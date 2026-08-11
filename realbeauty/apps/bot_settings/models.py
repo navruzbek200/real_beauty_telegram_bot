@@ -57,7 +57,11 @@ class GlobalSettings(models.Model):
         default="https://instagram.com/realbeauty_uz",
         verbose_name="Instagram havolasi",
     )
-    youtube_url = models.URLField(blank=True, verbose_name="YouTube havolasi")
+    youtube_url = models.URLField(
+        blank=True,
+        default="https://www.youtube.com/@Realbeauty_uz1/shorts",
+        verbose_name="YouTube havolasi",
+    )
     telegram_url = models.URLField(
         blank=True, verbose_name="Telegram kanal havolasi"
     )

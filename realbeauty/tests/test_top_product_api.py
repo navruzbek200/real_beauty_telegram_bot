@@ -120,3 +120,19 @@ class WebAppCatalogTests(APITestCase):
         self.assertEqual(data["shop"]["name"], "Real Beauty")
         kinds = {link["kind"] for link in data["links"]}
         self.assertEqual(kinds, {"instagram", "telegram"})  # youtube omitted
+
+    def test_catalog_ships_the_youtube_channel_by_default(self):
+        """A fresh settings row already carries the shop's YouTube channel.
+
+        The column shipped blank for a long time, and a blank URL is dropped
+        from `links` — which is why the Mini App never showed a YouTube row
+        even though the icon and styling were there waiting for it.
+        """
+        from apps.bot_settings.models import GlobalSettings
+
+        links = {l["kind"]: l["url"] for l in self.client.get(
+            "/api/v1/webapp/catalog/").data["links"]}
+        self.assertEqual(
+            links["youtube"], "https://www.youtube.com/@Realbeauty_uz1/shorts"
+        )
+        self.assertEqual(GlobalSettings.get().youtube_url, links["youtube"])
