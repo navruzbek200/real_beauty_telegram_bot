@@ -28,11 +28,6 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/products', label: 'Mahsulotlar', permission: 'products.view_product' },
       { to: '/top-products', label: 'Bu oydagi top', permission: 'products.view_product' },
-      {
-        to: '/tutorial-steps',
-        label: 'Video darsliklar',
-        permission: 'products.view_producttutorialstep',
-      },
     ],
   },
   {

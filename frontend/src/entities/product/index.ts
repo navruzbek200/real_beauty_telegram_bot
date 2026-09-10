@@ -1,8 +1,2 @@
-export { productApi, topProductApi, tutorialStepApi } from './api'
-export type {
-  Product,
-  ProductListParams,
-  ProductTutorialStep,
-  TopProduct,
-  TutorialStepListParams,
-} from './model/types'
+export { productApi, topProductApi } from './api'
+export type { Product, ProductListParams, TopProduct } from './model/types'

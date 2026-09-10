@@ -15,7 +15,6 @@ import { SettingsPage } from '@/pages/settings'
 import { SkinQuizResultsPage } from '@/pages/skin-quiz-results'
 import { SupportThreadsPage } from '@/pages/support-threads'
 import { TopProductsPage } from '@/pages/top-products'
-import { TutorialStepsPage } from '@/pages/tutorial-steps'
 import { ProtectedRoute } from './protected-route'
 
 export function AppRoutes() {
@@ -45,14 +44,6 @@ export function AppRoutes() {
       <Route
         path="/top-products"
         element={<ProtectedRoute permission="products.view_product"><TopProductsPage /></ProtectedRoute>}
-      />
-      <Route
-        path="/tutorial-steps"
-        element={
-          <ProtectedRoute permission="products.view_producttutorialstep">
-            <TutorialStepsPage />
-          </ProtectedRoute>
-        }
       />
 
       <Route
