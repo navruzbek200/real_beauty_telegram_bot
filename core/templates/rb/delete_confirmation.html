@@ -1,0 +1,7 @@
+{% extends "admin/delete_confirmation.html" %}
+{% load admin_urls %}
+
+{% block breadcrumbs %}
+    {% url opts|admin_urlname:'changelist' as changelist_url %}
+    {% include "rb/_backbar.html" with back_url=changelist_url back_label="Bekor qilish" trail=opts.verbose_name_plural|capfirst %}
+{% endblock %}

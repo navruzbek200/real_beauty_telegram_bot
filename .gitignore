@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets — never commit
+.env
+.env.bak.*
+secrets/
+
+# Data — customer PII lives here
+backups/
+*.sqlite3
+media/
+
+# Build artefacts
+staticfiles/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Runtime state
+celerybeat-schedule*
+
+# OS
+.DS_Store

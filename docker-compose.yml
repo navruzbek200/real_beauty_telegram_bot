@@ -1,0 +1,160 @@
+# Real Beauty — production stack.
+#
+#   docker compose up -d --build
+#
+# Bootstrap once:
+#   docker compose exec django python manage.py createsuperuser
+#
+# Local development does NOT use this file — use ./run_local.sh.
+
+services:
+  db:
+    image: postgres:16-alpine
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # No `ports:` on purpose — only containers reach the DB. Publishing 5432
+    # on a VPS exposes the database to the whole internet.
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save 60 1
+    # Same: internal only.
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Runs migrations once per deploy, then exits. Every long-lived service
+  # waits for it, so nothing serves traffic against an outdated schema.
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/django.Dockerfile
+    command: python manage.py migrate --noinput
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  django:
+    build:
+      context: .
+      dockerfile: docker/django.Dockerfile
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
+    env_file: .env
+    volumes:
+      - media:/app/media
+      # Firebase service-account JSON (FIREBASE_SERVICE_ACCOUNT_JSON in .env)
+      # — put it at ./secrets/firebase-service-account.json on the host.
+      - ./secrets:/app/secrets:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/realbeauty.conf:/etc/nginx/conf.d/default.conf:ro
+      - media:/srv/media:ro
+      - static:/srv/staticfiles:ro
+      - frontend_dist:/srv/frontend:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot
+    depends_on:
+      django:
+        condition: service_started
+      frontend-sync:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Renews the Let's Encrypt cert in the background. First issuance is done
+  # once by docker/nginx/init-letsencrypt.sh; after that this keeps it fresh.
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done'
+    restart: unless-stopped
+
+  # Copies the baked static files out of the image into the volume nginx reads.
+  static-sync:
+    build:
+      context: .
+      dockerfile: docker/django.Dockerfile
+    command: sh -c "cp -r /app/staticfiles/. /srv/staticfiles/"
+    volumes:
+      - static:/srv/staticfiles
+
+  # Builds the React SPA and copies its dist/ into the volume nginx serves
+  # from — same pattern as static-sync, but for the frontend.
+  frontend-sync:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    command: sh -c "cp -r /app/dist/. /srv/frontend/"
+    volumes:
+      - frontend_dist:/srv/frontend
+
+  bot:
+    build:
+      context: .
+      dockerfile: docker/bot.Dockerfile
+    command: python -m bot.main
+    env_file: .env
+    volumes:
+      # The bot reads tutorial videos and writes photo thumbnails — without
+      # this mount videos 404 and every thumbnail dies with the container.
+      - media:/app/media
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker/django.Dockerfile
+    command: celery -A tasks.celery worker -B -l info
+    env_file: .env
+    volumes:
+      # The thumbnail-purge task deletes files from disk.
+      - media:/app/media
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  redis_data:
+  media:
+  static:
+  frontend_dist:
+  certbot_conf:
+  certbot_www:

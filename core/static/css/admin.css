@@ -1,0 +1,438 @@
+/*
+ * Real Beauty admin — usability layer for non-technical users.
+ * Rule of thumb: a coloured button (green/navy/red) always keeps WHITE text
+ * (incl. inner <span>/<svg>); a light button always keeps DARK text. Never
+ * white-on-white or white-on-light.
+ */
+
+:root {
+  --rb-green: #059669;
+  --rb-green-h: #047857;
+  --rb-red: #dc2626;
+  --rb-red-h: #b91c1c;
+  --rb-navy: #2b42aa;
+  --rb-navy-h: #1a2564;
+  --rb-row-hover: rgba(47, 182, 217, 0.12); /* translucent: safe in both themes */
+}
+
+/* Pointer on everything clickable */
+a, button, input[type="submit"], [role="button"], summary, label[for] {
+  cursor: pointer;
+}
+
+/* =========================================================================
+ * COLOURED action buttons — coloured bg + forced white label (children too)
+ * ========================================================================= */
+
+/* ADD (changelist header, our labelled green button) */
+a.rb-add-btn { background-color: var(--rb-green) !important; border: 0 !important; }
+a.rb-add-btn:hover { background-color: var(--rb-green-h) !important; }
+
+/* SAVE (primary submit) → green */
+#submit-row button[name="_save"] {
+  background-color: var(--rb-green) !important;
+  border-color: var(--rb-green) !important;
+  font-size: 15px !important;
+  padding: 10px 22px !important;
+  border-radius: 8px !important;
+}
+#submit-row button[name="_save"]:hover { background-color: var(--rb-green-h) !important; }
+
+/* PRIMARY (Apply action, other primary submits) → navy */
+button.bg-primary-600,
+a.bg-primary-600,
+input.bg-primary-600,
+.actions button[type="submit"] {
+  background-color: var(--rb-navy) !important;
+  border-color: var(--rb-navy) !important;
+}
+button.bg-primary-600:hover,
+a.bg-primary-600:hover,
+input.bg-primary-600:hover,
+.actions button[type="submit"]:hover {
+  background-color: var(--rb-navy-h) !important;
+}
+
+/* DELETE → red */
+.deletelink-box a,
+a.deletelink {
+  background-color: var(--rb-red) !important;
+  border-color: var(--rb-red) !important;
+  font-size: 15px !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+}
+.deletelink-box a:hover,
+a.deletelink:hover { background-color: var(--rb-red-h) !important; }
+
+/* Force WHITE label on every coloured button, including inner spans/icons */
+a.rb-add-btn, a.rb-add-btn *,
+#submit-row button[name="_save"], #submit-row button[name="_save"] *,
+button.bg-primary-600, button.bg-primary-600 *,
+a.bg-primary-600, a.bg-primary-600 *,
+.actions button[type="submit"], .actions button[type="submit"] *,
+.deletelink-box a, .deletelink-box a *,
+a.deletelink, a.deletelink * {
+  color: #ffffff !important;
+}
+
+/* =========================================================================
+ * SECONDARY bottom buttons (Save & continue / add another / Close, etc.)
+ * Solid, readable fill in both themes — never faint/invisible.
+ * ========================================================================= */
+#submit-row button:not([name="_save"]),
+#submit-row a:not(.deletelink):not(.rb-add-btn) {
+  background-color: #eef2f7 !important;
+  border: 1px solid #cbd5e1 !important;
+  min-height: 40px;
+}
+#submit-row button:not([name="_save"]):hover,
+#submit-row a:not(.deletelink):not(.rb-add-btn):hover {
+  background-color: #dde5ee !important;
+  border-color: #94a3b8 !important;
+}
+/* dark label on the light secondary buttons (children too) */
+#submit-row button:not([name="_save"]), #submit-row button:not([name="_save"]) *,
+#submit-row a:not(.deletelink):not(.rb-add-btn),
+#submit-row a:not(.deletelink):not(.rb-add-btn) * {
+  color: #1e293b !important;
+}
+
+/* Dark theme: secondary buttons become dark grey with light label */
+.dark #submit-row button:not([name="_save"]),
+.dark #submit-row a:not(.deletelink):not(.rb-add-btn) {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+.dark #submit-row button:not([name="_save"]):hover,
+.dark #submit-row a:not(.deletelink):not(.rb-add-btn):hover {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+.dark #submit-row button:not([name="_save"]), .dark #submit-row button:not([name="_save"]) *,
+.dark #submit-row a:not(.deletelink):not(.rb-add-btn),
+.dark #submit-row a:not(.deletelink):not(.rb-add-btn) * {
+  color: #e5e7eb !important;
+}
+
+/* =========================================================================
+ * Tables, focus, readability
+ * ========================================================================= */
+#result_list tbody tr:hover,
+table tbody tr:hover { background: var(--rb-row-hover) !important; }
+#result_list th, #result_list td {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  font-size: 14px;
+}
+
+a:focus-visible, button:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #2fb6d9 !important;
+  outline-offset: 2px;
+}
+
+body { font-size: 14.5px; }
+
+/* =========================================================================
+ * FORM FIELDS — always readable text on a clear field in BOTH themes.
+ * (Fixes "white text / invisible input" when filling a record.)
+ * ========================================================================= */
+input[type="text"], input[type="number"], input[type="email"],
+input[type="url"], input[type="password"], input[type="tel"],
+input[type="date"], input[type="datetime-local"], input[type="search"],
+textarea, select, .vTextField, .vLargeTextField {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+}
+input::placeholder, textarea::placeholder { color: #94a3b8 !important; }
+
+input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus,
+input[type="url"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
+input[type="date"]:focus, input[type="datetime-local"]:focus,
+input[type="search"]:focus, textarea:focus, select:focus {
+  border-color: #5b8def !important;
+  outline: 2px solid rgba(91, 141, 239, .25) !important;
+  outline-offset: 0 !important;
+}
+
+/* Field labels: clearly readable */
+form label, .form-row label, .field-box label {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* Dark theme field variants */
+.dark input[type="text"], .dark input[type="number"], .dark input[type="email"],
+.dark input[type="url"], .dark input[type="password"], .dark input[type="tel"],
+.dark input[type="date"], .dark input[type="datetime-local"],
+.dark input[type="search"], .dark textarea, .dark select,
+.dark .vTextField, .dark .vLargeTextField {
+  background-color: #111827 !important;
+  color: #f1f5f9 !important;
+  border-color: #374151 !important;
+}
+.dark input::placeholder, .dark textarea::placeholder { color: #6b7280 !important; }
+.dark form label, .dark .form-row label, .dark .field-box label {
+  color: #cbd5e1 !important;
+}
+
+/* =========================================================================
+ * BACK BAR — the real back button (rb/_backbar.html)
+ * ========================================================================= */
+
+.rb-backbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.rb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px 7px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  color: #1a2564;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.2;
+}
+.rb-back:hover { background-color: #e2e8f0; }
+.rb-back .material-symbols-outlined { font-size: 18px; }
+.rb-backbar__trail { font-size: 14px; color: #64748b; }
+
+.dark .rb-back {
+  border-color: #374151;
+  background-color: #1f2937;
+  color: #e2e8f0;
+}
+.dark .rb-back:hover { background-color: #374151; }
+.dark .rb-backbar__trail { color: #94a3b8; }
+
+/* =========================================================================
+ * ROW DELETE — one bin per row (core.admin.RBModelAdmin.delete_button)
+ * ========================================================================= */
+
+a.rb-row-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  color: #94a3b8;
+  text-decoration: none;
+}
+a.rb-row-delete:hover { background-color: #fee2e2; color: var(--rb-red); }
+a.rb-row-delete .material-symbols-outlined { font-size: 19px; }
+.dark a.rb-row-delete:hover { background-color: rgba(127, 29, 29, 0.35); color: #fca5a5; }
+
+/* =========================================================================
+ * BROADCAST confirmation page
+ * ========================================================================= */
+
+.rb-confirm {
+  max-width: 620px;
+  margin: 8px auto 0;
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background-color: #f8fafc;
+}
+.rb-confirm__h { font-size: 20px; font-weight: 700; color: #1a2564; }
+.rb-confirm__lead { margin-top: 12px; font-size: 15px; color: #334155; line-height: 1.5; }
+.rb-confirm__preview {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  white-space: pre-wrap;
+}
+.rb-confirm__warn { margin-top: 14px; color: #b45309; font-weight: 600; }
+.rb-confirm__actions { display: flex; gap: 12px; margin-top: 22px; }
+
+.rb-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.rb-btn--ghost { border-color: #cbd5e1; background: #fff; color: #334155; }
+.rb-btn--ghost:hover { background: #f1f5f9; }
+.rb-btn--danger { background: var(--rb-red); color: #fff; }
+.rb-btn--danger:hover { background: var(--rb-red-h); }
+
+.dark .rb-confirm { border-color: #374151; background-color: #111827; }
+.dark .rb-confirm__h { color: #c7d2fe; }
+.dark .rb-confirm__lead { color: #cbd5e1; }
+.dark .rb-confirm__preview { background-color: #1f2937; border-color: #374151; color: #e2e8f0; }
+.dark .rb-btn--ghost { background: #1f2937; border-color: #374151; color: #e2e8f0; }
+.dark .rb-btn--ghost:hover { background: #374151; }
+
+/* =========================================================================
+ * DASHBOARD stat cards
+ * Styled here, not with Tailwind utilities in the template: Unfold ships a
+ * pre-compiled stylesheet, so any class it does not already use itself (and
+ * every `dark:` variant of one) simply does not exist — which is how these
+ * cards ended up rendering as bare white boxes.
+ * ========================================================================= */
+
+.rb-stats {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.rb-stats--secondary {
+  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.rb-stat {
+  display: block;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.rb-stat:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+}
+.rb-stat__title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+.rb-stat__value {
+  margin-top: 6px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1a2564;
+}
+.rb-stat__note {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Something needs a human: red frame, red number. */
+.rb-stat--urgent { border-color: #fecaca; background-color: #fef2f2; }
+.rb-stat--urgent .rb-stat__value { color: var(--rb-red); }
+
+.rb-stat--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+}
+.rb-stat--row .rb-stat__title { font-size: 13px; }
+.rb-stat--row .rb-stat__value { margin-top: 0; font-size: 20px; }
+
+.dark .rb-stat {
+  border-color: #374151;
+  background-color: #111827;
+}
+.dark .rb-stat:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45); }
+.dark .rb-stat__title, .dark .rb-stat__note { color: #94a3b8; }
+.dark .rb-stat__value { color: #e2e8f0; }
+.dark .rb-stat--urgent {
+  border-color: #7f1d1d;
+  background-color: rgba(127, 29, 29, 0.25);
+}
+.dark .rb-stat--urgent .rb-stat__value { color: #fca5a5; }
+
+/* =========================================================================
+ * SUPPORT CONVERSATION — apps/support/admin.py SupportThreadAdmin.conversation()
+ * Classes, not inline colors: a bubble with a fixed light background and no
+ * matching text color read as a plain white box the moment dark mode set the
+ * page text light-on-light-background too.
+ * ========================================================================= */
+
+.rb-chat { max-height: 460px; overflow-y: auto; padding: 4px; }
+
+.rb-chat__row { display: flex; margin: 6px 0; }
+.rb-chat__row--out { justify-content: flex-end; }
+
+.rb-chat__bubble {
+  max-width: 70%;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background-color: #f3f4f6;
+  color: #0f172a;
+}
+.rb-chat__row--out .rb-chat__bubble { background-color: #dbeafe; }
+
+.rb-chat__meta { font-size: 11px; color: #6b7280; margin-bottom: 2px; }
+.rb-chat__text { white-space: pre-wrap; }
+.rb-chat__error { font-size: 12px; color: var(--rb-red); margin-top: 4px; }
+
+.rb-chat__img {
+  display: block;
+  max-width: 220px;
+  max-height: 220px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 4px;
+  object-fit: cover;
+}
+.rb-chat__video, .rb-chat__audio { display: block; max-width: 260px; width: 100%; margin-top: 4px; }
+.rb-chat__file-chip {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.dark .rb-chat__bubble { background-color: #1f2937; color: #f1f5f9; }
+.dark .rb-chat__row--out .rb-chat__bubble { background-color: #1e3a5f; }
+.dark .rb-chat__meta { color: #94a3b8; }
+
+@media (prefers-reduced-motion: reduce) {
+  a.rb-add-btn { transition: none; }
+  .rb-stat, .rb-stat:hover { transition: none; transform: none; }
+}
+
+/* =========================================================================
+ * RESPONSIVE — phones and narrow tablets.
+ * Unfold's own scaffolding (sidebar, tables) already collapses on its own;
+ * this covers only the custom rb-* pieces this project added on top.
+ * ========================================================================= */
+@media (max-width: 640px) {
+  .rb-backbar { gap: 8px; }
+  .rb-back { padding: 6px 12px 6px 8px; font-size: 13px; }
+  .rb-backbar__trail { font-size: 13px; }
+
+  .rb-confirm { padding: 16px; border-radius: 8px; }
+  .rb-confirm__actions { flex-direction: column; }
+  .rb-btn { justify-content: center; width: 100%; }
+
+  .rb-stats, .rb-stats--secondary { grid-template-columns: 1fr; }
+  .rb-stat__value { font-size: 24px; }
+
+  .rb-chat__bubble { max-width: 88%; }
+  .rb-chat__img, .rb-chat__video, .rb-chat__audio { max-width: 100%; }
+
+  #result_list th, #result_list td { padding-left: 8px !important; padding-right: 8px !important; }
+}
+
+/* A wide table (many columns) must scroll inside itself on a narrow screen,
+   never stretch the whole page sideways. */
+.module, #changelist .results { overflow-x: auto; }

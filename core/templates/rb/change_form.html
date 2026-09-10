@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+{% load admin_urls %}
+
+{% comment %}
+Extends Unfold's change_form (resolved by name — this file lives under rb/, so
+it does not shadow the template it inherits) purely to swap the breadcrumb line
+for a back button pointing at the list this record came from.
+{% endcomment %}
+
+{% block breadcrumbs %}
+    {% url opts|admin_urlname:'changelist' as changelist_url %}
+    {% include "rb/_backbar.html" with back_url=changelist_url back_label=opts.verbose_name_plural|capfirst trail=original %}
+{% endblock %}

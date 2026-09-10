@@ -1,0 +1,188 @@
+# Real Beauty CRM — Uzbek admin strings.
+#
+# Django ships an `uz` locale but it is only partly translated: "Harakat:" and
+# "Saqlash" come through, while "Are you sure you want to delete…", "Home",
+# "Objects" and others fall back to English, so the panel reads half-Uzbek
+# half-English. Anything missing upstream is filled in here; LOCALE_PATHS puts
+# this file ahead of Django's own.
+#
+# There is no gettext on this machine, so compile with:
+#     python scripts/compile_messages.py
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: uz\n"
+
+msgid "Home"
+msgstr "Boshqaruv paneli"
+
+msgid "Objects"
+msgstr "O'chiriladigan yozuvlar"
+
+msgid "No, take me back"
+msgstr "Yo'q, orqaga qaytaraman"
+
+msgid "Yes, I’m sure"
+msgstr "Ha, o'chirilsin"
+
+msgid "Go"
+msgstr "Bajarish"
+
+msgid "Are you sure you want to delete the %(object_name)s \"%(escaped_object)s\"? All of the following related items will be deleted:"
+msgstr "«%(escaped_object)s» — shu %(object_name)s rostdan o'chirilsinmi? Unga bog'liq quyidagilar ham o'chib ketadi:"
+
+msgid "Are you sure you want to delete the selected %(objects_name)s? All of the following objects and their related items will be deleted:"
+msgstr "Tanlanganlar (%(objects_name)s) rostdan o'chirilsinmi? Quyidagilar va ularga bog'liq yozuvlar ham o'chib ketadi:"
+
+msgid "Deleting the %(object_name)s '%(escaped_object)s' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:"
+msgstr "«%(escaped_object)s» ni o'chirish bog'liq yozuvlarni ham o'chiradi, lekin sizda ularni o'chirishga ruxsat yo'q:"
+
+msgid "Deleting the %(object_name)s '%(escaped_object)s' would require deleting the following protected related objects:"
+msgstr "«%(escaped_object)s» ni o'chirish uchun avval quyidagi himoyalangan yozuvlarni o'chirish kerak:"
+
+msgid "Select %s to change"
+msgstr "%s — tahrirlash uchun tanlang"
+
+msgid "Select %s to view"
+msgstr "%s — ko'rish uchun tanlang"
+
+msgid "Filter results"
+msgstr "Saralash"
+
+msgid "Search"
+msgstr "Qidirish"
+
+msgid "Save and continue editing"
+msgstr "Saqlash va tahrirni davom ettirish"
+
+msgid "Save and add another"
+msgstr "Saqlash va yana qo'shish"
+
+msgid "Change password"
+msgstr "Parolni o'zgartirish"
+
+msgid "Log out"
+msgstr "Chiqish"
+
+msgid "By %s"
+msgstr "%s bo'yicha"
+
+msgid "All"
+msgstr "Barchasi"
+
+msgid "Yes"
+msgstr "Ha"
+
+msgid "No"
+msgstr "Yo'q"
+
+msgid "Unknown"
+msgstr "Noma'lum"
+
+msgid "Add another %(verbose_name)s"
+msgstr "Yana %(verbose_name)s qo'shish"
+
+msgid "Remove"
+msgstr "Olib tashlash"
+
+msgid "Delete?"
+msgstr "O'chirilsinmi?"
+
+msgid "Currently:"
+msgstr "Hozirgi:"
+
+msgid "Change:"
+msgstr "O'zgartirish:"
+
+msgid "Clear"
+msgstr "Tozalash"
+
+msgid "Password"
+msgstr "Parol"
+
+msgid "Password confirmation"
+msgstr "Parolni tasdiqlash"
+
+msgid "The two password fields didn’t match."
+msgstr "Ikkala parol bir xil emas."
+
+# --- django-unfold's own strings: it ships no uz catalogue at all, so every
+# one of these rendered in English next to Django's translated ones.
+
+msgid "Select action"
+msgstr "Nima qilish kerak"
+
+msgid "Select all rows"
+msgstr "Barchasini belgilash"
+
+msgid "Run"
+msgstr "Bajarish"
+
+msgid "More actions"
+msgstr "Boshqa amallar"
+
+msgid "Filters"
+msgstr "Saralash"
+
+msgid "Apply Filters"
+msgstr "Saralash"
+
+msgid "Clear all filters"
+msgstr "Saralashni tozalash"
+
+msgid "Clear selection"
+msgstr "Belgilashni bekor qilish"
+
+msgid "Click here to select the objects across all pages"
+msgstr "Barcha sahifalardagi yozuvlarni belgilash uchun shu yerni bosing"
+
+msgid "No records found."
+msgstr "Hech nima topilmadi."
+
+msgid "Show all"
+msgstr "Hammasini ko'rsatish"
+
+msgid "All applications"
+msgstr "Barcha bo'limlar"
+
+msgid "General"
+msgstr "Umumiy"
+
+msgid "Toggle sorting"
+msgstr "Tartiblash"
+
+msgid "Type to search"
+msgstr "Qidirish uchun yozing"
+
+msgid "Dark"
+msgstr "Qorong'i"
+
+msgid "Light"
+msgstr "Yorug'"
+
+msgid "System"
+msgstr "Tizimdagidek"
+
+msgid "Menu"
+msgstr "Menyu"
+
+msgid "Please correct the error below."
+msgstr "Quyidagi xatoni to'g'rilang."
+
+msgid "Please correct the errors below."
+msgstr "Quyidagi xatolarni to'g'rilang."
+
+msgid "Log in again"
+msgstr "Qayta kirish"
+
+msgid "You have been successfully logged out from the administration"
+msgstr "Siz tizimdan chiqdingiz"
+
+msgid "Thanks for spending some quality time with the web site today."
+msgstr "Ishingizga omad!"
+
+msgid "You don’t have permission to view or edit anything."
+msgstr "Sizda hech narsani ko'rish yoki tahrirlash uchun ruxsat yo'q."
+
+msgid "Please enter your old password, for security’s sake, and then enter your new password twice so we can verify you typed it in correctly."
+msgstr "Xavfsizlik uchun avval eski parolingizni kiriting, so'ng yangi parolni ikki marta yozing."

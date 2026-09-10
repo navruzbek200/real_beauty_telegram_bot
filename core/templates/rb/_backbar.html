@@ -1,0 +1,22 @@
+{% load i18n admin_urls %}
+
+{% comment %}
+The back bar that replaces Unfold's breadcrumb line.
+
+Stock breadcrumbs are small grey text ending in "Home", and the only
+button-shaped thing near them is the sidebar collapse handle — so that is what
+people clicked to go back, and the menu folded away instead. This puts an
+actual labelled button where the eye already goes.
+{% endcomment %}
+
+<div class="px-4 lg:px-12">
+    <div class="container mb-8 mx-auto -my-3">
+        <div class="rb-backbar">
+            <a href="{{ back_url }}" class="rb-back">
+                <span class="material-symbols-outlined">arrow_back</span>
+                {{ back_label }}
+            </a>
+            <span class="rb-backbar__trail">{{ trail }}</span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+
+{% comment %}
+Confirmation gate before a broadcast goes out. A send reaches every targeted
+customer and cannot be recalled, so it never fires from a single click — this
+page states the real recipient count and needs an explicit POST.
+{% endcomment %}
+
+{% block breadcrumbs %}
+    {% include "rb/_backbar.html" with back_url=back_url back_label="Bekor qilish" trail="E'lonni yuborish" %}
+{% endblock %}
+
+{% block content %}
+<div class="px-4 lg:px-12">
+  <div class="rb-confirm">
+    <h1 class="rb-confirm__h">📣 E'lonni yuborishni tasdiqlang</h1>
+
+    <p class="rb-confirm__lead">
+      «<b>{{ broadcast.title }}</b>» xabari <b>{{ count }}</b> ta xaridorga
+      yuboriladi. Bu amalni <b>bekor qilib bo'lmaydi</b>.
+    </p>
+
+    <div class="rb-confirm__preview">{{ broadcast.body|linebreaksbr }}</div>
+
+    {% if count == 0 %}
+      <p class="rb-confirm__warn">
+        ⚠️ Bu shartlarga mos xaridor yo'q. Avval «Kimlarga» qismini tekshiring.
+      </p>
+    {% endif %}
+
+    <form method="post" class="rb-confirm__actions">
+      {% csrf_token %}
+      <input type="hidden" name="confirm" value="yes">
+      <a href="{{ back_url }}" class="rb-btn rb-btn--ghost">Bekor qilish</a>
+      {% if count > 0 %}
+        <button type="submit" class="rb-btn rb-btn--danger">
+          Ha, {{ count }} ta xaridorga yubor
+        </button>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}

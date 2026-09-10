@@ -1,0 +1,45 @@
+{% extends 'admin/base.html' %}
+
+{% load i18n %}
+
+{% comment %}
+Replaces Unfold's default index. The stock page renders the app/model grid,
+which on this project just repeats the sidebar under different names; the
+numbers below are what the shop actually opens the CRM to check.
+
+Styling lives in css/admin.css (.rb-stat*) rather than Tailwind utilities —
+Unfold's stylesheet is pre-compiled, so classes it does not use itself are
+not in it and silently render as nothing.
+{% endcomment %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block content %}
+    <div class="rb-stats">
+        {% for card in cards %}
+            <a href="{{ card.url }}" class="rb-stat{% if card.urgent %} rb-stat--urgent{% endif %}">
+                <div class="rb-stat__title">{{ card.title }}</div>
+                <div class="rb-stat__value">{{ card.value }}</div>
+                <div class="rb-stat__note">{{ card.note }}</div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="rb-stats rb-stats--secondary">
+        {% for card in secondary %}
+            <a href="{{ card.url }}" class="rb-stat rb-stat--row">
+                <span class="rb-stat__title">{{ card.title }}</span>
+                <span class="rb-stat__value">{{ card.value }}</span>
+            </a>
+        {% endfor %}
+    </div>
+
+    {% comment %}
+    The "recent actions" feed that normally sits here is deliberately gone: it
+    listed every save anyone made, including rows since deleted, whose links
+    lead nowhere. Per-record history is still one click away on each object's
+    own page, which is where the question "who changed this?" is actually asked.
+    {% endcomment %}
+{% endblock %}

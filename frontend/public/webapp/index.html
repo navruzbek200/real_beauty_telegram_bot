@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>Real Beauty</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      /* One palette, baby blue, sampled from the shop's own packaging: the
+         pale aqua of the gift bag plus the deep navy its logo is printed in.
+         There is deliberately no second accent hue — the earlier champagne
+         gold read as a different brand next to the bag and the bottles. */
+      --sky: #6ec6d9;        /* primary — buttons, active chips */
+      --sky-2: #a9dce2;      /* the bag itself — accents on dark */
+      --sky-3: #d7eff4;      /* palest wash — badge fills */
+      --sky-deep: #2c7d9b;   /* deep end of every gradient */
+      --ink: #1d2c5c;        /* the logo navy — text on pale blue */
+      --on-sky: #fff;
+
+      /* Base follows the Telegram theme. The fallbacks are only used outside
+         the client (previewing in a browser), so they come in both schemes. */
+      --bg: var(--tg-theme-bg-color, #f4fbfd);
+      --text: var(--tg-theme-text-color, #14303d);
+      --hint: var(--tg-theme-hint-color, #6f8b98);
+
+      /* Accent used for *text* (prices, active tabs). Pale blue on a white
+         background is unreadable, so light and dark each get the shade that
+         actually has contrast against it — see data-scheme below. */
+      --accent: var(--sky-deep);
+
+      --card: color-mix(in srgb, var(--text) 4%, var(--bg));
+      --line: color-mix(in srgb, var(--text) 11%, transparent);
+      --radius: 18px;
+    }
+    :root[data-scheme="dark"] {
+      --bg: var(--tg-theme-bg-color, #0d1620);
+      --text: var(--tg-theme-text-color, #eaf4f8);
+      --hint: var(--tg-theme-hint-color, #8fa7b3);
+      --accent: var(--sky-2);
+      --card: color-mix(in srgb, var(--text) 5%, var(--bg));
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; }
+    body { position: relative; min-height: 100vh; overflow-x: hidden;
+      background:
+        radial-gradient(54% 34% at 12% 0%, color-mix(in srgb, var(--sky) 20%, transparent), transparent 62%),
+        radial-gradient(48% 30% at 92% 3%, color-mix(in srgb, var(--sky-deep) 14%, transparent), transparent 60%),
+        var(--bg);
+      background-attachment: fixed;
+      /* room for the fixed tab bar */
+      padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
+    body.locked { overflow: hidden; }
+    img { display: block; max-width: 100%; }
+    .serif { font-family: ui-serif, "Palatino", Georgia, "Times New Roman", serif; }
+
+    .card-bg { background: var(--card); border: 1px solid var(--line); }
+    .glass { background: color-mix(in srgb, var(--bg) 74%, transparent);
+      backdrop-filter: blur(16px) saturate(1.25); -webkit-backdrop-filter: blur(16px) saturate(1.25);
+      border: 1px solid var(--line); }
+
+    /* ---------- hero ---------- */
+    .hero { padding: calc(22px + env(safe-area-inset-top)) 20px 14px; text-align: center; }
+    .hero .kicker { font-size: 10.5px; letter-spacing: .34em; text-transform: uppercase;
+      color: var(--accent); font-weight: 700; }
+    .hero h1 { margin: 4px 0 0; font-size: 32px; font-weight: 600; letter-spacing: .01em; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p { margin: 6px auto 0; font-size: 13.5px; color: var(--hint); max-width: 30ch; line-height: 1.45; }
+    .hero .rule { width: 52px; height: 2px; margin: 12px auto 0; border-radius: 2px;
+      background: linear-gradient(90deg, transparent, var(--sky), var(--sky-deep), transparent); }
+
+    /* ---------- views ---------- */
+    .view { display: none; animation: fade .22s ease; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+
+    /* ---------- search + chips ---------- */
+    .controls { padding: 4px 16px; }
+    .search { position: relative; border-radius: 14px; margin-bottom: 10px; }
+    .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: .5; }
+    .search input { width: 100%; border: none; outline: none; background: transparent; color: var(--text);
+      padding: 12px 14px 12px 42px; font-size: 15px; }
+    .search input::placeholder { color: var(--hint); }
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { flex: 0 0 auto; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600;
+      cursor: pointer; color: var(--text); transition: transform .12s ease; white-space: nowrap; }
+    .chip:active { transform: scale(.95); }
+    .chip.active { background: linear-gradient(135deg, var(--sky), var(--sky-deep)); color: var(--on-sky);
+      border-color: transparent; box-shadow: 0 4px 14px color-mix(in srgb, var(--sky) 42%, transparent); }
+    .count { padding: 2px 18px 0; font-size: 12px; color: var(--hint); }
+
+    /* ---------- product grid ---------- */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 8px; }
+    .card { border-radius: var(--radius); overflow: hidden; cursor: pointer; display: flex; flex-direction: column;
+      transition: transform .14s ease; animation: rise .4s both; }
+    .card:active { transform: scale(.97); }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+    .thumb-wrap { position: relative; }
+    .thumb { aspect-ratio: 1/1; width: 100%; object-fit: cover;
+      background: linear-gradient(150deg, color-mix(in srgb, var(--sky) 22%, transparent), color-mix(in srgb, var(--sky-deep) 12%, transparent)); }
+    img.thumb { opacity: 0; transition: opacity .3s ease; }
+    img.thumb.ready { opacity: 1; }
+    div.thumb { display: flex; align-items: center; justify-content: center; font-size: 38px;
+      color: var(--accent); font-family: ui-serif, Georgia, serif; font-style: italic; }
+    .badges { position: absolute; top: 9px; left: 9px; display: flex; gap: 5px; flex-wrap: wrap; }
+    .badge { font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; letter-spacing: .02em; }
+    .badge.sale { background: linear-gradient(135deg, var(--sky), var(--sky-deep)); color: var(--on-sky); }
+    .badge.top { background: linear-gradient(135deg, var(--sky-3), var(--sky-2)); color: var(--ink); }
+    .card-body { padding: 11px 12px 13px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+    .brand { font-size: 9.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--hint); }
+    .name { font-size: 13.5px; font-weight: 600; line-height: 1.3; min-height: 2.6em;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .price-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+    .price { font-size: 15.5px; font-weight: 800; color: var(--accent); }
+    .old { font-size: 12px; color: var(--hint); text-decoration: line-through; }
+    .buy { margin-top: auto; border-radius: 11px; padding: 9px; font-size: 13px; font-weight: 700;
+      background: color-mix(in srgb, var(--sky) 16%, transparent); color: var(--accent); cursor: pointer;
+      border: 1px solid color-mix(in srgb, var(--sky) 32%, transparent); }
+
+    /* ---------- lessons ---------- */
+    .section-head { padding: 14px 20px 4px; }
+    .section-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
+    .section-head p { margin: 4px 0 0; font-size: 13px; color: var(--hint); line-height: 1.45; }
+    .lesson-list { padding: 10px 16px 0; display: flex; flex-direction: column; gap: 10px; }
+    .lesson-card { border-radius: var(--radius); overflow: hidden; animation: rise .4s both; }
+    .lesson-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; }
+    .lesson-head:active { background: color-mix(in srgb, var(--text) 5%, transparent); }
+    .lesson-thumb { width: 52px; height: 52px; border-radius: 13px; object-fit: cover; flex: 0 0 auto;
+      background: linear-gradient(150deg, color-mix(in srgb, var(--sky) 24%, transparent), color-mix(in srgb, var(--sky-deep) 14%, transparent)); }
+    div.lesson-thumb { display: flex; align-items: center; justify-content: center; font-size: 22px;
+      color: var(--accent); font-family: ui-serif, Georgia, serif; font-style: italic; }
+    .lesson-info { flex: 1; min-width: 0; }
+    .lesson-info .t { font-size: 14.5px; font-weight: 650; line-height: 1.25;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .lesson-info .m { margin-top: 3px; font-size: 12px; color: var(--hint); }
+    .lesson-chev { color: var(--hint); transition: transform .2s ease; flex: 0 0 auto; }
+    .lesson-card.open .lesson-chev { transform: rotate(90deg); }
+    .steps { display: none; border-top: 1px solid var(--line); }
+    .lesson-card.open .steps { display: block; }
+    .step { display: flex; align-items: center; gap: 11px; padding: 11px 14px; cursor: pointer; }
+    .step + .step { border-top: 1px solid var(--line); }
+    .step:active { background: color-mix(in srgb, var(--text) 5%, transparent); }
+    .play { width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center;
+      justify-content: center; background: linear-gradient(135deg, var(--sky), var(--sky-deep)); color: var(--on-sky); }
+    .play.soon { background: color-mix(in srgb, var(--hint) 22%, transparent); color: var(--hint); }
+    .step .s-label { flex: 1; font-size: 14px; font-weight: 550; min-width: 0; }
+    .step .s-soon { font-size: 11px; color: var(--hint); flex: 0 0 auto; }
+    .lesson-note { margin: 12px 20px 0; font-size: 12.5px; color: var(--hint); text-align: center; line-height: 1.5; }
+
+    /* ---------- contact ---------- */
+    .menu { border-radius: var(--radius); overflow: hidden; margin: 10px 16px 0; }
+    .row { display: flex; align-items: center; gap: 13px; padding: 13px 15px; cursor: pointer; transition: background .15s ease; }
+    .row:active { background: color-mix(in srgb, var(--text) 6%, transparent); }
+    .row + .row { border-top: 1px solid var(--line); }
+    .ic { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+      flex: 0 0 auto; color: #fff; }
+    .ic.ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+    .ic.yt { background: linear-gradient(135deg,#ff4b41,#e00000); }
+    .ic.tg { background: linear-gradient(135deg,#37bbfe,#007dbb); }
+    .ic.sp { background: linear-gradient(135deg, var(--sky), var(--sky-deep)); }
+    .row .label { flex: 1; font-size: 15px; font-weight: 600; }
+    .row .chev { color: var(--hint); font-size: 20px; }
+
+    /* ---------- states / skeleton ---------- */
+    .state { text-align: center; color: var(--hint); padding: 48px 24px; font-size: 15px; line-height: 1.5; }
+    .sk { border-radius: var(--radius); overflow: hidden; }
+    .sk .thumb, .sk .bar { animation: pulse 1.3s ease-in-out infinite; }
+    .sk .bar { height: 12px; margin: 12px; border-radius: 6px; background: var(--line); }
+    .sk .bar.short { width: 55%; }
+    @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    /* ---------- detail sheet ---------- */
+    .backdrop { position: fixed; inset: 0; background: rgba(9,26,36,.55); opacity: 0; pointer-events: none;
+      transition: opacity .22s ease; z-index: 20; }
+    .backdrop.open { opacity: 1; pointer-events: auto; }
+    .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--bg);
+      border-radius: 24px 24px 0 0; transform: translateY(101%); transition: transform .3s cubic-bezier(.2,.9,.2,1);
+      max-height: 90vh; overflow-y: auto; padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line); }
+    .sheet.open { transform: none; }
+    .grab { width: 42px; height: 4px; border-radius: 2px; background: var(--hint); opacity: .4; margin: 9px auto 2px; }
+    /* `contain`, not `cover`: the sheet is where a customer decides, so a tall
+       bottle must never have its cap or its label cropped off. */
+    .sheet-photo { width: 100%; aspect-ratio: 1/1; object-fit: contain;
+      background: linear-gradient(150deg, color-mix(in srgb, var(--sky) 16%, transparent), color-mix(in srgb, var(--sky-deep) 9%, transparent));
+      display: flex; align-items: center; justify-content: center; font-size: 58px; color: var(--accent);
+      font-family: ui-serif, Georgia, serif; font-style: italic; }
+    .sheet-body { padding: 18px 18px 6px; }
+    .sheet-body .brand { margin-bottom: 5px; }
+    .sheet-body h2 { margin: 0 0 10px; font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+    .sheet-price { display: flex; align-items: baseline; gap: 9px; margin-bottom: 14px; flex-wrap: wrap; }
+    .sheet-price .price { font-size: 23px; }
+    .desc { color: var(--text); opacity: .86; font-size: 15px; line-height: 1.55; white-space: pre-wrap; }
+    .cta { padding: 16px 18px 4px; }
+    .cta button { width: 100%; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 800;
+      background: linear-gradient(135deg, var(--sky), var(--sky-deep)); color: var(--on-sky); cursor: pointer;
+      box-shadow: 0 6px 20px color-mix(in srgb, var(--sky) 40%, transparent); }
+    .cta button:active { transform: scale(.98); }
+    .cta .hint-line { margin: 9px 2px 0; font-size: 12px; color: var(--hint); text-align: center; }
+
+    .soon-price { font-size: 12.5px; font-weight: 600; color: var(--hint); }
+
+    /* ---------- bottom tab bar ---------- */
+    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; display: flex;
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); gap: 6px;
+      border-top: 1px solid var(--line); }
+    .tab { flex: 1; border: none; background: none; color: var(--hint); font: inherit; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 4px; border-radius: 13px;
+      font-size: 11px; font-weight: 650; transition: color .15s ease, background .15s ease; }
+    .tab.active { color: var(--accent); background: color-mix(in srgb, var(--sky) 15%, transparent); }
+    .tab svg { display: block; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="kicker" id="kicker">Beauty shop</div>
+    <h1 class="serif" id="shop-name">Real <em>Beauty</em></h1>
+    <p id="shop-tagline">Teringizga professional g'amxo'rlik</p>
+    <div class="rule"></div>
+  </header>
+
+  <!-- ============ SHOP ============ -->
+  <div class="view" id="view-shop">
+    <div class="controls">
+      <div class="search card-bg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input id="search" type="text" placeholder="Qidirish…" autocomplete="off" />
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="count" id="count"></div>
+    <div id="content"></div>
+  </div>
+
+  <!-- ============ LESSONS ============ -->
+  <div class="view" id="view-lessons">
+    <div class="section-head">
+      <h2 id="lessons-title">🎓 Darslar</h2>
+      <p id="lessons-sub"></p>
+    </div>
+    <div id="lessons-content"></div>
+    <p class="lesson-note" id="lesson-note" hidden></p>
+  </div>
+
+  <!-- ============ CONTACT ============ -->
+  <div class="view" id="view-contact">
+    <div class="section-head">
+      <h2 id="contact-title">Aloqa</h2>
+      <p id="contact-sub"></p>
+    </div>
+    <div class="menu card-bg" id="links"></div>
+  </div>
+
+  <div class="backdrop" id="backdrop"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div id="sheet-content"></div>
+  </div>
+
+  <nav class="tabbar glass" id="tabbar">
+    <button class="tab active" data-tab="shop">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 7V6a6 6 0 0 1 12 0v1"/><path d="M4 7h16l-1.2 12.1a2 2 0 0 1-2 1.9H7.2a2 2 0 0 1-2-1.9L4 7Z"/></svg>
+      <span id="tab-shop">Do'kon</span>
+    </button>
+    <button class="tab" data-tab="lessons">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5v-7Z" fill="currentColor" stroke="none"/></svg>
+      <span id="tab-lessons">Darslar</span>
+    </button>
+    <button class="tab" data-tab="contact">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.4 8.4 0 0 1 3 11.5 8.5 8.5 0 0 1 11.5 3 8.5 8.5 0 0 1 21 11.5Z"/></svg>
+      <span id="tab-contact">Aloqa</span>
+    </button>
+  </nav>
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor && tg.setHeaderColor('bg_color'); } catch (e) {} }
+
+    // Light and dark need different shades of the same blue to stay readable,
+    // and the accent is chosen off this attribute (see :root[data-scheme]).
+    const applyScheme = () => {
+      const dark = tg ? tg.colorScheme === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.scheme = dark ? 'dark' : 'light';
+    };
+    applyScheme();
+    if (tg && tg.onEvent) { try { tg.onEvent('themeChanged', applyScheme); } catch (e) {} }
+
+    const params = new URLSearchParams(window.location.search);
+    const LANG = (params.get('lang') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || 'uz').slice(0, 2);
+    const T = {
+      uz: { kicker: 'Go‘zallik do‘koni', search: 'Qidirish…', all: 'Hammasi', top: '🔥 TOP', sale: '💸 Chegirma',
+        empty: 'Mahsulot topilmadi', err: 'Yuklab bo‘lmadi. Qayta urinib ko‘ring.', ask: '💬 Savol berish',
+        askHint: 'Savolingiz botda — shu chatda davom etadi', badgeTop: 'TOP', som: 'so‘m', details: 'Batafsil',
+        links: 'Biz bilan bog‘laning', support: 'Savol / Murojaat yozish', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram kanal',
+        tabShop: 'Do‘kon', tabLessons: 'Darslar', tabContact: 'Aloqa',
+        lessonsTitle: '🎓 Video darslar', lessonsMine: 'Mahsulotlaringiz bo‘yicha qo‘llanmalar', lessonsAll: 'Mahsulotlar bo‘yicha video qo‘llanmalar',
+        lessonsEmpty: 'Hozircha video darslar yo‘q.\nTez orada qo‘shiladi!', lessonCount: (n) => n + ' ta dars',
+        lessonNote: 'Darsni tanlasangiz, video bot chatida ochiladi 📲', soon: 'Tez orada',
+        contactSub: 'Savolingiz bormi? Jamoamiz doim aloqada.',
+        soonPrice: 'Narx tez orada', askPrice: '💬 Narxni so‘rash', found: (n) => n + ' ta mahsulot' },
+      ru: { kicker: 'Магазин красоты', search: 'Поиск…', all: 'Все', top: '🔥 ТОП', sale: '💸 Скидка',
+        empty: 'Товары не найдены', err: 'Не удалось загрузить. Попробуйте ещё раз.', ask: '💬 Задать вопрос',
+        askHint: 'Вопрос продолжится в чате с ботом', badgeTop: 'ТОП', som: 'сум', details: 'Подробнее',
+        links: 'Мы на связи', support: 'Написать вопрос', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram канал',
+        tabShop: 'Магазин', tabLessons: 'Уроки', tabContact: 'Связь',
+        lessonsTitle: '🎓 Видеоуроки', lessonsMine: 'Инструкции по вашим товарам', lessonsAll: 'Видеоинструкции по товарам',
+        lessonsEmpty: 'Видеоуроков пока нет.\nСкоро добавим!', lessonCount: (n) => n + ' урок(ов)',
+        lessonNote: 'Выберите урок — видео откроется в чате с ботом 📲', soon: 'Скоро',
+        contactSub: 'Есть вопрос? Наша команда всегда на связи.',
+        soonPrice: 'Цена скоро', askPrice: '💬 Узнать цену', found: (n) => n + ' товар(ов)' },
+      en: { kicker: 'Beauty shop', search: 'Search…', all: 'All', top: '🔥 TOP', sale: '💸 Sale',
+        empty: 'No products found', err: 'Could not load. Try again.', ask: '💬 Ask a question',
+        askHint: 'Your question continues in the bot chat', badgeTop: 'TOP', som: 'UZS', details: 'Details',
+        links: 'Get in touch', support: 'Write a question', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram channel',
+        tabShop: 'Shop', tabLessons: 'Lessons', tabContact: 'Contact',
+        lessonsTitle: '🎓 Video lessons', lessonsMine: 'Guides for your products', lessonsAll: 'Video guides for our products',
+        lessonsEmpty: 'No video lessons yet.\nComing soon!', lessonCount: (n) => n + ' lesson(s)',
+        lessonNote: 'Pick a lesson — the video opens in the bot chat 📲', soon: 'Soon',
+        contactSub: 'Got a question? Our team is always in touch.',
+        soonPrice: 'Price coming soon', askPrice: '💬 Ask the price', found: (n) => n + ' product(s)' },
+    };
+    const L = T[LANG] || T.uz;
+    const set = (id, txt) => { document.getElementById(id).textContent = txt; };
+    set('kicker', L.kicker); set('tab-shop', L.tabShop); set('tab-lessons', L.tabLessons); set('tab-contact', L.tabContact);
+    set('lessons-title', L.lessonsTitle); set('contact-title', L.tabContact); set('contact-sub', L.contactSub);
+    document.getElementById('search').placeholder = L.search;
+
+    const money = (n) => n == null ? '' : (n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ' + L.som);
+    const esc = (s) => (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const initial = (s) => (s || 'R').replace(/[^\p{L}\p{N}]/gu, '').charAt(0).toUpperCase() || 'R';
+    const haptic = (t) => { try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t); } catch (e) {} };
+    const openUrl = (u) => { try { u.includes('t.me') ? tg.openTelegramLink(u) : tg.openLink(u); } catch (e) { location.href = u; } };
+
+    let BOT_USERNAME = '';
+    let ALL = [], FILTER = 'all', QUERY = '';
+
+    // The catalogue is one shelf per brand, and the product name always leads
+    // with it — so the brand chips come out of the data instead of a list here
+    // that would go stale the moment the shop adds a line.
+    const BRANDS = [
+      { key: 'merikit', label: 'MERIKIT', re: /^merikit\s+/i },
+      { key: 'doclab', label: 'DocLab', re: /^(?:doclab|docellab)\s+/i },
+      { key: 'ronas', label: 'Ronas', re: /^ronas\s+/i },
+      { key: 'erste', label: 'erste Liebe', re: /^erste\s+liebe\s+/i },
+      // One chip, two houses — each card still shows which of the two it is.
+      { key: 'dr', label: 'Dr.G / Dr.Itch', re: /^(dr\.\s?\w+)\s+/i },
+      { key: 'coreana', label: 'Coreana', re: /^coreana\s+/i },
+    ];
+    const brandOf = (name) => BRANDS.find(b => b.re.test(name || '')) || null;
+    /** Splits "Merikit Clarity Serum (250 ml)" into its brand and the rest, so
+     *  the card can print the brand as a kicker and keep both of its title
+     *  lines for the part that actually tells two products apart. */
+    function split(name) {
+      const b = brandOf(name);
+      if (!b) return { key: null, label: '', title: name || '' };
+      const m = (name || '').match(b.re);
+      return {
+        key: b.key,
+        label: b.key === 'dr' ? m[1] : b.label,
+        title: (name || '').replace(b.re, '') || name || '',
+      };
+    }
+
+    // ------------------------------------------------------------------
+    // Talking back to the bot. sendData only works when the app was opened
+    // from the REPLY-keyboard button (no query_id in initData). From an
+    // inline button / link the same tap falls back to a t.me deep link the
+    // bot handles as /start ask_… | lesson_… | support.
+    // ------------------------------------------------------------------
+    function actInChat(payload, startParam) {
+      const fromReplyKeyboard = !!(tg && tg.initDataUnsafe && tg.initDataUnsafe.user && !tg.initDataUnsafe.query_id);
+      if (fromReplyKeyboard && tg.sendData) {
+        try { tg.sendData(JSON.stringify(payload)); return; } catch (e) { /* fall through */ }
+      }
+      if (BOT_USERNAME) {
+        const url = 'https://t.me/' + BOT_USERNAME + '?start=' + encodeURIComponent(startParam);
+        try { tg.openTelegramLink(url); } catch (e) { location.href = url; }
+        try { tg.close(); } catch (e) {}
+      }
+    }
+
+    // ------------------------------------------------------------------ tabs
+    const VIEWS = ['shop', 'lessons', 'contact'];
+    let lessonsLoaded = false;
+    function showTab(name) {
+      if (!VIEWS.includes(name)) name = 'shop';
+      VIEWS.forEach(v => {
+        document.getElementById('view-' + v).classList.toggle('active', v === name);
+      });
+      document.querySelectorAll('.tab').forEach(el =>
+        el.classList.toggle('active', el.dataset.tab === name));
+      if (name === 'lessons' && !lessonsLoaded) loadLessons();
+    }
+    document.querySelectorAll('.tab').forEach(el =>
+      el.addEventListener('click', () => { haptic('light'); showTab(el.dataset.tab); }));
+
+    // ------------------------------------------------------------------ shop
+    function chipList() {
+      const chips = [{ key: 'all', label: L.all }, { key: 'top', label: L.top }, { key: 'sale', label: L.sale }];
+      BRANDS.forEach(b => {
+        if (ALL.some(p => b.re.test(p.name || ''))) chips.push({ key: 'brand:' + b.key, label: b.label });
+      });
+      return chips;
+    }
+    function renderChips() {
+      document.getElementById('chips').innerHTML = chipList().map(c =>
+        `<button class="chip card-bg ${c.key === FILTER ? 'active' : ''}" data-k="${esc(c.key)}">${esc(c.label)}</button>`).join('');
+      document.querySelectorAll('.chip').forEach(el => el.addEventListener('click', () => {
+        FILTER = el.dataset.k; haptic('light'); renderChips(); renderGrid();
+      }));
+    }
+    function visible() {
+      const brand = FILTER.startsWith('brand:') ? FILTER.slice(6) : null;
+      return ALL.filter(p => {
+        if (FILTER === 'top' && !p.is_top) return false;
+        if (FILTER === 'sale' && !p.discount_percent) return false;
+        if (brand) {
+          const b = brandOf(p.name);
+          if (!b || b.key !== brand) return false;
+        }
+        // Searching the description too: customers look for an ingredient
+        // ("retinol", "PDRN") far more often than for a product's exact name.
+        if (QUERY && !((p.name || '') + ' ' + (p.description || '')).toLowerCase().includes(QUERY)) return false;
+        return true;
+      });
+    }
+    function card(p, i) {
+      // A dead image URL falls back to the gradient the .thumb already paints,
+      // instead of leaving the browser's broken-image glyph in the grid.
+      const thumb = p.photo
+        ? `<img class="thumb" loading="lazy" src="${esc(p.photo)}" alt=""
+             onload="this.classList.add('ready')"
+             onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';this.classList.add('ready')">`
+        : `<div class="thumb">${esc(initial(p.name))}</div>`;
+      const badges = [];
+      if (p.discount_percent) badges.push(`<span class="badge sale">-${p.discount_percent}%</span>`);
+      if (p.is_top) badges.push(`<span class="badge top">★ ${L.badgeTop}</span>`);
+      const old = (p.old_price && p.old_price > p.price) ? `<span class="old">${money(p.old_price)}</span>` : '';
+      const b = split(p.name);
+      return `<div class="card card-bg" data-id="${p.id}" style="animation-delay:${Math.min(i, 8) * 30}ms">
+        <div class="thumb-wrap">${thumb}${badges.length ? `<div class="badges">${badges.join('')}</div>` : ''}</div>
+        <div class="card-body">
+          ${b.label ? `<div class="brand">${esc(b.label)}</div>` : ''}
+          <div class="name">${esc(b.title)}</div>
+          <div class="price-row">${p.price ? `<span class="price">${money(p.price)}</span>${old}` : `<span class="soon-price">${L.soonPrice}</span>`}</div>
+          <button class="buy" type="button">${L.details}</button>
+        </div>
+      </div>`;
+    }
+    function renderGrid() {
+      const list = visible(), c = document.getElementById('content');
+      set('count', list.length ? L.found(list.length) : '');
+      if (!list.length) { c.innerHTML = `<div class="state">${L.empty}</div>`; return; }
+      c.innerHTML = `<div class="grid">${list.map(card).join('')}</div>`;
+      c.querySelectorAll('.card').forEach(el => el.addEventListener('click', () => openSheet(Number(el.dataset.id))));
+    }
+    function skeleton(target) {
+      const one = `<div class="sk card-bg"><div class="thumb"></div><div class="bar"></div><div class="bar short"></div></div>`;
+      document.getElementById(target).innerHTML = `<div class="grid">${one.repeat(6)}</div>`;
+    }
+    function openSheet(id) {
+      const p = ALL.find(x => x.id === id); if (!p) return;
+      haptic('light');
+      const photo = p.photo ? `<img class="sheet-photo" src="${esc(p.photo)}" alt="">`
+        : `<div class="sheet-photo">${esc(initial(p.name))}</div>`;
+      const old = (p.old_price && p.old_price > p.price) ? `<span class="old">${money(p.old_price)}</span>` : '';
+      const disc = p.discount_percent ? `<span class="badge sale">-${p.discount_percent}%</span>` : '';
+      const b = split(p.name);
+      document.getElementById('sheet-content').innerHTML = `
+        ${photo}
+        <div class="sheet-body">
+          ${b.label ? `<div class="brand">${esc(b.label)}</div>` : ''}
+          <h2>${esc(b.title)}</h2>
+          <div class="sheet-price">${p.price ? `<span class="price">${money(p.price)}</span>` : ''}${old}${disc}</div>
+          ${p.description ? `<div class="desc">${esc(p.description)}</div>` : ''}
+        </div>
+        <div class="cta">
+          <button id="ask">${p.price ? L.ask : L.askPrice}</button>
+          <p class="hint-line">${L.askHint}</p>
+        </div>`;
+      document.getElementById('sheet').scrollTop = 0;
+      document.getElementById('backdrop').classList.add('open');
+      document.getElementById('sheet').classList.add('open');
+      document.body.classList.add('locked');
+      // Telegram's own back arrow is the gesture people reach for first; without
+      // this it closes the whole Mini App instead of the open product.
+      try { tg && tg.BackButton && tg.BackButton.show(); } catch (e) {}
+      document.getElementById('ask').addEventListener('click', () => {
+        haptic('medium');
+        actInChat({ action: 'ask', id: p.id, name: p.name }, 'ask_' + p.id);
+      });
+    }
+    function closeSheet() {
+      document.getElementById('backdrop').classList.remove('open');
+      document.getElementById('sheet').classList.remove('open');
+      document.body.classList.remove('locked');
+      try { tg && tg.BackButton && tg.BackButton.hide(); } catch (e) {}
+    }
+    document.getElementById('backdrop').addEventListener('click', closeSheet);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+    if (tg && tg.BackButton && tg.BackButton.onClick) {
+      try { tg.BackButton.onClick(closeSheet); } catch (e) {}
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => { QUERY = e.target.value.trim().toLowerCase(); renderGrid(); });
+
+    // ---------------------------------------------------------------- lessons
+    function lessonCard(p, i) {
+      const thumb = p.photo ? `<img class="lesson-thumb" loading="lazy" src="${esc(p.photo)}" alt="">`
+        : `<div class="lesson-thumb">${esc(initial(p.name))}</div>`;
+      const steps = (p.steps || []).map(s => {
+        const icon = s.has_video
+          ? `<span class="play"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span>`
+          : `<span class="play soon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>`;
+        const soon = s.has_video ? '' : `<span class="s-soon">${L.soon}</span>`;
+        return `<div class="step" data-step="${s.id}">${icon}<span class="s-label">${esc(s.label)}</span>${soon}</div>`;
+      }).join('');
+      return `<div class="lesson-card card-bg" style="animation-delay:${Math.min(i, 8) * 30}ms">
+        <div class="lesson-head">${thumb}
+          <div class="lesson-info"><div class="t">${esc(p.name)}</div><div class="m">${L.lessonCount((p.steps || []).length)}</div></div>
+          <svg class="lesson-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+        <div class="steps">${steps}</div>
+      </div>`;
+    }
+    function loadLessons() {
+      lessonsLoaded = true;
+      skeleton('lessons-content');
+      const initData = (tg && tg.initData) ? tg.initData : '';
+      fetch('/api/v1/webapp/lessons/?lang=' + encodeURIComponent(LANG) + (initData ? '&init_data=' + encodeURIComponent(initData) : ''))
+        .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+        .then(data => {
+          if (data.bot_username) BOT_USERNAME = data.bot_username;
+          const c = document.getElementById('lessons-content');
+          const items = data.products || [];
+          set('lessons-sub', data.personalized ? L.lessonsMine : L.lessonsAll);
+          if (!items.length) {
+            c.innerHTML = `<div class="state">${L.lessonsEmpty.replace('\n', '<br>')}</div>`;
+            return;
+          }
+          c.innerHTML = `<div class="lesson-list">${items.map(lessonCard).join('')}</div>`;
+          const note = document.getElementById('lesson-note');
+          note.textContent = L.lessonNote; note.hidden = false;
+          c.querySelectorAll('.lesson-head').forEach(el => el.addEventListener('click', () => {
+            haptic('light'); el.parentElement.classList.toggle('open');
+          }));
+          c.querySelectorAll('.step').forEach(el => el.addEventListener('click', () => {
+            haptic('medium');
+            actInChat({ action: 'lesson', id: Number(el.dataset.step) }, 'lesson_' + el.dataset.step);
+          }));
+        })
+        .catch(() => { document.getElementById('lessons-content').innerHTML = `<div class="state">${L.err}</div>`; });
+    }
+
+    // ---------------------------------------------------------------- contact
+    const ICONS = {
+      instagram: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
+      youtube: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.4-.4-5a2.6 2.6 0 0 0-1.8-1.8C19 4.8 12 4.8 12 4.8s-7 0-8.8.4A2.6 2.6 0 0 0 1.4 7C1 8.6 1 12 1 12s0 3.4.4 5a2.6 2.6 0 0 0 1.8 1.8c1.8.4 8.8.4 8.8.4s7 0 8.8-.4A2.6 2.6 0 0 0 22.6 17c.4-1.6.4-5 .4-5ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>',
+      telegram: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 20c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-4.9L18 6.5c.4-.3-.1-.5-.6-.2L6.6 13.2l-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3Z"/></svg>',
+      support: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.4 8.4 0 0 1 3 11.5 8.5 8.5 0 0 1 11.5 3 8.5 8.5 0 0 1 21 11.5Z"/></svg>',
+    };
+    function renderLinks(links) {
+      const rows = [], map = { instagram: ['ig', L.ig], youtube: ['yt', L.yt], telegram: ['tg', L.tgc] };
+      rows.push(`<div class="row" data-support="1"><div class="ic sp">${ICONS.support}</div><span class="label">${L.support}</span><span class="chev">›</span></div>`);
+      links.forEach(l => {
+        const m = map[l.kind]; if (!m) return;
+        rows.push(`<div class="row" data-url="${esc(l.url)}"><div class="ic ${m[0]}">${ICONS[l.kind]}</div><span class="label">${m[1]}</span><span class="chev">›</span></div>`);
+      });
+      document.getElementById('links').innerHTML = rows.join('');
+      document.querySelectorAll('#links .row').forEach(el => el.addEventListener('click', () => {
+        haptic('light');
+        if (el.dataset.support) actInChat({ action: 'support' }, 'support'); else openUrl(el.dataset.url);
+      }));
+    }
+
+    // ------------------------------------------------------------------ boot
+    skeleton('content'); renderChips();
+    fetch('/api/v1/webapp/catalog/?lang=' + encodeURIComponent(LANG))
+      .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(data => {
+        ALL = data.products || [];
+        if (data.bot_username) BOT_USERNAME = data.bot_username;
+        if (data.shop && data.shop.name) {
+          const parts = data.shop.name.trim().split(/\s+/);
+          document.getElementById('shop-name').innerHTML = parts.length > 1
+            ? esc(parts.slice(0, -1).join(' ')) + ' <em>' + esc(parts[parts.length - 1]) + '</em>'
+            : esc(data.shop.name);
+          if (data.shop.tagline) set('shop-tagline', data.shop.tagline);
+        }
+        renderChips();
+        ALL.length ? renderGrid() : (document.getElementById('content').innerHTML = `<div class="state">${L.empty}</div>`);
+        renderLinks(data.links || []);
+      })
+      .catch(() => { document.getElementById('content').innerHTML = `<div class="state">${L.err}</div>`; });
+
+    // Deep entry: ?tab=lessons opens the Darslar tab straight away.
+    showTab(params.get('tab') || 'shop');
+  </script>
+</body>
+</html>
