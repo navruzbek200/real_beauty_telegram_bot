@@ -13,6 +13,11 @@ from apps.api.views.auth import (
     RefreshView,
 )
 from apps.api.views.bot_settings import DiscountViewSet, GlobalSettingsView
+from apps.api.views.lessons import (
+    AccessCodeViewSet,
+    LessonUnlockViewSet,
+    LessonVideoViewSet,
+)
 from apps.api.views.loyalty import LoyaltySettingsView, RewardViewSet
 from apps.api.views.orders import OrderViewSet
 from apps.api.views.webapp import (
@@ -54,6 +59,9 @@ router.register("support-threads", SupportThreadViewSet, basename="support-threa
 router.register("support-messages", SupportMessageViewSet, basename="support-message")
 router.register("support-admins", SupportAdminViewSet, basename="support-admin")
 router.register("orders", OrderViewSet, basename="order")
+router.register("lesson-videos", LessonVideoViewSet, basename="lesson-video")
+router.register("access-codes", AccessCodeViewSet, basename="access-code")
+router.register("lesson-unlocks", LessonUnlockViewSet, basename="lesson-unlock")
 
 urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="api_login"),

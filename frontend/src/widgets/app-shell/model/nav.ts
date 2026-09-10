@@ -36,6 +36,18 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: 'Video darslar',
+    items: [
+      { to: '/lesson-videos', label: 'Video darslar', permission: 'lessons.view_lessonvideo' },
+      { to: '/access-codes', label: "Kalit so'zlar", permission: 'lessons.view_accesscode' },
+      {
+        to: '/lesson-unlocks',
+        label: 'Kim darslarni ochgan',
+        permission: 'lessons.view_lessonunlock',
+      },
+    ],
+  },
+  {
     title: 'Marketing',
     items: [
       { to: '/auto-messages', label: 'Avtomatik xabarlar', permission: 'campaigns.view_automessage' },

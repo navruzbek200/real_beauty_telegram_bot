@@ -3,7 +3,10 @@ import { Route, Routes } from 'react-router-dom'
 import { AutoMessagesPage } from '@/pages/auto-messages'
 import { BroadcastsPage } from '@/pages/broadcasts'
 import { CustomersPage } from '@/pages/customers'
+import { AccessCodesPage } from '@/pages/access-codes'
 import { DashboardPage } from '@/pages/dashboard'
+import { LessonUnlocksPage } from '@/pages/lesson-unlocks'
+import { LessonVideosPage } from '@/pages/lesson-videos'
 import { LoginPage } from '@/pages/login'
 import { MessageTemplatesPage } from '@/pages/message-templates'
 import { OrdersPage } from '@/pages/orders'
@@ -50,6 +53,19 @@ export function AppRoutes() {
             <TutorialStepsPage />
           </ProtectedRoute>
         }
+      />
+
+      <Route
+        path="/lesson-videos"
+        element={<ProtectedRoute permission="lessons.view_lessonvideo"><LessonVideosPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/access-codes"
+        element={<ProtectedRoute permission="lessons.view_accesscode"><AccessCodesPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/lesson-unlocks"
+        element={<ProtectedRoute permission="lessons.view_lessonunlock"><LessonUnlocksPage /></ProtectedRoute>}
       />
 
       <Route

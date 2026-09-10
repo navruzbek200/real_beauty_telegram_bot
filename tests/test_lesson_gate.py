@@ -473,3 +473,96 @@ class UnlockFromReplyKeyboardTests(TestCase):
             msg = self._send({"action": "vlesson", "id": self.video.pk})
 
         self.assertEqual(msg.sent, [])
+
+
+class LessonPanelApiTests(TestCase):
+    """The React panel's own endpoints for the course."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from rest_framework.test import APIClient
+
+        self.client = APIClient()
+        self.client.force_authenticate(
+            get_user_model().objects.create_superuser("boss", "b@example.com", "pw")
+        )
+
+    def test_issuing_returns_the_codes_once(self):
+        res = self.client.post("/api/v1/access-codes/issue/", {"count": 4}, format="json")
+
+        self.assertEqual(res.status_code, 200, res.data)
+        codes = res.data["codes"]
+        self.assertEqual(len(codes), 4)
+        self.assertEqual(AccessCode.objects.filter(code__in=codes, max_uses=1).count(), 4)
+
+    def test_the_batch_size_is_capped(self):
+        res = self.client.post("/api/v1/access-codes/issue/", {"count": 9999}, format="json")
+
+        # Rejected outright rather than silently trimmed: a four-digit count is
+        # a mistake, and minting fifty codes "helpfully" hides it.
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(AccessCode.objects.count(), 0)
+
+    def test_the_list_can_be_narrowed_to_codes_still_worth_handing_out(self):
+        user = TelegramUser.objects.create(
+            telegram_id=8300,
+            full_name="Mijoz",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+        spent = AccessCode.objects.create(code="SARFLANGAN", max_uses=1)
+        free = AccessCode.objects.create(code="BOSH", max_uses=1)
+        redeem(user, "SARFLANGAN")
+
+        listed = self.client.get("/api/v1/access-codes/?state=free").data["results"]
+        used = self.client.get("/api/v1/access-codes/?state=used").data["results"]
+
+        self.assertEqual([c["code"] for c in listed], [free.code])
+        self.assertEqual([c["code"] for c in used], [spent.code])
+
+    def test_a_code_row_says_who_redeemed_it(self):
+        user = TelegramUser.objects.create(
+            telegram_id=8301,
+            full_name="Dilnoza",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+        AccessCode.objects.create(code="KALIT", max_uses=1)
+        redeem(user, "KALIT")
+
+        row = self.client.get("/api/v1/access-codes/").data["results"][0]
+
+        self.assertEqual(row["state"], "used")
+        self.assertEqual(row["redeemed_by"], "Dilnoza")
+
+    def test_saving_a_code_with_no_word_generates_one(self):
+        res = self.client.post(
+            "/api/v1/access-codes/",
+            {"code": "", "label": "Aksiya", "max_uses": 1, "is_active": True},
+            format="json",
+        )
+
+        self.assertEqual(res.status_code, 201, res.data)
+        self.assertTrue(res.data["code"])
+
+    def test_access_can_be_granted_by_hand_from_the_panel(self):
+        user = TelegramUser.objects.create(
+            telegram_id=8302,
+            full_name="Kamola",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+
+        res = self.client.post("/api/v1/lesson-unlocks/", {"user": user.pk}, format="json")
+
+        self.assertEqual(res.status_code, 201, res.data)
+        from apps.lessons.services import is_unlocked
+
+        self.assertTrue(is_unlocked(user))
+        self.assertEqual(res.data["code_value"], "")
+
+    def test_videos_are_listed_in_their_running_order(self):
+        LessonVideo.objects.create(title="Uchinchi", order=3, video_file_id="c")
+        LessonVideo.objects.create(title="Birinchi", order=1, video_file_id="a")
+        LessonVideo.objects.create(title="Ikkinchi", order=2, video_file_id="b")
+
+        titles = [v["title"] for v in self.client.get("/api/v1/lesson-videos/").data["results"]]
+
+        self.assertEqual(titles, ["Birinchi", "Ikkinchi", "Uchinchi"])
