@@ -59,9 +59,18 @@ async def from_webapp(message: Message, state: FSMContext, lang: str) -> None:
     reply-keyboard button — inline launches use t.me deep links instead, see
     auth._handled_as_action):
 
-      {"action": "ask", "id": …, "name": …}   → support flow, product named
-      {"action": "lesson", "id": <step_id>}   → play that protected lesson
-      {"action": "support"} / anything else   → plain support flow
+      {"action": "ask", "id": …, "name": …}     → support flow, product named
+      {"action": "lesson", "id": <step_id>}     → play that protected lesson
+      {"action": "vlesson", "id": <video_id>}   → play that course lesson
+      {"action": "unlock", "code": "…"}         → redeem an access word
+      {"action": "support"} / anything else     → plain support flow
+
+    This is also the only trust path a reply-keyboard launch has: Telegram
+    does not sign initData for those, so the Mini App cannot prove who it is
+    to our API. It can only hand the payload back through Telegram, which
+    delivers it as a message from an account Telegram has already
+    authenticated — which is why unlocking has to be possible here and not
+    only over HTTP.
     """
     if message.from_user is None:
         return
@@ -77,6 +86,39 @@ async def from_webapp(message: Message, state: FSMContext, lang: str) -> None:
         payload = {}
     action = str(payload.get("action", ""))
     name = str(payload.get("name", ""))[:128]
+
+    if action == "unlock":
+        from bot.services import lesson_service
+
+        code = str(payload.get("code", ""))[:32]
+        result = await lesson_service.redeem_detailed(message.from_user.id, code)
+        if result == "":
+            await message.answer(
+                t("lessons.unlocked", lang),
+                parse_mode="HTML",
+                reply_markup=inline.lessons_open_keyboard(lang),
+            )
+        else:
+            await message.answer(t(f"lessons.err.{result}", lang), parse_mode="HTML")
+        return
+
+    if action == "vlesson":
+        from bot.services import lesson_service
+        from bot.utils.video import send_lesson_video
+
+        try:
+            video_id = int(payload.get("id"))
+        except (TypeError, ValueError):
+            video_id = 0
+        if not await lesson_service.is_unlocked(message.from_user.id):
+            await message.answer(t("lessons.locked", lang), parse_mode="HTML")
+            return
+        video = await lesson_service.get_video(video_id) if video_id else None
+        if video is None:
+            await message.answer(t("lessons.not_found", lang))
+            return
+        await send_lesson_video(message.bot, message.chat.id, video, lang)
+        return
 
     if action == "lesson":
         from bot.services import product_service

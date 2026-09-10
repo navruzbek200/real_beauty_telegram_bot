@@ -458,6 +458,28 @@ STRINGS: dict[str, str] = {
         "Ochish uchun kalit so'z kerak. Kalit so'zni do'konimizdan "
         "mahsulot xarid qilganingizda beramiz."
     ),
+    "lessons.unlocked": (
+        "✅ <b>Darslar ochildi!</b>\n\n"
+        "Endi barcha video darslarni ko'rishingiz mumkin. "
+        "Quyidagi tugmani bosing."
+    ),
+    "lessons.open": "🎓 Darslarni ochish",
+    "lessons.err.unknown_code": (
+        "❌ Bunday kalit so'z topilmadi.\n\n"
+        "Yozilishini tekshiring yoki do'kondan qayta so'rang."
+    ),
+    "lessons.err.code_spent": (
+        "❌ Bu kalit so'z allaqachon ishlatilgan.\n\n"
+        "Har bir kalit faqat bitta mijozga beriladi — do'kondan yangisini so'rang."
+    ),
+    "lessons.err.code_expired": (
+        "❌ Bu kalit so'zning muddati tugagan.\n\n"
+        "Do'kondan yangisini so'rang."
+    ),
+    "lessons.err.code_inactive": (
+        "❌ Bu kalit so'z o'chirilgan.\n\n"
+        "Do'kondan yangisini so'rang."
+    ),
     "lessons.not_found": "Bu dars topilmadi yoki olib tashlangan.",
     "lessons.video_soon": "Video tez orada qo'shiladi.",
     # ------------------------------------------------------- bot command menu

@@ -413,6 +413,7 @@
         gateBuy: 'Mahsulot xarid qilish',
         gateAsk: 'Savol / Murojaat yozish',
         gateNoTelegram: 'Kalit so‘zni Telegram ilovasi ichidan kiriting.',
+        gateInChat: 'Tekshirilmoqda — javob bot chatida chiqadi…',
         gateErrors: {
           unknown_code: 'Bunday kalit so‘z topilmadi. Yozilishini tekshiring.',
           code_inactive: 'Bu kalit so‘z o‘chirilgan. Do‘kondan yangisini so‘rang.',
@@ -443,6 +444,7 @@
         gateBuy: 'Купить товар',
         gateAsk: 'Задать вопрос',
         gateNoTelegram: 'Введите кодовое слово внутри приложения Telegram.',
+        gateInChat: 'Проверяем — ответ придёт в чат с ботом…',
         gateErrors: {
           unknown_code: 'Такое кодовое слово не найдено. Проверьте написание.',
           code_inactive: 'Это кодовое слово отключено. Попросите новое в магазине.',
@@ -473,6 +475,7 @@
         gateBuy: 'Buy a product',
         gateAsk: 'Write a question',
         gateNoTelegram: 'Enter the access word from inside the Telegram app.',
+        gateInChat: 'Checking — the answer arrives in the bot chat…',
         gateErrors: {
           unknown_code: 'No such access word. Check the spelling.',
           code_inactive: 'This access word is switched off. Ask the shop for a new one.',
@@ -733,7 +736,26 @@
         ev.preventDefault();
         const code = input.value.trim();
         if (!code) { input.classList.add('bad'); input.focus(); return; }
-        if (!(tg && tg.initData)) { say(L.gateNoTelegram, 'bad'); return; }
+
+        // Telegram signs initData only for launches it expects the bot to
+        // verify out of band — an inline button, the menu button, a direct
+        // link. Opened from the reply-keyboard button (which is how «Darslar»
+        // is reached from the main menu) there is no signature at all, and the
+        // only way back is sendData: Telegram delivers it to the bot as a
+        // message from an account it has already authenticated, which is a
+        // stronger proof than the HMAC would have been. It closes the app, so
+        // the answer arrives in the chat with a button to come back.
+        if (!(tg && tg.initData)) {
+          if (tg && tg.sendData) {
+            haptic('medium');
+            say(L.gateInChat, 'good');
+            try { tg.sendData(JSON.stringify({ action: 'unlock', code: code })); }
+            catch (e) { say(L.gateNoTelegram, 'bad'); }
+            return;
+          }
+          say(L.gateNoTelegram, 'bad');
+          return;
+        }
 
         btn.disabled = true;
         btn.innerHTML = `<span class="spin"></span>${L.gateChecking}`;

@@ -13,6 +13,7 @@ import hashlib
 import hmac
 import json
 from datetime import timedelta
+from types import SimpleNamespace
 from urllib.parse import urlencode
 
 from django.core.cache import cache
@@ -379,3 +380,96 @@ class SpentCodeCleanupTests(TestCase):
         # will not do it a second time.
         self.assertFalse(is_unlocked(reinstalled))
         self.assertEqual(redeem(reinstalled, "BIRMARTA").reason, "code_spent")
+
+
+@override_settings(BOT_TOKEN=BOT_TOKEN, WEBAPP_URL="https://example.test/webapp/")
+class UnlockFromReplyKeyboardTests(TestCase):
+    """Redeeming a word when the Mini App has no signature to offer.
+
+    Telegram signs initData only for launches the bot is expected to verify
+    out of band. Opened from the reply-keyboard button — which is how the main
+    menu reaches the app — there is no signature at all, so the HTTP endpoint
+    can never work from there. The payload comes back through Telegram
+    instead, as a message from an account Telegram has already authenticated.
+    """
+
+    def setUp(self):
+        from asgiref.sync import async_to_sync  # noqa: F401
+
+        self.user = TelegramUser.objects.create(
+            telegram_id=7200,
+            full_name="Mijoz",
+            language="uz",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+        self.video = LessonVideo.objects.create(
+            title="Terini tozalash", order=1, video_file_id="cached-id-1"
+        )
+        self.code = AccessCode.objects.create(code="BIRMARTA", max_uses=1)
+
+    def _send(self, payload: dict):
+        import json as _json
+
+        from asgiref.sync import async_to_sync
+
+        from bot.handlers import support
+        from tests.test_webapp_lessons import FakeMessage, fsm_for
+
+        msg = FakeMessage(7200)
+        msg.web_app_data = SimpleNamespace(data=_json.dumps(payload))
+        msg.bot = None
+        async_to_sync(support.from_webapp)(msg, fsm_for(7200), "uz")
+        return msg
+
+    def test_a_correct_word_opens_the_course_and_offers_the_way_back(self):
+        msg = self._send({"action": "unlock", "code": "birmarta"})
+
+        self.assertTrue(LessonUnlock.objects.filter(user=self.user).exists())
+        self.assertIn("ochildi", msg.sent[0]["text"].lower())
+        # sendData closes the app, so the reply has to carry the way back in.
+        self.assertIsNotNone(msg.sent[0]["reply_markup"])
+
+    def test_a_spent_word_says_which_thing_went_wrong(self):
+        other = TelegramUser.objects.create(
+            telegram_id=7201,
+            full_name="Boshqa",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+        redeem(other, "BIRMARTA")
+
+        msg = self._send({"action": "unlock", "code": "BIRMARTA"})
+
+        self.assertFalse(LessonUnlock.objects.filter(user=self.user).exists())
+        self.assertIn("ishlatilgan", msg.sent[0]["text"].lower())
+
+    def test_a_locked_customer_asking_for_a_lesson_is_refused(self):
+        from unittest.mock import AsyncMock, patch
+
+        with patch("bot.utils.video.send_lesson_video", new=AsyncMock()) as sender:
+            msg = self._send({"action": "vlesson", "id": self.video.pk})
+
+        sender.assert_not_awaited()
+        self.assertIn("yopiq", msg.sent[0]["text"].lower())
+
+    def test_an_unlocked_customer_gets_the_lesson(self):
+        from unittest.mock import AsyncMock, patch
+
+        LessonUnlock.objects.create(user=self.user)
+
+        with patch("bot.utils.video.send_lesson_video", new=AsyncMock()) as sender:
+            self._send({"action": "vlesson", "id": self.video.pk})
+
+        sender.assert_awaited_once()
+
+    def test_a_lesson_request_does_not_fall_into_the_support_flow(self):
+        # The bug this covers: an unknown action lands in "write us a
+        # question", so before vlesson was handled a customer tapping a lesson
+        # was silently asked to type a support message instead.
+        from unittest.mock import AsyncMock, patch
+
+        LessonUnlock.objects.create(user=self.user)
+
+        with patch("bot.utils.video.send_lesson_video", new=AsyncMock()):
+            msg = self._send({"action": "vlesson", "id": self.video.pk})
+
+        self.assertEqual(msg.sent, [])

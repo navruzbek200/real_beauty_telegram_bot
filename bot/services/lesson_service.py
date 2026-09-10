@@ -41,3 +41,19 @@ def redeem(telegram_id: int, code: str) -> bool:
 
     user = TelegramUser.objects.filter(telegram_id=telegram_id).first()
     return services.redeem(user, code).ok
+
+
+@sync_to_async
+def redeem_detailed(telegram_id: int, code: str) -> str:
+    """Redeem and say *why* it failed — "" means it worked.
+
+    The bot tells the customer which of "wrong word", "already used" and
+    "expired" happened, because each one has a different next step and
+    "didn't work" leaves them with none.
+    """
+    from apps.lessons import services
+    from apps.users.models import TelegramUser
+
+    user = TelegramUser.objects.filter(telegram_id=telegram_id).first()
+    result = services.redeem(user, code)
+    return "" if result.ok else result.reason
