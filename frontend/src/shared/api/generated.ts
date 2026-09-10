@@ -510,6 +510,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/products/mark_in_stock/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["products_mark_in_stock_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/mark_out_of_stock/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Take a product off sale without taking it out of the shop.
+         *
+         *     Clearing `is_active` would make it vanish, and a product a customer
+         *     has been eyeing for a week should not simply disappear — it should say
+         *     it is coming back.
+         */
+        post: operations["products_mark_out_of_stock_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/products/remove_from_top/": {
         parameters: {
             query?: never;
@@ -949,15 +988,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description The «Darslar» tab: products with their video-lesson steps.
+         * @description The «Darslar» tab — a course that stays shut until a code opens it.
          *
-         *     Only steps that actually carry a video are listed, and only products left
-         *     with at least one of them. A step whose video has not been uploaded yet is
-         *     an empty promise — the tab says "coming soon" instead, and each lesson
-         *     appears by itself the moment its video is added in the panel.
-         *
-         *     Personalized to the customer's own products when a *verified* initData is
-         *     supplied; otherwise every product that has a lesson, top ones first.
+         *     The lock is on the *payload*, not on the page: a locked answer carries no
+         *     titles, no ids and no file references, so nothing about the course leaks to
+         *     someone poking at the endpoint directly. Only a verified initData can be
+         *     unlocked against, because the Telegram id is the only identity a Mini App
+         *     can prove.
          */
         get: operations["webapp_lessons_retrieve"];
         put?: never;
@@ -986,6 +1023,28 @@ export interface paths {
          *     only says which product ids and quantities it wants.
          */
         post: operations["webapp_orders_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webapp/unlock/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Spend a code and open the course for this customer.
+         *
+         *     Rate-limited per Telegram id: a code is short enough to guess by brute
+         *     force otherwise, and the id is the only stable handle a Mini App gives us.
+         */
+        post: operations["webapp_unlock_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1232,6 +1291,10 @@ export interface components {
             shop_name?: string;
             /** Do'kon shiori */
             shop_tagline?: string;
+            /** Do'kon shiori (ruscha) */
+            shop_tagline_ru?: string;
+            /** Do'kon shiori (inglizcha) */
+            shop_tagline_en?: string;
             /** Instagram havolasi */
             instagram_url?: string;
             /** YouTube havolasi */
@@ -1248,6 +1311,11 @@ export interface components {
              * @description Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_bts?: number;
+            /**
+             * Naqd to'lov (yetkazishda)
+             * @description O'chirilsa Mini App'da «yetkazishda naqd» varianti ko'rsatilmaydi — faqat karta orqali to'lov qoladi.
+             */
+            cash_on_delivery_enabled?: boolean;
         };
         InitSessionResponse: {
             session_token: string;
@@ -1847,6 +1915,10 @@ export interface components {
             shop_name?: string;
             /** Do'kon shiori */
             shop_tagline?: string;
+            /** Do'kon shiori (ruscha) */
+            shop_tagline_ru?: string;
+            /** Do'kon shiori (inglizcha) */
+            shop_tagline_en?: string;
             /** Instagram havolasi */
             instagram_url?: string;
             /** YouTube havolasi */
@@ -1863,6 +1935,11 @@ export interface components {
              * @description Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_bts?: number;
+            /**
+             * Naqd to'lov (yetkazishda)
+             * @description O'chirilsa Mini App'da «yetkazishda naqd» varianti ko'rsatilmaydi — faqat karta orqali to'lov qoladi.
+             */
+            cash_on_delivery_enabled?: boolean;
         };
         PatchedLoyaltySettings: {
             /**
@@ -2005,6 +2082,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2233,6 +2312,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2316,6 +2397,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2696,6 +2779,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -4109,6 +4194,7 @@ export interface operations {
     products_list: {
         parameters: {
             query?: {
+                in_stock?: boolean;
                 is_active?: boolean;
                 is_top?: boolean;
                 /** @description Which field to use when ordering the results. */
@@ -4261,6 +4347,56 @@ export interface operations {
         };
     };
     products_add_to_top_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductBulkIds"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProductBulkIds"];
+                "multipart/form-data": components["schemas"]["ProductBulkIds"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkUpdateResult"];
+                };
+            };
+        };
+    };
+    products_mark_in_stock_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductBulkIds"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProductBulkIds"];
+                "multipart/form-data": components["schemas"]["ProductBulkIds"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkUpdateResult"];
+                };
+            };
+        };
+    };
+    products_mark_out_of_stock_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -5493,6 +5629,24 @@ export interface operations {
         };
     };
     webapp_orders_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    webapp_unlock_create: {
         parameters: {
             query?: never;
             header?: never;

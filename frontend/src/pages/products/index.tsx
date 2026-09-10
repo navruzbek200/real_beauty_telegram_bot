@@ -22,13 +22,21 @@ export function ProductsPage() {
     queryClient.invalidateQueries({ queryKey: ['products'] })
   }
 
+  // Taking something off sale is not the same as hiding it: the product keeps
+  // its place in the catalogue and the bot says it is coming back.
+  async function toggleStock(product: Product) {
+    if (product.in_stock === false) await productApi.markInStock([product.id])
+    else await productApi.markOutOfStock([product.id])
+    queryClient.invalidateQueries({ queryKey: ['products'] })
+  }
+
   return (
     <ResourcePage<Product, ProductFormValues, FormData, FormData>
       title="Mahsulotlar"
       api={productApi}
       queryKey={['products']}
       columns={productColumns}
-      filterKeys={['is_active', 'is_top']}
+      filterKeys={['is_active', 'is_top', 'in_stock']}
       searchPlaceholder="Nomi yoki tavsif bo'yicha qidirish..."
       permissions={{
         add: 'products.add_product',
@@ -50,6 +58,15 @@ export function ProductsPage() {
             <option value="false">O'chirilgan</option>
           </Select>
           <Select
+            value={state.filters.in_stock ?? ''}
+            onChange={(e) => state.setFilter('in_stock', e.target.value || null)}
+            className="max-w-40"
+          >
+            <option value="">Sotuvda: barchasi</option>
+            <option value="true">Sotuvda bor</option>
+            <option value="false">Tugagan</option>
+          </Select>
+          <Select
             value={state.filters.is_top ?? ''}
             onChange={(e) => state.setFilter('is_top', e.target.value || null)}
             className="max-w-40"
@@ -63,9 +80,14 @@ export function ProductsPage() {
       rowActions={
         canChange
           ? (product) => (
-              <Button variant="ghost" onClick={() => toggleTop(product)}>
-                {product.is_top ? "Topdan olish" : "Topga qo'shish"}
-              </Button>
+              <>
+                <Button variant="ghost" onClick={() => toggleStock(product)}>
+                  {product.in_stock === false ? '🟢 Sotuvda bor' : '🔴 Tugadi'}
+                </Button>
+                <Button variant="ghost" onClick={() => toggleTop(product)}>
+                  {product.is_top ? 'Topdan olish' : "Topga qo'shish"}
+                </Button>
+              </>
             )
           : undefined
       }

@@ -15,6 +15,7 @@ from django.test import TestCase
 from apps.products.models import Product, ProductTutorialStep
 from apps.users.models import TelegramUser, UserProduct
 from bot.handlers import browse
+from bot.i18n import t
 from bot.keyboards import inline
 
 
@@ -107,7 +108,10 @@ class OutOfStockBrowserTests(TestCase):
 
         labels = _labels(msg.sent[0]["reply_markup"])
         serum = next(l for l in labels if "Serum" in l)
-        self.assertIn("tugagan", serum)
+        # Marked rather than described: the exact wording is marketing copy
+        # and changes, the marker and the missing price are the behaviour.
+        self.assertIn("⛔️", serum)
+        self.assertIn(t("product.out_of_stock_short", "uz"), serum)
         self.assertNotIn("1 000", serum)  # the price is dropped
 
     def test_its_card_says_it_cannot_be_ordered(self):
@@ -122,7 +126,7 @@ class OutOfStockBrowserTests(TestCase):
         self.assertEqual(len(cb.message.sent), 1)
         sent = cb.message.sent[0]
         body = sent.get("caption") or sent.get("text") or ""
-        self.assertIn("tugagan", body)
+        self.assertIn(t("product.out_of_stock", "uz"), body)
 
 
 class CatalogEntryTests(TestCase):

@@ -302,6 +302,29 @@
 
     .soon-price { font-size: 12.5px; font-weight: 600; color: var(--hint); }
 
+    /* Sold out: dimmed, not hidden. The photo desaturates so the row reads as
+       paused at a glance, while the name and price stay legible — the point is
+       that the customer still sees it exists and is coming back. */
+    .card.is-out .thumb { filter: grayscale(.85) opacity(.55); }
+    .card.is-out .price { color: var(--hint); }
+    .card.is-out .old { display: none; }
+    .card.is-out .buy {
+      background: transparent; color: var(--hint);
+      border-color: color-mix(in srgb, var(--hint) 30%, transparent);
+    }
+    .badge.out {
+      background: color-mix(in srgb, var(--text) 62%, transparent);
+      color: var(--bg); backdrop-filter: blur(4px);
+    }
+    .out-note {
+      margin-top: 12px; padding: 12px 14px; border-radius: 13px;
+      background: color-mix(in srgb, var(--sky) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sky) 26%, transparent);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .out-note b { font-size: 14px; color: var(--text); }
+    .out-note span { font-size: 13px; color: var(--hint); line-height: 1.5; }
+
     /* ---------- bottom tab bar ---------- */
     .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; display: flex;
       padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); gap: 6px;
@@ -414,6 +437,11 @@
         gateAsk: 'Savol / Murojaat yozish',
         gateNoTelegram: 'Kalit so‘zni Telegram ilovasi ichidan kiriting.',
         gateInChat: 'Tekshirilmoqda — javob bot chatida chiqadi…',
+        soldOut: 'Tugadi',
+        soldOutCta: 'Tez orada',
+        soldOutTitle: '🔥 Hozircha tugab qoldi',
+        soldOutBody: 'Bu mahsulotni sizga o‘xshaganlar juda yaxshi ko‘radi — tez orada yana olib kelamiz. Kelganda xabar berishimizni istasangiz, yozing.',
+        soldOutAsk: '🔔 Kelganda xabar bering',
         gateErrors: {
           unknown_code: 'Bunday kalit so‘z topilmadi. Yozilishini tekshiring.',
           code_inactive: 'Bu kalit so‘z o‘chirilgan. Do‘kondan yangisini so‘rang.',
@@ -445,6 +473,11 @@
         gateAsk: 'Задать вопрос',
         gateNoTelegram: 'Введите кодовое слово внутри приложения Telegram.',
         gateInChat: 'Проверяем — ответ придёт в чат с ботом…',
+        soldOut: 'Нет',
+        soldOutCta: 'Скоро',
+        soldOutTitle: '🔥 Пока закончился',
+        soldOutBody: 'Этот товар очень любят — такие же покупатели, как вы. Скоро привезём снова. Напишите, если хотите, чтобы мы сообщили.',
+        soldOutAsk: '🔔 Сообщите, когда привезёте',
         gateErrors: {
           unknown_code: 'Такое кодовое слово не найдено. Проверьте написание.',
           code_inactive: 'Это кодовое слово отключено. Попросите новое в магазине.',
@@ -476,6 +509,11 @@
         gateAsk: 'Write a question',
         gateNoTelegram: 'Enter the access word from inside the Telegram app.',
         gateInChat: 'Checking — the answer arrives in the bot chat…',
+        soldOut: 'Sold out',
+        soldOutCta: 'Coming back',
+        soldOutTitle: '🔥 Sold out for now',
+        soldOutBody: 'Customers like you love this one — we are bringing it back soon. Write to us and we will tell you when it lands.',
+        soldOutAsk: '🔔 Tell me when it is back',
         gateErrors: {
           unknown_code: 'No such access word. Check the spelling.',
           code_inactive: 'This access word is switched off. Ask the shop for a new one.',
@@ -599,17 +637,21 @@
              onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';this.classList.add('ready')">`
         : `<div class="thumb">${esc(initial(p.name))}</div>`;
       const badges = [];
-      if (p.discount_percent) badges.push(`<span class="badge sale">-${p.discount_percent}%</span>`);
+      const out = p.in_stock === false;
+      // The sold-out badge replaces the discount: advertising a saving on
+      // something nobody can buy reads as a bait.
+      if (out) badges.push(`<span class="badge out">${L.soldOut}</span>`);
+      else if (p.discount_percent) badges.push(`<span class="badge sale">-${p.discount_percent}%</span>`);
       if (p.is_top) badges.push(`<span class="badge top">★ ${L.badgeTop}</span>`);
       const old = (p.old_price && p.old_price > p.price) ? `<span class="old">${money(p.old_price)}</span>` : '';
       const b = split(p.name);
-      return `<div class="card card-bg" data-id="${p.id}" style="animation-delay:${Math.min(i, 8) * 30}ms">
+      return `<div class="card card-bg${out ? ' is-out' : ''}" data-id="${p.id}" style="animation-delay:${Math.min(i, 8) * 30}ms">
         <div class="thumb-wrap">${thumb}${badges.length ? `<div class="badges">${badges.join('')}</div>` : ''}</div>
         <div class="card-body">
           ${b.label ? `<div class="brand">${esc(b.label)}</div>` : ''}
           <div class="name">${esc(b.title)}</div>
           <div class="price-row">${p.price ? `<span class="price">${money(p.price)}</span>${old}` : `<span class="soon-price">${L.soonPrice}</span>`}</div>
-          <button class="buy" type="button">${L.details}</button>
+          <button class="buy" type="button">${out ? L.soldOutCta : L.details}</button>
         </div>
       </div>`;
     }
@@ -632,16 +674,18 @@
       const old = (p.old_price && p.old_price > p.price) ? `<span class="old">${money(p.old_price)}</span>` : '';
       const disc = p.discount_percent ? `<span class="badge sale">-${p.discount_percent}%</span>` : '';
       const b = split(p.name);
+      const outOfStock = p.in_stock === false;
       document.getElementById('sheet-content').innerHTML = `
         ${photo}
         <div class="sheet-body">
           ${b.label ? `<div class="brand">${esc(b.label)}</div>` : ''}
           <h2>${esc(b.title)}</h2>
-          <div class="sheet-price">${p.price ? `<span class="price">${money(p.price)}</span>` : ''}${old}${disc}</div>
+          <div class="sheet-price">${p.price ? `<span class="price">${money(p.price)}</span>` : ''}${old}${outOfStock ? '' : disc}</div>
+          ${outOfStock ? `<div class="out-note"><b>${L.soldOutTitle}</b><span>${L.soldOutBody}</span></div>` : ''}
           ${p.description ? `<div class="desc">${esc(p.description)}</div>` : ''}
         </div>
         <div class="cta">
-          <button id="ask">${p.price ? L.ask : L.askPrice}</button>
+          <button id="ask">${outOfStock ? L.soldOutAsk : (p.price ? L.ask : L.askPrice)}</button>
           <p class="hint-line">${L.askHint}</p>
         </div>`;
       document.getElementById('sheet').scrollTop = 0;

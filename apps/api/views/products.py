@@ -26,6 +26,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_fields = ["is_active", "is_top", "in_stock"]
     search_fields = ["name", "description"]
     ordering_fields = ["name", "created_at", "top_order"]
+    # Postgres is free to return an unordered query in any order it likes, so
+    # paging a 59-row catalogue without one can show a product twice and skip
+    # another. `id` breaks ties between rows created in the same second.
+    ordering = ["-created_at", "id"]
 
     @extend_schema(request=ProductBulkIdsSerializer, responses=BulkUpdateResultSerializer)
     @action(detail=False, methods=["post"])
@@ -52,6 +56,32 @@ class ProductViewSet(viewsets.ModelViewSet):
         updated = Product.objects.filter(
             pk__in=serializer.validated_data["ids"]
         ).update(is_top=False)
+        return Response({"updated": updated})
+
+    @extend_schema(request=ProductBulkIdsSerializer, responses=BulkUpdateResultSerializer)
+    @action(detail=False, methods=["post"])
+    def mark_out_of_stock(self, request):
+        """Take a product off sale without taking it out of the shop.
+
+        Clearing `is_active` would make it vanish, and a product a customer
+        has been eyeing for a week should not simply disappear — it should say
+        it is coming back.
+        """
+        serializer = ProductBulkIdsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        updated = Product.objects.filter(
+            pk__in=serializer.validated_data["ids"]
+        ).update(in_stock=False)
+        return Response({"updated": updated})
+
+    @extend_schema(request=ProductBulkIdsSerializer, responses=BulkUpdateResultSerializer)
+    @action(detail=False, methods=["post"])
+    def mark_in_stock(self, request):
+        serializer = ProductBulkIdsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        updated = Product.objects.filter(
+            pk__in=serializer.validated_data["ids"]
+        ).update(in_stock=True)
         return Response({"updated": updated})
 
 

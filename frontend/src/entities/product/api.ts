@@ -60,7 +60,27 @@ async function removeFromTop(ids: number[]): Promise<void> {
   if (error) throw error
 }
 
-export const productApi = { list, retrieve, create, update, remove, addToTop, removeFromTop }
+async function markInStock(ids: number[]): Promise<void> {
+  const { error } = await apiClient.POST('/api/v1/products/mark_in_stock/', { body: { ids } })
+  if (error) throw error
+}
+
+async function markOutOfStock(ids: number[]): Promise<void> {
+  const { error } = await apiClient.POST('/api/v1/products/mark_out_of_stock/', { body: { ids } })
+  if (error) throw error
+}
+
+export const productApi = {
+  list,
+  retrieve,
+  create,
+  update,
+  remove,
+  addToTop,
+  removeFromTop,
+  markInStock,
+  markOutOfStock,
+}
 
 async function listTop(params: ProductListParams): Promise<Paginated<TopProduct>> {
   const { data, error } = await apiClient.GET('/api/v1/top-products/', {

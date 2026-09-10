@@ -301,8 +301,12 @@ STRINGS: dict[str, str] = {
         "Pick a product to open its video lessons 👇"
     ),
     "catalog.gone": "This product is no longer available.",
-    "product.out_of_stock": "⛔️ <b>Out of stock</b> — can't be ordered right now.",
-    "product.out_of_stock_short": "out of stock",
+    "product.out_of_stock": (
+        "🔥 <b>Sold out for now</b>\n"
+        "Customers like you love this one — we are bringing it back soon. "
+        "Write to us and we will tell you when it lands."
+    ),
+    "product.out_of_stock_short": "sold out",
     "browse.prev": "◀️ Prev",
     "browse.next": "Next ▶️",
     "browse.counter": "{page}/{total}",

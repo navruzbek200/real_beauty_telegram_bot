@@ -11,6 +11,7 @@ export interface ProductListParams {
   ordering?: string
   is_active?: boolean
   is_top?: boolean
+  in_stock?: boolean
 }
 
 export interface TutorialStepListParams {
