@@ -23,7 +23,10 @@ cd "$(dirname "$0")"
 info() { printf "\033[1;36m[deploy]\033[0m %s\n" "$*"; }
 die()  { printf "\033[1;31m[deploy]\033[0m %s\n" "$*"; exit 1; }
 
-ssh_do() { ssh -o StrictHostKeyChecking=no "${USER}@${HOST}" "$@"; }
+SSH_OPTS=(-o StrictHostKeyChecking=no -o ServerAliveInterval=15 -o ServerAliveCountMax=8 -o ConnectTimeout=20)
+SSH_CMD="ssh ${SSH_OPTS[*]}"
+
+ssh_do() { ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" "$@"; }
 
 # --- 1. ship the code ---------------------------------------------------------
 # Two passes, because the server owns some of what lives in this directory.
@@ -45,7 +48,7 @@ for dir in "${SRC_DIRS[@]}"; do
   rsync -az --delete \
     --exclude '__pycache__' --exclude 'node_modules' \
     --exclude 'dist' --exclude '.vite' \
-    -e "ssh -o StrictHostKeyChecking=no" \
+    -e "$SSH_CMD" \
     "./${dir}/" "${USER}@${HOST}:${REMOTE}/${dir}/"
 done
 
@@ -54,7 +57,7 @@ info "Syncing root files …"
 # already handled every directory the repo owns.
 rsync -az -f '- /*/' \
   --exclude '.env' --exclude '.git' \
-  -e "ssh -o StrictHostKeyChecking=no" \
+  -e "$SSH_CMD" \
   ./ "${USER}@${HOST}:${REMOTE}/"
 
 # --- 2. rebuild ---------------------------------------------------------------
