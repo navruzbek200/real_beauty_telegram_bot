@@ -26,13 +26,34 @@ die()  { printf "\033[1;31m[deploy]\033[0m %s\n" "$*"; exit 1; }
 ssh_do() { ssh -o StrictHostKeyChecking=no "${USER}@${HOST}" "$@"; }
 
 # --- 1. ship the code ---------------------------------------------------------
-# No --delete: the server holds things the repo does not (.env, secrets, media).
-info "Syncing working tree to ${HOST}:${REMOTE} …"
-rsync -az \
-  --exclude '.git' --exclude '.venv' --exclude 'node_modules' \
-  --exclude 'frontend/dist' --exclude 'media' --exclude 'staticfiles' \
-  --exclude '.env' --exclude 'secrets' --exclude 'celerybeat-schedule' \
-  --exclude '__pycache__' \
+# Two passes, because the server owns some of what lives in this directory.
+#
+# The source trees are mirrored with --delete: without it a file deleted here
+# lingers there forever, and a stale module that still imports something the
+# repo has removed fails the frontend build — which is how this script broke
+# the first time a page was deleted. Excluded paths (node_modules, dist,
+# __pycache__) are protected from that delete by rsync itself, so the server's
+# build artefacts survive.
+#
+# The root is synced without --delete, since .env, secrets/, media/ and
+# backups/ sit alongside the tracked files and belong to the server alone.
+SRC_DIRS=(apps bot core tasks tests scripts locale docker frontend)
+
+info "Syncing source trees to ${HOST}:${REMOTE} …"
+for dir in "${SRC_DIRS[@]}"; do
+  [ -d "$dir" ] || continue
+  rsync -az --delete \
+    --exclude '__pycache__' --exclude 'node_modules' \
+    --exclude 'dist' --exclude '.vite' \
+    -e "ssh -o StrictHostKeyChecking=no" \
+    "./${dir}/" "${USER}@${HOST}:${REMOTE}/${dir}/"
+done
+
+info "Syncing root files …"
+# -f '- /*/' keeps this pass to the files at the top level; the loop above
+# already handled every directory the repo owns.
+rsync -az -f '- /*/' \
+  --exclude '.env' --exclude '.git' \
   -e "ssh -o StrictHostKeyChecking=no" \
   ./ "${USER}@${HOST}:${REMOTE}/"
 
