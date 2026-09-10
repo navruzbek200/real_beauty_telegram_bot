@@ -452,6 +452,14 @@ STRINGS: dict[str, str] = {
     "loyalty.tier.silver": "Kumush",
     "loyalty.tier.gold": "Oltin",
     "loyalty.tier.platinum": "Platina",
+    # ------------------------------------------------------- video darslar
+    "lessons.locked": (
+        "🔒 <b>Video darslar yopiq</b>\n\n"
+        "Ochish uchun kalit so'z kerak. Kalit so'zni do'konimizdan "
+        "mahsulot xarid qilganingizda beramiz."
+    ),
+    "lessons.not_found": "Bu dars topilmadi yoki olib tashlangan.",
+    "lessons.video_soon": "Video tez orada qo'shiladi.",
     # ------------------------------------------------------- bot command menu
     "cmd.start": "Botni ishga tushirish",
     "cmd.menu": "Asosiy menyu",

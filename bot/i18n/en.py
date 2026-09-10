@@ -386,6 +386,14 @@ STRINGS: dict[str, str] = {
         "Status: waiting to be filled in."
     ),
     "admin.user_registered": "✅ <b>{full_name}</b> completed registration.",
+    # ------------------------------------------------------- video lessons
+    "lessons.locked": (
+        "🔒 <b>Video lessons are locked</b>\n\n"
+        "You need an access word to open them. We give one with every "
+        "purchase from our shop."
+    ),
+    "lessons.not_found": "This lesson was not found or has been removed.",
+    "lessons.video_soon": "The video will be added shortly.",
     # ------------------------------------------------------- bot command menu
     # ------------------------------------------------------- loyalty / bonus
     "loyalty.disabled": "💎 The bonus program is currently off. It'll be back soon!",

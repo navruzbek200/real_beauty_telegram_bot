@@ -150,6 +150,105 @@
     .step .s-soon { font-size: 11px; color: var(--hint); flex: 0 0 auto; }
     .lesson-note { margin: 12px 20px 0; font-size: 12.5px; color: var(--hint); text-align: center; line-height: 1.5; }
 
+    /* ---------- locked course + lesson list ---------- */
+    /* The gate is the whole tab, not a banner over a visible list: a customer
+       who cannot watch should not be shown what they are missing item by item,
+       and the API does not send the titles anyway. */
+    .gate { padding: 26px 22px 30px; text-align: center; animation: rise .4s both; }
+    .gate-badge {
+      width: 76px; height: 76px; margin: 0 auto 16px; border-radius: 26px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(140deg, var(--sky), var(--sky-deep));
+      color: var(--on-sky);
+      box-shadow: 0 12px 28px color-mix(in srgb, var(--sky) 40%, transparent);
+    }
+    .gate h3 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: .01em; }
+    .gate p { margin: 8px auto 0; font-size: 14px; color: var(--hint); line-height: 1.5; max-width: 30ch; }
+    .gate .waiting { color: var(--accent); font-weight: 650; }
+
+    .code-form { margin: 20px auto 0; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .code-input {
+      width: 100%; border-radius: 15px; padding: 15px 16px; font: inherit;
+      font-size: 19px; font-weight: 700; letter-spacing: .22em; text-align: center;
+      text-transform: uppercase; color: var(--text); background: var(--card);
+      border: 1.5px solid var(--line); outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .code-input::placeholder { letter-spacing: .12em; font-weight: 600; color: var(--hint); opacity: .7; }
+    .code-input:focus {
+      border-color: var(--sky);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--sky) 20%, transparent);
+    }
+    .code-input.bad { border-color: #e0684f; box-shadow: 0 0 0 4px rgba(224,104,79,.18); }
+    .code-btn {
+      width: 100%; border: none; border-radius: 15px; padding: 15px; font: inherit;
+      font-size: 15.5px; font-weight: 700; cursor: pointer; color: var(--on-sky);
+      background: linear-gradient(135deg, var(--sky), var(--sky-deep));
+      box-shadow: 0 8px 20px color-mix(in srgb, var(--sky) 38%, transparent);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform .12s ease, opacity .15s ease;
+    }
+    .code-btn:active { transform: scale(.97); }
+    .code-btn[disabled] { opacity: .55; cursor: default; box-shadow: none; }
+    .code-btn .spin {
+      width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto;
+      border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .gate-msg { min-height: 18px; font-size: 13px; line-height: 1.45; }
+    .gate-msg.bad { color: #e0684f; }
+    .gate-msg.good { color: #34a879; }
+
+    .gate-alt {
+      display: flex; align-items: center; gap: 12px; margin: 26px auto 14px; max-width: 320px;
+      color: var(--hint); font-size: 12.5px;
+    }
+    .gate-alt::before, .gate-alt::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+    .gate-links { max-width: 320px; margin: 0 auto; display: flex; flex-direction: column; gap: 9px; }
+    .gate-link {
+      display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+      padding: 13px 15px; border-radius: 14px; font: inherit; font-size: 14.5px; font-weight: 600;
+      color: var(--text); background: var(--card); border: 1px solid var(--line); cursor: pointer;
+      transition: transform .12s ease;
+    }
+    .gate-link:active { transform: scale(.98); }
+    .gate-link .ic { width: 34px; height: 34px; border-radius: 10px; }
+    .gate-link .chev { margin-left: auto; color: var(--hint); }
+
+    .vlist { padding: 10px 16px 4px; display: flex; flex-direction: column; gap: 10px; }
+    .vrow {
+      display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
+      padding: 13px 14px; border-radius: var(--radius); font: inherit; color: inherit;
+      background: var(--card); border: 1px solid var(--line); cursor: pointer;
+      animation: rise .4s both; transition: transform .12s ease;
+    }
+    .vrow:active { transform: scale(.98); }
+    .vplay {
+      width: 42px; height: 42px; border-radius: 14px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--sky), var(--sky-deep)); color: var(--on-sky);
+    }
+    .vinfo { flex: 1; min-width: 0; }
+    .vinfo .t { font-size: 14.5px; font-weight: 650; line-height: 1.3; }
+    .vinfo .d {
+      margin-top: 3px; font-size: 12px; color: var(--hint); line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .vnum {
+      flex: 0 0 auto; font-size: 11.5px; font-weight: 700; color: var(--hint);
+      font-variant-numeric: tabular-nums;
+    }
+    .unlocked-note {
+      margin: 14px 20px 0; padding: 11px 14px; border-radius: 13px;
+      background: color-mix(in srgb, var(--sky) 13%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sky) 26%, transparent);
+      font-size: 12.5px; color: var(--text); line-height: 1.5; text-align: center;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .gate, .vrow, .code-btn .spin { animation: none; }
+    }
+
     /* ---------- contact ---------- */
     .menu { border-radius: var(--radius); overflow: hidden; margin: 10px 16px 0; }
     .row { display: flex; align-items: center; gap: 13px; padding: 13px 15px; cursor: pointer; transition: background .15s ease; }
@@ -301,7 +400,27 @@
         lessonsEmpty: 'Hozircha video darslar yo‘q.\nTez orada qo‘shiladi!', lessonCount: (n) => n + ' ta dars',
         lessonNote: 'Darsni tanlasangiz, video bot chatida ochiladi 📲', soon: 'Tez orada',
         contactSub: 'Savolingiz bormi? Jamoamiz doim aloqada.',
-        soonPrice: 'Narx tez orada', askPrice: '💬 Narxni so‘rash', found: (n) => n + ' ta mahsulot' },
+        soonPrice: 'Narx tez orada', askPrice: '💬 Narxni so‘rash', found: (n) => n + ' ta mahsulot',
+        lessonsLockedSub: 'Kalit so‘z bilan ochiladi',
+        lessonsWaiting: (n) => n + ' ta dars sizni kutmoqda',
+        gateTitle: 'Video darslar yopiq',
+        gateHow: 'Ochish uchun kalit so‘zni kiriting. Kalit so‘zni do‘konimizdan mahsulot xarid qilganingizda beramiz.',
+        gatePlaceholder: 'KALIT SO‘Z',
+        gateUnlock: 'Ochish',
+        gateChecking: 'Tekshirilmoqda…',
+        gateOpened: 'Ochildi! Darslar yuklanmoqda…',
+        gateNoCode: 'Kalit so‘z yo‘qmi?',
+        gateBuy: 'Mahsulot xarid qilish',
+        gateAsk: 'Savol / Murojaat yozish',
+        gateNoTelegram: 'Kalit so‘zni Telegram ilovasi ichidan kiriting.',
+        gateErrors: {
+          unknown_code: 'Bunday kalit so‘z topilmadi. Yozilishini tekshiring.',
+          code_inactive: 'Bu kalit so‘z o‘chirilgan. Do‘kondan yangisini so‘rang.',
+          code_expired: 'Bu kalit so‘zning muddati tugagan. Do‘kondan yangisini so‘rang.',
+          code_spent: 'Bu kalit so‘z allaqachon ishlatilgan. Do‘kondan yangisini so‘rang.',
+          too_many: 'Juda ko‘p urinish. Bir necha daqiqadan keyin qayta urinib ko‘ring.',
+          not_identified: 'Sizni tanib bo‘lmadi. Botga /start bosib, qaytadan kiring.'
+        } },
       ru: { kicker: 'Магазин красоты', search: 'Поиск…', all: 'Все', top: '🔥 ТОП', sale: '💸 Скидка',
         empty: 'Товары не найдены', err: 'Не удалось загрузить. Попробуйте ещё раз.', ask: '💬 Задать вопрос',
         askHint: 'Вопрос продолжится в чате с ботом', badgeTop: 'ТОП', som: 'сум', details: 'Подробнее',
@@ -311,7 +430,27 @@
         lessonsEmpty: 'Видеоуроков пока нет.\nСкоро добавим!', lessonCount: (n) => n + ' урок(ов)',
         lessonNote: 'Выберите урок — видео откроется в чате с ботом 📲', soon: 'Скоро',
         contactSub: 'Есть вопрос? Наша команда всегда на связи.',
-        soonPrice: 'Цена скоро', askPrice: '💬 Узнать цену', found: (n) => n + ' товар(ов)' },
+        soonPrice: 'Цена скоро', askPrice: '💬 Узнать цену', found: (n) => n + ' товар(ов)',
+        lessonsLockedSub: 'Открывается по кодовому слову',
+        lessonsWaiting: (n) => 'Вас ждёт уроков: ' + n,
+        gateTitle: 'Видеоуроки закрыты',
+        gateHow: 'Введите кодовое слово. Мы выдаём его при покупке товара в нашем магазине.',
+        gatePlaceholder: 'КОДОВОЕ СЛОВО',
+        gateUnlock: 'Открыть',
+        gateChecking: 'Проверяем…',
+        gateOpened: 'Открыто! Загружаем уроки…',
+        gateNoCode: 'Нет кодового слова?',
+        gateBuy: 'Купить товар',
+        gateAsk: 'Задать вопрос',
+        gateNoTelegram: 'Введите кодовое слово внутри приложения Telegram.',
+        gateErrors: {
+          unknown_code: 'Такое кодовое слово не найдено. Проверьте написание.',
+          code_inactive: 'Это кодовое слово отключено. Попросите новое в магазине.',
+          code_expired: 'Срок действия кодового слова истёк. Попросите новое.',
+          code_spent: 'Это кодовое слово уже использовано. Попросите новое.',
+          too_many: 'Слишком много попыток. Повторите через несколько минут.',
+          not_identified: 'Не удалось вас узнать. Нажмите /start в боте и войдите снова.'
+        } },
       en: { kicker: 'Beauty shop', search: 'Search…', all: 'All', top: '🔥 TOP', sale: '💸 Sale',
         empty: 'No products found', err: 'Could not load. Try again.', ask: '💬 Ask a question',
         askHint: 'Your question continues in the bot chat', badgeTop: 'TOP', som: 'UZS', details: 'Details',
@@ -321,7 +460,27 @@
         lessonsEmpty: 'No video lessons yet.\nComing soon!', lessonCount: (n) => n + ' lesson(s)',
         lessonNote: 'Pick a lesson — the video opens in the bot chat 📲', soon: 'Soon',
         contactSub: 'Got a question? Our team is always in touch.',
-        soonPrice: 'Price coming soon', askPrice: '💬 Ask the price', found: (n) => n + ' product(s)' },
+        soonPrice: 'Price coming soon', askPrice: '💬 Ask the price', found: (n) => n + ' product(s)',
+        lessonsLockedSub: 'Opens with an access word',
+        lessonsWaiting: (n) => n + ' lesson(s) waiting for you',
+        gateTitle: 'Video lessons are locked',
+        gateHow: 'Enter your access word to open them. We give one with every purchase from our shop.',
+        gatePlaceholder: 'ACCESS WORD',
+        gateUnlock: 'Unlock',
+        gateChecking: 'Checking…',
+        gateOpened: 'Unlocked! Loading lessons…',
+        gateNoCode: 'No access word?',
+        gateBuy: 'Buy a product',
+        gateAsk: 'Write a question',
+        gateNoTelegram: 'Enter the access word from inside the Telegram app.',
+        gateErrors: {
+          unknown_code: 'No such access word. Check the spelling.',
+          code_inactive: 'This access word is switched off. Ask the shop for a new one.',
+          code_expired: 'This access word has expired. Ask the shop for a new one.',
+          code_spent: 'This access word has already been used. Ask the shop for a new one.',
+          too_many: 'Too many attempts. Try again in a few minutes.',
+          not_identified: 'We could not identify you. Press /start in the bot and open it again.'
+        } },
     };
     const L = T[LANG] || T.uz;
     const set = (id, txt) => { document.getElementById(id).textContent = txt; };
@@ -509,24 +668,144 @@
     document.getElementById('search').addEventListener('input', (e) => { QUERY = e.target.value.trim().toLowerCase(); renderGrid(); });
 
     // ---------------------------------------------------------------- lessons
-    function lessonCard(p, i) {
-      const thumb = p.photo ? `<img class="lesson-thumb" loading="lazy" src="${esc(p.photo)}" alt="">`
-        : `<div class="lesson-thumb">${esc(initial(p.name))}</div>`;
-      const steps = (p.steps || []).map(s => {
-        const icon = s.has_video
-          ? `<span class="play"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span>`
-          : `<span class="play soon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>`;
-        const soon = s.has_video ? '' : `<span class="s-soon">${L.soon}</span>`;
-        return `<div class="step" data-step="${s.id}">${icon}<span class="s-label">${esc(s.label)}</span>${soon}</div>`;
-      }).join('');
-      return `<div class="lesson-card card-bg" style="animation-delay:${Math.min(i, 8) * 30}ms">
-        <div class="lesson-head">${thumb}
-          <div class="lesson-info"><div class="t">${esc(p.name)}</div><div class="m">${L.lessonCount((p.steps || []).length)}</div></div>
-          <svg class="lesson-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-        </div>
-        <div class="steps">${steps}</div>
-      </div>`;
+    // The course is gated. The API decides — the client only renders whichever
+    // of the two states it was handed, and never holds a title it was not
+    // entitled to see.
+    let LESSON_STATE = null;
+
+    function lockIcon() {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/>
+        <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>
+      </svg>`;
     }
+
+    function renderGate(data) {
+      const waiting = data.available
+        ? `<p><span class="waiting">${L.lessonsWaiting(data.available)}</span></p>` : '';
+      document.getElementById('lessons-content').innerHTML = `
+        <div class="gate">
+          <div class="gate-badge">${lockIcon()}</div>
+          <h3>${L.gateTitle}</h3>
+          ${waiting}
+          <p>${L.gateHow}</p>
+
+          <form class="code-form" id="code-form" novalidate>
+            <input class="code-input" id="code-input" type="text" inputmode="latin"
+                   autocomplete="off" autocapitalize="characters" spellcheck="false"
+                   maxlength="32" placeholder="${L.gatePlaceholder}"
+                   aria-label="${L.gatePlaceholder}">
+            <button class="code-btn" id="code-btn" type="submit">${L.gateUnlock}</button>
+            <div class="gate-msg" id="gate-msg" role="status" aria-live="polite"></div>
+          </form>
+
+          <div class="gate-alt">${L.gateNoCode}</div>
+          <div class="gate-links">
+            <button class="gate-link" type="button" data-go="shop">
+              <span class="ic sp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8h16l-1.2 11.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8Z"/>
+                <path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
+              <span>${L.gateBuy}</span>
+              <span class="chev">›</span>
+            </button>
+            <button class="gate-link" type="button" data-go="support">
+              <span class="ic tg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2Z"/></svg></span>
+              <span>${L.gateAsk}</span>
+              <span class="chev">›</span>
+            </button>
+          </div>
+        </div>`;
+
+      const form = document.getElementById('code-form');
+      const input = document.getElementById('code-input');
+      const btn = document.getElementById('code-btn');
+      const msg = document.getElementById('gate-msg');
+
+      function say(text, kind) {
+        msg.textContent = text || '';
+        msg.className = 'gate-msg' + (kind ? ' ' + kind : '');
+      }
+      input.addEventListener('input', () => { input.classList.remove('bad'); say(''); });
+
+      form.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        const code = input.value.trim();
+        if (!code) { input.classList.add('bad'); input.focus(); return; }
+        if (!(tg && tg.initData)) { say(L.gateNoTelegram, 'bad'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spin"></span>${L.gateChecking}`;
+        say('');
+
+        fetch('/api/v1/webapp/unlock/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ init_data: tg.initData, code: code })
+        })
+          .then(r => r.json().then(j => ({ status: r.status, body: j })))
+          .then(({ status, body }) => {
+            if (body && body.ok) {
+              haptic('medium');
+              say(L.gateOpened, 'good');
+              // Re-fetch rather than reveal from what we already hold: the
+              // titles were never sent to a locked client.
+              setTimeout(() => { lessonsLoaded = false; loadLessons(); }, 500);
+              return;
+            }
+            haptic('light');
+            input.classList.add('bad');
+            const reason = (body && body.reason) || (status === 429 ? 'too_many' : '');
+            say(L.gateErrors[reason] || L.gateErrors.unknown_code, 'bad');
+            btn.disabled = false;
+            btn.textContent = L.gateUnlock;
+          })
+          .catch(() => {
+            say(L.err, 'bad');
+            btn.disabled = false;
+            btn.textContent = L.gateUnlock;
+          });
+      });
+
+      document.querySelectorAll('.gate-link').forEach(el => el.addEventListener('click', () => {
+        haptic('light');
+        if (el.dataset.go === 'shop') showTab('shop');
+        else actInChat({ action: 'support' }, 'support');
+      }));
+    }
+
+    function renderLessons(videos) {
+      const c = document.getElementById('lessons-content');
+      if (!videos.length) {
+        c.innerHTML = `<div class="state">${L.lessonsEmpty.replace('\n', '<br>')}</div>`;
+        return;
+      }
+      c.innerHTML = `<div class="vlist">${videos.map((v, i) => `
+        <button class="vrow" type="button" data-video="${v.id}" style="animation-delay:${Math.min(i, 8) * 30}ms">
+          <span class="vplay"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span>
+          <span class="vinfo">
+            <span class="t">${esc(v.title)}</span>
+            ${v.description ? `<span class="d">${esc(v.description)}</span>` : ''}
+          </span>
+          <span class="vnum">${v.duration ? clock(v.duration) : String(i + 1).padStart(2, '0')}</span>
+        </button>`).join('')}</div>
+        <p class="unlocked-note">${L.lessonNote}</p>`;
+
+      c.querySelectorAll('.vrow').forEach(el => el.addEventListener('click', () => {
+        haptic('medium');
+        actInChat({ action: 'vlesson', id: Number(el.dataset.video) }, 'vlesson_' + el.dataset.video);
+      }));
+    }
+
+    function clock(sec) {
+      const m = Math.floor(sec / 60), r = Math.round(sec % 60);
+      return m + ':' + (r < 10 ? '0' : '') + r;
+    }
+
     function loadLessons() {
       lessonsLoaded = true;
       skeleton('lessons-content');
@@ -534,24 +813,17 @@
       fetch('/api/v1/webapp/lessons/?lang=' + encodeURIComponent(LANG) + (initData ? '&init_data=' + encodeURIComponent(initData) : ''))
         .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
         .then(data => {
+          LESSON_STATE = data;
           if (data.bot_username) BOT_USERNAME = data.bot_username;
-          const c = document.getElementById('lessons-content');
-          const items = data.products || [];
-          set('lessons-sub', data.personalized ? L.lessonsMine : L.lessonsAll);
-          if (!items.length) {
-            c.innerHTML = `<div class="state">${L.lessonsEmpty.replace('\n', '<br>')}</div>`;
+          const note = document.getElementById('lesson-note');
+          if (note) note.hidden = true;
+          if (data.locked) {
+            set('lessons-sub', L.lessonsLockedSub);
+            renderGate(data);
             return;
           }
-          c.innerHTML = `<div class="lesson-list">${items.map(lessonCard).join('')}</div>`;
-          const note = document.getElementById('lesson-note');
-          note.textContent = L.lessonNote; note.hidden = false;
-          c.querySelectorAll('.lesson-head').forEach(el => el.addEventListener('click', () => {
-            haptic('light'); el.parentElement.classList.toggle('open');
-          }));
-          c.querySelectorAll('.step').forEach(el => el.addEventListener('click', () => {
-            haptic('medium');
-            actInChat({ action: 'lesson', id: Number(el.dataset.step) }, 'lesson_' + el.dataset.step);
-          }));
+          set('lessons-sub', L.lessonsAll);
+          renderLessons(data.videos || []);
         })
         .catch(() => { document.getElementById('lessons-content').innerHTML = `<div class="state">${L.err}</div>`; });
     }

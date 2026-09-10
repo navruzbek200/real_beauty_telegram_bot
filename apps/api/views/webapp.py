@@ -24,36 +24,18 @@ from urllib.parse import parse_qsl
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
 from rest_framework import status as http_status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.products.models import Product
+from apps.users.models import TelegramUser
 from core.i18n import pick
 
 logger = logging.getLogger(__name__)
 
 _LANGS = {"uz", "ru", "en"}
-
-def _has_playable_lesson():
-    """Exists() over tutorial steps that carry a video.
-
-    Both conditions are stated positively — `__gt=""` is true only for a
-    non-empty string, and false for NULL. A negated Q across the step
-    relation would instead have matched products with *no steps at all*,
-    since "no step has an empty video" is vacuously true for them.
-    """
-    from apps.products.models import ProductTutorialStep
-
-    return Exists(
-        ProductTutorialStep.objects.filter(
-            Q(video_file_id__gt="") | Q(video_file__gt=""),
-            product=OuterRef("pk"),
-        )
-    )
-
 
 def _serialize(product: Product, lang: str, request) -> dict:
     photo = None
@@ -152,75 +134,111 @@ class WebAppCatalogView(APIView):
 
 
 class WebAppLessonsView(APIView):
-    """The «Darslar» tab: products with their video-lesson steps.
+    """The «Darslar» tab — a course that stays shut until a code opens it.
 
-    Only steps that actually carry a video are listed, and only products left
-    with at least one of them. A step whose video has not been uploaded yet is
-    an empty promise — the tab says "coming soon" instead, and each lesson
-    appears by itself the moment its video is added in the panel.
-
-    Personalized to the customer's own products when a *verified* initData is
-    supplied; otherwise every product that has a lesson, top ones first.
+    The lock is on the *payload*, not on the page: a locked answer carries no
+    titles, no ids and no file references, so nothing about the course leaks to
+    someone poking at the endpoint directly. Only a verified initData can be
+    unlocked against, because the Telegram id is the only identity a Mini App
+    can prove.
     """
 
     permission_classes = [AllowAny]
     authentication_classes: list = []
 
     def get(self, request):
+        from apps.lessons import services as lesson_services
+
         lang = _clean_lang(request.query_params.get("lang"))
-        telegram_id = verified_telegram_id(
-            request.query_params.get("init_data", "")
-        )
+        telegram_id = verified_telegram_id(request.query_params.get("init_data", ""))
+        bot_username = getattr(settings, "BOT_USERNAME", "") or ""
 
-        playable = Product.objects.filter(is_active=True).filter(
-            _has_playable_lesson()
-        ).prefetch_related("tutorial_steps")
-
-        products: list[Product] = []
-        personalized = False
+        user = None
         if telegram_id:
-            products = list(
-                playable.filter(
-                    userproduct__user__telegram_id=telegram_id
-                ).order_by("name")
-            )
-            personalized = bool(products)
-        if not products:
-            products = list(playable.order_by("-is_top", "top_order", "name"))
+            user = TelegramUser.objects.filter(telegram_id=telegram_id).first()
 
-        items = []
-        for product in products:
-            steps = sorted(
-                (s for s in product.tutorial_steps.all() if s.has_video),
-                key=lambda s: s.order,
-            )
-            items.append(
+        videos = lesson_services.published_videos()
+
+        if not lesson_services.is_unlocked(user):
+            return Response(
                 {
-                    "id": product.pk,
-                    "name": pick(product, "name", lang),
-                    "photo": (
-                        request.build_absolute_uri(product.photo.url)
-                        if product.photo and product.photo.name
-                        else None
-                    ),
-                    "steps": [
-                        {
-                            "id": step.pk,
-                            "label": pick(step, "button_label", lang),
-                            "has_video": True,
-                        }
-                        for step in steps
-                    ],
+                    "locked": True,
+                    "identified": user is not None,
+                    "bot_username": bot_username,
+                    # How many lessons are waiting, so the gate can promise
+                    # something concrete instead of an unspecified "content".
+                    "available": len(videos),
+                    "videos": [],
                 }
             )
+
         return Response(
             {
-                "personalized": personalized,
-                "bot_username": getattr(settings, "BOT_USERNAME", "") or "",
-                "products": items,
-                "count": len(items),
+                "locked": False,
+                "identified": True,
+                "bot_username": bot_username,
+                "available": len(videos),
+                "videos": [
+                    {
+                        "id": v.pk,
+                        "title": pick(v, "title", lang),
+                        "description": pick(v, "description", lang),
+                        "duration": v.duration_seconds or 0,
+                    }
+                    for v in videos
+                ],
             }
         )
+
+
+class WebAppUnlockView(APIView):
+    """Spend a code and open the course for this customer.
+
+    Rate-limited per Telegram id: a code is short enough to guess by brute
+    force otherwise, and the id is the only stable handle a Mini App gives us.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    RATE_LIMIT_MAX = 8
+    RATE_LIMIT_WINDOW_S = 300
+
+    def post(self, request):
+        from apps.lessons import services as lesson_services
+
+        init_data = request.data.get("init_data") or ""
+        telegram_id = verified_telegram_id(init_data)
+        if not telegram_id:
+            return Response(
+                {"ok": False, "reason": "not_identified"},
+                status=http_status.HTTP_403_FORBIDDEN,
+            )
+
+        bucket = f"lesson_unlock:{telegram_id}"
+        tries = cache.get(bucket, 0)
+        if tries >= self.RATE_LIMIT_MAX:
+            return Response(
+                {"ok": False, "reason": "too_many"},
+                status=http_status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        cache.set(bucket, tries + 1, self.RATE_LIMIT_WINDOW_S)
+
+        user = TelegramUser.objects.filter(telegram_id=telegram_id).first()
+        if user is None:
+            return Response(
+                {"ok": False, "reason": "not_identified"},
+                status=http_status.HTTP_403_FORBIDDEN,
+            )
+
+        result = lesson_services.redeem(user, request.data.get("code") or "")
+        if not result.ok:
+            return Response({"ok": False, "reason": result.reason})
+
+        # A correct code clears the budget, so a customer who fumbled the
+        # spelling a few times is not left locked out of their own course.
+        cache.delete(bucket)
+        return Response({"ok": True})
 
 
 class WebAppOrderView(APIView):

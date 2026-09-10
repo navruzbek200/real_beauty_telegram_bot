@@ -75,7 +75,8 @@ async def _handled_as_action(
     message: Message, state: FSMContext, bot: Bot, payload: str
 ) -> bool:
     """
-    Mini App deep links: `ask_<product_id>`, `lesson_<step_id>`, `learn`.
+    Mini App deep links: `ask_<product_id>`, `lesson_<step_id>`,
+    `vlesson_<video_id>`, `learn`.
 
     sendData only reaches the bot when the app was opened from a reply-keyboard
     button; opened from an inline button (or a link) the app falls back to a
@@ -85,6 +86,7 @@ async def _handled_as_action(
     is_action = (
         payload.startswith("ask_")
         or payload.startswith("lesson_")
+        or payload.startswith("vlesson_")
         or payload in ("learn", "support")
     )
     if not is_action:
@@ -113,6 +115,26 @@ async def _handled_as_action(
     if payload == "support":
         await state.set_state(SupportState.message)
         await message.answer(t("support.ask", lang), parse_mode="HTML")
+        return True
+
+    if payload.startswith("vlesson_"):
+        from bot.services import lesson_service
+        from bot.utils.video import send_lesson_video
+
+        try:
+            video_id = int(payload.removeprefix("vlesson_"))
+        except ValueError:
+            return False
+        # The gate is re-checked here, not trusted from the Mini App: a deep
+        # link is a plain URL anyone can retype with a different id.
+        if not await lesson_service.is_unlocked(message.chat.id):
+            await message.answer(t("lessons.locked", lang), parse_mode="HTML")
+            return True
+        video = await lesson_service.get_video(video_id)
+        if video is None:
+            await message.answer(t("lessons.not_found", lang))
+            return True
+        await send_lesson_video(bot, message.chat.id, video, lang)
         return True
 
     if payload.startswith("lesson_"):

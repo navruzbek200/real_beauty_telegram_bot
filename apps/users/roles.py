@@ -52,6 +52,14 @@ SELLER_PERMISSIONS: list[tuple[str, str]] = [
     # closes them. Creation stays with the customer (Mini App only).
     ("orders", "view_order"),
     ("orders", "change_order"),
+    # Handing an access word to a customer who just bought something happens at
+    # the counter, so the seller issues and revokes them. The course itself —
+    # which videos exist — stays an owner's decision.
+    ("lessons", "view_lessonvideo"),
+    ("lessons", "view_accesscode"),
+    ("lessons", "add_accesscode"),
+    ("lessons", "change_accesscode"),
+    ("lessons", "view_lessonunlock"),
 ]
 
 

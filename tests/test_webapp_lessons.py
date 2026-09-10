@@ -1,13 +1,15 @@
 """
-The Mini App's «Darslar» tab and its deep links back into the chat.
+The Mini App's signature check and its deep links back into the chat.
 
-Three seams matter here:
+Two seams matter here:
 
-* `verified_telegram_id` — the HMAC check that decides whether the lessons
-  endpoint may personalize. A forged or tampered initData must read as nobody.
-* The lessons endpoint itself — public fallback vs. the customer's own shelf.
+* `verified_telegram_id` — the HMAC check every endpoint that acts on behalf
+  of a customer depends on. A forged or tampered initData must read as nobody.
 * The `/start ask_… | lesson_… | support` deep links — the path the Mini App
   uses when it was NOT opened from the reply keyboard (where sendData is dead).
+
+The «Darslar» tab itself is a gated course now; its own tests live in
+tests/test_lesson_gate.py.
 """
 
 from __future__ import annotations
@@ -77,108 +79,6 @@ def _step(product, label="1-qadam", *, video=True, order=1):
     )
 
 
-@override_settings(BOT_TOKEN=TOKEN)
-class WebAppLessonsViewTests(TestCase):
-    def setUp(self):
-        self.with_lesson = Product.objects.create(name="Serum", is_top=True)
-        _step(self.with_lesson)
-        Product.objects.create(name="Lessonless")  # must not appear in fallback
-
-    def test_fallback_lists_only_products_that_have_lessons(self):
-        response = self.client.get("/api/v1/webapp/lessons/")
-        self.assertEqual(response.status_code, 200)
-        names = [p["name"] for p in response.json()["products"]]
-        self.assertEqual(names, ["Serum"])
-        self.assertFalse(response.json()["personalized"])
-        steps = response.json()["products"][0]["steps"]
-        self.assertEqual(steps[0]["label"], "1-qadam")
-        self.assertTrue(steps[0]["has_video"])
-
-    def test_a_lesson_with_no_video_yet_is_not_listed(self):
-        # The shop writes the steps first and uploads the videos later; until
-        # then the tab must say "coming soon" rather than list dead buttons.
-        pending = Product.objects.create(name="Tayyorlanmoqda")
-        _step(pending, "1-qadam: tozalash", video=False)
-
-        names = [
-            p["name"] for p in self.client.get("/api/v1/webapp/lessons/").json()["products"]
-        ]
-        self.assertNotIn("Tayyorlanmoqda", names)
-
-    def test_only_the_steps_that_have_a_video_are_listed(self):
-        _step(self.with_lesson, "2-qadam: hali yo'q", video=False, order=2)
-
-        products = self.client.get("/api/v1/webapp/lessons/").json()["products"]
-        labels = [s["label"] for s in products[0]["steps"]]
-        self.assertEqual(labels, ["1-qadam"])
-
-    def test_an_uploaded_file_counts_even_without_a_cached_id(self):
-        uploaded = Product.objects.create(name="Yuklangan")
-        ProductTutorialStep.objects.create(
-            product=uploaded,
-            order=1,
-            button_label="1-qadam",
-            video_file="videos/lesson.mp4",
-        )
-
-        names = [
-            p["name"] for p in self.client.get("/api/v1/webapp/lessons/").json()["products"]
-        ]
-        self.assertIn("Yuklangan", names)
-
-    def test_verified_customer_sees_their_own_shelf_first(self):
-        owned = Product.objects.create(name="Sotib olingan")
-        _step(owned)
-        user = TelegramUser.objects.create(
-            telegram_id=555,
-            full_name="Mijoz",
-            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
-        )
-        UserProduct.objects.create(user=user, product=owned)
-
-        response = self.client.get(
-            "/api/v1/webapp/lessons/", {"init_data": make_init_data(555)}
-        )
-        names = [p["name"] for p in response.json()["products"]]
-        self.assertEqual(names, ["Sotib olingan"])
-        self.assertTrue(response.json()["personalized"])
-
-    def test_an_owned_product_with_no_playable_lesson_falls_back(self):
-        owned = Product.objects.create(name="Darssiz xarid")
-        user = TelegramUser.objects.create(
-            telegram_id=557,
-            full_name="Mijoz",
-            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
-        )
-        UserProduct.objects.create(user=user, product=owned)
-
-        response = self.client.get(
-            "/api/v1/webapp/lessons/", {"init_data": make_init_data(557)}
-        )
-        names = [p["name"] for p in response.json()["products"]]
-        self.assertEqual(names, ["Serum"])
-        self.assertFalse(response.json()["personalized"])
-
-    def test_forged_init_data_falls_back_to_the_public_list(self):
-        owned = Product.objects.create(name="Sotib olingan")
-        _step(owned)
-        user = TelegramUser.objects.create(
-            telegram_id=556,
-            full_name="Mijoz",
-            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
-        )
-        UserProduct.objects.create(user=user, product=owned)
-
-        forged = make_init_data(556, token="999:OTHER")
-        response = self.client.get("/api/v1/webapp/lessons/", {"init_data": forged})
-        # The owned product still shows — it has a lesson, and the public list
-        # carries every one of those. What a forged signature must not buy is
-        # the *personalised* ordering that puts their own shelf first.
-        names = [p["name"] for p in response.json()["products"]]
-        self.assertEqual(names, ["Serum", "Sotib olingan"])
-        self.assertFalse(response.json()["personalized"])
-
-
 # ---------------------------------------------------------------------------
 # Deep links
 # ---------------------------------------------------------------------------
@@ -207,6 +107,7 @@ def fsm_for(chat_id: int) -> FSMContext:
     )
 
 
+@override_settings(BOT_TOKEN=TOKEN)
 class DeepLinkActionTests(TestCase):
     def setUp(self):
         self.user = TelegramUser.objects.create(

@@ -1,0 +1,290 @@
+{% comment %}
+Video upload field.
+
+Django's stock file input is a grey "Choose file" button and, once something is
+saved, a bare link to the stored path. For a shop owner publishing a course
+that is not enough to work with: they need to see that the right clip landed,
+how long it runs, and — on a 40 MB upload over a phone tether — that anything
+is happening at all.
+
+So this widget does three things the default cannot. It accepts a drop. It
+plays the chosen file back immediately from a local object URL, before any
+byte has been sent, which is the only preview that costs nothing. And it
+reports upload progress, by taking over the submit with XHR — with a plain
+fallback: if XHR is unavailable or the request fails, the form is submitted the
+ordinary way and the browser handles it as it always did.
+{% endcomment %}
+<div class="rbv" data-rbv data-max-mb="{{ max_mb }}">
+  <input type="file" name="{{ widget.name }}" id="{{ widget.attrs.id }}"
+         accept="video/mp4,video/quicktime,video/x-m4v,video/*"
+         class="rbv-input" data-rbv-input>
+
+  <label class="rbv-drop" for="{{ widget.attrs.id }}" data-rbv-drop>
+    <svg class="rbv-ico" width="30" height="30" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <path d="M12 16V4"/><path d="m7 9 5-5 5 5"/>
+      <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>
+    </svg>
+    <span class="rbv-lead">Videoni shu yerga tashlang</span>
+    <span class="rbv-sub">yoki bosib tanlang · MP4 · eng ko'pi {{ max_mb }} MB</span>
+  </label>
+
+  <div class="rbv-picked" data-rbv-picked hidden>
+    <video class="rbv-preview" data-rbv-preview controls preload="metadata"
+           playsinline muted></video>
+    <div class="rbv-meta">
+      <div class="rbv-name" data-rbv-name></div>
+      <div class="rbv-facts" data-rbv-facts></div>
+      <div class="rbv-bar" data-rbv-bar hidden><i data-rbv-fill></i></div>
+      <div class="rbv-err" data-rbv-err role="alert" hidden></div>
+    </div>
+    <button type="button" class="rbv-clear" data-rbv-clear aria-label="Tanlangan videoni bekor qilish">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  {% if current_url %}
+    <div class="rbv-current">
+      <span class="rbv-dot" aria-hidden="true"></span>
+      Yuklangan:
+      <a href="{{ current_url }}" target="_blank" rel="noopener">{{ current_name }}</a>
+      {% if widget.is_initial %}
+        <label class="rbv-del">
+          <input type="checkbox" name="{{ checkbox_name }}" id="{{ checkbox_id }}">
+          o'chirish
+        </label>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<style>
+/* Scoped to .rbv so nothing here can reach the rest of the admin. Colours are
+   the shop's own sky blue, so the CRM and the storefront read as one brand. */
+.rbv {
+  --rbv-sky: #6ec6d9;
+  --rbv-deep: #2c7d9b;
+  --rbv-ink: #16242e;
+  --rbv-dim: #64808d;
+  --rbv-line: #cfdee5;
+  --rbv-surface: #f6fafc;
+  --rbv-card: #fff;
+  --rbv-danger: #c2410c;
+  font-family: inherit;
+  max-width: 620px;
+}
+.dark .rbv, html.dark .rbv {
+  --rbv-ink: #e4eff3;
+  --rbv-dim: #93a9b5;
+  --rbv-line: #2b3b46;
+  --rbv-surface: #16222b;
+  --rbv-card: #1b2932;
+  --rbv-danger: #f0a882;
+}
+
+.rbv-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.rbv-drop {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; text-align: center;
+  padding: 26px 20px; min-height: 132px;
+  border: 1.5px dashed var(--rbv-line); border-radius: 14px;
+  background: var(--rbv-surface); color: var(--rbv-dim);
+  cursor: pointer; transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.rbv-drop:hover { border-color: var(--rbv-sky); color: var(--rbv-deep); }
+.rbv-input:focus-visible + .rbv-drop { outline: 2px solid var(--rbv-deep); outline-offset: 2px; }
+.rbv-drop.is-over {
+  border-color: var(--rbv-deep); border-style: solid;
+  background: color-mix(in srgb, var(--rbv-sky) 14%, var(--rbv-surface));
+  color: var(--rbv-deep);
+}
+.rbv-ico { color: var(--rbv-deep); }
+.rbv-lead { font-size: 14px; font-weight: 600; color: var(--rbv-ink); }
+.rbv-sub { font-size: 12px; }
+
+.rbv-picked {
+  display: grid; grid-template-columns: 148px minmax(0, 1fr) auto; gap: 14px; align-items: start;
+  padding: 12px; border: 1px solid var(--rbv-line); border-radius: 14px; background: var(--rbv-card);
+}
+.rbv-preview {
+  width: 148px; aspect-ratio: 9 / 16; max-height: 210px;
+  border-radius: 10px; background: #0d151b; object-fit: contain; display: block;
+}
+.rbv-meta { min-width: 0; padding-top: 2px; }
+.rbv-name {
+  font-size: 14px; font-weight: 600; color: var(--rbv-ink);
+  overflow-wrap: anywhere; line-height: 1.35;
+}
+.rbv-facts {
+  margin-top: 4px; font-size: 12px; color: var(--rbv-dim);
+  font-variant-numeric: tabular-nums;
+}
+.rbv-bar {
+  margin-top: 10px; height: 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--rbv-sky) 22%, transparent); overflow: hidden;
+}
+.rbv-bar i {
+  display: block; height: 100%; width: 0%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--rbv-sky), var(--rbv-deep));
+  transition: width .2s ease;
+}
+.rbv-err { margin-top: 8px; font-size: 12.5px; color: var(--rbv-danger); line-height: 1.45; }
+.rbv-clear {
+  border: 1px solid var(--rbv-line); background: var(--rbv-card); color: var(--rbv-dim);
+  width: 30px; height: 30px; border-radius: 9px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.rbv-clear:hover { color: var(--rbv-danger); border-color: var(--rbv-danger); }
+
+.rbv-current {
+  margin-top: 10px; font-size: 12.5px; color: var(--rbv-dim);
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.rbv-dot { width: 7px; height: 7px; border-radius: 50%; background: #059669; flex: 0 0 auto; }
+.rbv-current a { color: var(--rbv-deep); }
+.rbv-del { display: inline-flex; align-items: center; gap: 5px; margin-left: 4px; cursor: pointer; }
+
+@media (max-width: 520px) {
+  .rbv-picked { grid-template-columns: 96px minmax(0, 1fr) auto; }
+  .rbv-preview { width: 96px; max-height: 150px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rbv-drop, .rbv-bar i { transition: none; }
+}
+</style>
+
+<script>
+(function () {
+  var root = document.currentScript.previousElementSibling;
+  while (root && !root.hasAttribute('data-rbv')) root = root.previousElementSibling;
+  if (!root || root.dataset.rbvReady) return;
+  root.dataset.rbvReady = '1';
+
+  var input   = root.querySelector('[data-rbv-input]');
+  var drop    = root.querySelector('[data-rbv-drop]');
+  var picked  = root.querySelector('[data-rbv-picked]');
+  var preview = root.querySelector('[data-rbv-preview]');
+  var nameEl  = root.querySelector('[data-rbv-name]');
+  var factsEl = root.querySelector('[data-rbv-facts]');
+  var errEl   = root.querySelector('[data-rbv-err]');
+  var barEl   = root.querySelector('[data-rbv-bar]');
+  var fillEl  = root.querySelector('[data-rbv-fill]');
+  var clearEl = root.querySelector('[data-rbv-clear]');
+  var maxMb   = parseInt(root.dataset.maxMb, 10) || 50;
+  var objUrl  = null;
+
+  function mb(bytes) { return (bytes / 1048576).toFixed(1) + ' MB'; }
+  function clock(s) {
+    if (!s || !isFinite(s)) return '';
+    var m = Math.floor(s / 60), r = Math.round(s % 60);
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+  function fail(msg) { errEl.textContent = msg; errEl.hidden = !msg; }
+
+  function show(file) {
+    if (objUrl) URL.revokeObjectURL(objUrl);
+    objUrl = URL.createObjectURL(file);
+    preview.src = objUrl;
+    nameEl.textContent = file.name;
+    factsEl.textContent = mb(file.size);
+    // Duration only exists once the browser has read the header.
+    preview.onloadedmetadata = function () {
+      var d = clock(preview.duration);
+      factsEl.textContent = mb(file.size) + (d ? ' · ' + d : '') +
+        (preview.videoWidth ? ' · ' + preview.videoWidth + '×' + preview.videoHeight : '');
+    };
+    picked.hidden = false;
+    drop.hidden = true;
+    fail(file.size > maxMb * 1048576
+      ? "Fayl " + maxMb + " MB dan katta. Telegram bunday faylni qabul qilmaydi — siqib qayta yuklang."
+      : '');
+  }
+
+  function reset() {
+    if (objUrl) { URL.revokeObjectURL(objUrl); objUrl = null; }
+    input.value = '';
+    preview.removeAttribute('src');
+    picked.hidden = true;
+    drop.hidden = false;
+    barEl.hidden = true;
+    fillEl.style.width = '0%';
+    fail('');
+  }
+
+  input.addEventListener('change', function () {
+    if (input.files && input.files[0]) show(input.files[0]);
+  });
+  clearEl.addEventListener('click', reset);
+
+  ['dragenter', 'dragover'].forEach(function (e) {
+    drop.addEventListener(e, function (ev) {
+      ev.preventDefault(); drop.classList.add('is-over');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (e) {
+    drop.addEventListener(e, function (ev) {
+      ev.preventDefault(); drop.classList.remove('is-over');
+    });
+  });
+  drop.addEventListener('drop', function (ev) {
+    var f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (!f) return;
+    // DataTransfer is the only way to put a dropped file into the input the
+    // form will actually post; without it the drop looks accepted and submits
+    // nothing.
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(f);
+      input.files = dt.files;
+      show(f);
+    } catch (e) {
+      fail('Bu brauzer tashlab yuklashni qo‘llamaydi — «bosib tanlang»dan foydalaning.');
+    }
+  });
+
+  // Progress. Only worth taking over the submit when there is a new file to
+  // send; every other save goes through Django untouched.
+  var form = root.closest('form');
+  if (!form || !window.FormData || !window.XMLHttpRequest) return;
+
+  form.addEventListener('submit', function (ev) {
+    if (!input.files || !input.files.length) return;
+    if (ev.defaultPrevented || form.dataset.rbvSending) return;
+
+    var submitter = ev.submitter;
+    ev.preventDefault();
+    form.dataset.rbvSending = '1';
+
+    var data = new FormData(form);
+    if (submitter && submitter.name) data.append(submitter.name, submitter.value || '');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', form.getAttribute('action') || window.location.href, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+    barEl.hidden = false;
+    xhr.upload.onprogress = function (e) {
+      if (!e.lengthComputable) return;
+      fillEl.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+    };
+    xhr.onload = function () {
+      // Django answers a successful admin save with a redirect, which XHR has
+      // already followed; land the browser wherever it ended up.
+      window.location.href = xhr.responseURL || window.location.href;
+    };
+    xhr.onerror = function () {
+      // Hand the upload back to the browser rather than losing the form.
+      delete form.dataset.rbvSending;
+      barEl.hidden = true;
+      fail('Yuklab bo‘lmadi. Qayta urinilmoqda…');
+      form.submit();
+    };
+    xhr.send(data);
+  });
+})();
+</script>

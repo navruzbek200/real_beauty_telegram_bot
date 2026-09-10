@@ -19,6 +19,7 @@ from apps.api.views.webapp import (
     WebAppCatalogView,
     WebAppLessonsView,
     WebAppOrderView,
+    WebAppUnlockView,
 )
 from apps.api.views.campaigns import (
     AutoMessageViewSet,
@@ -79,6 +80,7 @@ urlpatterns = [
     path("webapp/catalog/", WebAppCatalogView.as_view(), name="api_webapp_catalog"),
     path("webapp/lessons/", WebAppLessonsView.as_view(), name="api_webapp_lessons"),
     path("webapp/orders/", WebAppOrderView.as_view(), name="api_webapp_orders"),
+    path("webapp/unlock/", WebAppUnlockView.as_view(), name="api_webapp_unlock"),
     path("schema/", SpectacularAPIView.as_view(), name="api_schema"),
     path("", include(router.urls)),
 ]
