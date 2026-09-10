@@ -19,6 +19,7 @@ class GlobalSettingsSerializer(serializers.ModelSerializer):
             "telegram_url",
             "delivery_fee_yandex",
             "delivery_fee_bts",
+            "cash_on_delivery_enabled",
         ]
 
 

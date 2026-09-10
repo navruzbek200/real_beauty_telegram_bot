@@ -304,6 +304,8 @@ STRINGS: dict[str, str] = {
         "Выберите товар — откроются видеоуроки 👇"
     ),
     "catalog.gone": "Этого товара больше нет.",
+    "product.out_of_stock": "⛔️ <b>Сейчас нет в наличии</b> — заказать нельзя.",
+    "product.out_of_stock_short": "нет в наличии",
     "browse.prev": "◀️ Назад",
     "browse.next": "Вперёд ▶️",
     "browse.counter": "{page}/{total}",

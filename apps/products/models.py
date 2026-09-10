@@ -28,6 +28,15 @@ class Product(models.Model):
         verbose_name="Rasm (ixtiyoriy)",
     )
     is_active = models.BooleanField(default=True, verbose_name="Faol")
+    # A softer switch than `is_active`: an out-of-stock product still appears
+    # in the catalogue and the Mini App, marked «tugagan», so the customer
+    # sees it exists — it just cannot be ordered. `is_active=False` hides it
+    # everywhere; this only takes it off sale.
+    in_stock = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="Sotuvda mavjud",
+    )
 
     current_price = models.PositiveIntegerField(
         default=0,

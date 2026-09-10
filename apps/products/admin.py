@@ -113,6 +113,7 @@ class ProductForm(forms.ModelForm):
             "description",
             "photo",
             "is_active",
+            "in_stock",
             "current_price",
             "old_price",
             "name_ru",
@@ -130,11 +131,16 @@ class ProductForm(forms.ModelForm):
             "description": "Tavsif",
             "photo": "Rasm",
             "is_active": "Faol",
+            "in_stock": "Sotuvda mavjud",
         }
         help_texts = {
             "description": "Mijozga ko'rsatiladigan qisqa tavsif.",
             "photo": "Ixtiyoriy — shart emas.",
-            "is_active": "O'chirilsa yangi xaridorlarga biriktirib bo'lmaydi.",
+            "is_active": "O'chirilsa mahsulot katalogdan ham, Mini App'dan ham "
+            "butunlay yo'qoladi. Vaqtincha sotuvdan olish uchun quyidagi "
+            "«Sotuvda mavjud»ni ishlating.",
+            "in_stock": "Belgini olib tashlasangiz mahsulot katalogda «tugagan» "
+            "yozuvi bilan ko'rinib turadi, lekin buyurtma berib bo'lmaydi.",
         }
 
 
@@ -147,6 +153,7 @@ _PRODUCT_FIELDSETS = (
                 "description",
                 "photo",
                 "is_active",
+                "in_stock",
                 "current_price",
                 "old_price",
             ]
@@ -185,13 +192,14 @@ class ProductAdmin(RBModelAdmin):
     list_display_links = ["name"]
     list_filter = [
         yes_no_filter("is_active", "Mahsulot holati", "Faol", "O'chirilgan"),
+        yes_no_filter("in_stock", "Sotuvda", "Sotuvda bor", "Tugagan"),
         yes_no_filter("is_top", "Top ro'yxati", "Topda", "Topda emas"),
     ]
     search_fields = ["name", "description"]
     inlines = [ProductTutorialStepInline]
     list_per_page = 25
     fieldsets = _PRODUCT_FIELDSETS
-    actions = ["add_to_top", "remove_from_top"]
+    actions = ["add_to_top", "remove_from_top", "mark_in_stock", "mark_out_of_stock"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("tutorial_steps")
@@ -234,6 +242,20 @@ class ProductAdmin(RBModelAdmin):
         updated = queryset.update(is_top=False)
         self.message_user(request, f"{updated} ta mahsulot topdan olindi.")
 
+    @admin.action(description="🟢 Sotuvda bor deb belgilash")
+    def mark_in_stock(self, request, queryset) -> None:
+        updated = queryset.update(in_stock=True)
+        self.message_user(request, f"{updated} ta mahsulot sotuvga qaytarildi.")
+
+    @admin.action(description="🔴 Tugagan deb belgilash")
+    def mark_out_of_stock(self, request, queryset) -> None:
+        # The product stays visible in the catalogue with a «tugagan» tag; it
+        # just can't be ordered until it is marked back in.
+        updated = queryset.update(in_stock=False)
+        self.message_user(
+            request, f"{updated} ta mahsulot «tugagan» deb belgilandi."
+        )
+
     @admin.display(description="Qo'llanma")
     def steps_summary(self, obj: Product) -> str:
         steps = list(obj.tutorial_steps.all())
@@ -263,11 +285,16 @@ class ProductAdmin(RBModelAdmin):
 
     @admin.display(description="Holat")
     def active_badge(self, obj: Product) -> str:
-        if obj.is_active:
+        if not obj.is_active:
+            return format_html('<span style="color:#9ca3af">⏸ O\'chirilgan</span>')
+        if not obj.in_stock:
+            # Visible in the catalogue, tagged «tugagan», but not orderable.
             return format_html(
-                '<span style="color:#059669;font-weight:600">✅ Faol</span>'
+                '<span style="color:#dc2626;font-weight:600">🔴 Tugagan</span>'
             )
-        return format_html('<span style="color:#9ca3af">⏸ O\'chirilgan</span>')
+        return format_html(
+            '<span style="color:#059669;font-weight:600">✅ Sotuvda</span>'
+        )
 
 
 @admin.register(TopProduct)
@@ -311,14 +338,20 @@ class TopProductAdmin(RBModelAdmin):
 
     @admin.display(description="Holat")
     def active_badge(self, obj: TopProduct) -> str:
-        if obj.is_active:
-            return format_html(
-                '<span style="color:#059669;font-weight:600">✅ Botda ko\'rinadi</span>'
-            )
         # A deactivated product is hidden by the bot even while flagged top;
         # saying so here beats wondering why the list looks short.
+        if not obj.is_active:
+            return format_html(
+                '<span style="color:#dc2626">⏸ O\'chirilgan — botda chiqmaydi</span>'
+            )
+        if not obj.in_stock:
+            # Still shown in the top list, but tagged «tugagan» and not orderable.
+            return format_html(
+                '<span style="color:#dc2626;font-weight:600">🔴 Tugagan — '
+                "buyurtma berib bo'lmaydi</span>"
+            )
         return format_html(
-            '<span style="color:#dc2626">⏸ O\'chirilgan — botda chiqmaydi</span>'
+            '<span style="color:#059669;font-weight:600">✅ Botda ko\'rinadi</span>'
         )
 
     def has_add_permission(self, request: HttpRequest) -> bool:

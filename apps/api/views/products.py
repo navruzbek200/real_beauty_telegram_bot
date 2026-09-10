@@ -23,7 +23,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [ModelPermissions]
     pagination_class = DefaultPagination
-    filterset_fields = ["is_active", "is_top"]
+    filterset_fields = ["is_active", "is_top", "in_stock"]
     search_fields = ["name", "description"]
     ordering_fields = ["name", "created_at", "top_order"]
 
@@ -86,11 +86,13 @@ class TopProductViewSet(
             Product.objects.filter(is_top=True).aggregate(top=Max("top_order"))["top"]
             or 0
         )
-        # `is_active` isn't on this form (the shop only fills in what the top
-        # list needs); a brand-new entry must actually show up in the bot, not
-        # sit invisible because a multipart POST without the field would
-        # otherwise resolve to False.
-        serializer.save(is_top=True, top_order=start + 1, is_active=True)
+        # `is_active` / `in_stock` aren't on this form (the shop only fills in
+        # what the top list needs); a brand-new entry must actually show up in
+        # the bot and be orderable, not sit invisible or tagged «tugagan»
+        # because a multipart POST without the field would resolve to False.
+        serializer.save(
+            is_top=True, top_order=start + 1, is_active=True, in_stock=True
+        )
 
     def perform_destroy(self, instance):
         instance.is_top = False
