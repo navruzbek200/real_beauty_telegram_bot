@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from django import forms
 from django.contrib import admin, messages
-from django.http import HttpRequest
+from django.db import IntegrityError
+from django.http import HttpRequest, HttpResponseRedirect
+from django.urls import path, reverse
 from django.utils.html import format_html
 
 from core.admin import RBModelAdmin, yes_no_filter
@@ -102,18 +104,78 @@ class AccessCodeForm(forms.ModelForm):
 @admin.register(AccessCode)
 class AccessCodeAdmin(RBModelAdmin):
     form = AccessCodeForm
-    list_display = ["code_badge", "label", "usage", "state", "created_at"]
+    change_list_template = "rb/lessons/accesscode_change_list.html"
+    list_display = ["code_badge", "label", "issued_to", "usage", "state", "created_at"]
     list_display_links = ["code_badge"]
     list_filter = [yes_no_filter("is_active", "Holat", "Faol", "O'chirilgan")]
-    search_fields = ["code", "label"]
+    search_fields = ["code", "label", "issued_to__full_name", "issued_to__phone_number"]
+    autocomplete_fields = ["issued_to"]
     readonly_fields = ["uses_count", "created_at"]
     actions = ["activate", "deactivate"]
+
+    # How many codes one "Chiqarish" press may mint. A seller issuing them at
+    # the counter never needs more, and a typed-in number never reaches the
+    # database unchecked.
+    ISSUE_CHOICES = (1, 5, 10, 25)
+
+    def get_urls(self):
+        return [
+            path(
+                "issue/",
+                self.admin_site.admin_view(self.issue_view),
+                name="lessons_accesscode_issue",
+            ),
+            *super().get_urls(),
+        ]
+
+    def issue_view(self, request: HttpRequest):
+        """Mint single-use codes and show them once, on the way back."""
+        changelist = reverse("admin:lessons_accesscode_changelist")
+        if request.method != "POST" or not self.has_add_permission(request):
+            return HttpResponseRedirect(changelist)
+
+        try:
+            count = int(request.POST.get("count", 1))
+        except (TypeError, ValueError):
+            count = 1
+        if count not in self.ISSUE_CHOICES:
+            count = 1
+
+        made: list[str] = []
+        for _ in range(count):
+            # A collision is vanishingly unlikely over 31^8, but "unlikely"
+            # is not "handled" — retry rather than hand the seller a 500.
+            for _attempt in range(5):
+                candidate = generate_code()
+                try:
+                    AccessCode.objects.create(
+                        code=candidate, max_uses=1, label="Xarid uchun"
+                    )
+                except IntegrityError:
+                    continue
+                made.append(candidate)
+                break
+
+        if made:
+            # The codes ride back in the session because this is a redirect,
+            # and they are dropped as soon as the page has shown them.
+            request.session["fresh_codes"] = made
+        else:
+            self.message_user(
+                request, "Kod chiqarib bo'lmadi. Qayta urinib ko'ring.", messages.ERROR
+            )
+        return HttpResponseRedirect(changelist)
+
+    def changelist_view(self, request: HttpRequest, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["fresh_codes"] = request.session.pop("fresh_codes", None)
+        return super().changelist_view(request, extra_context)
 
     fieldsets = (
         (
             "Kalit so'z",
             {
-                "fields": ["code", "label", "is_active"],
+                "fields": ["code", "label", "issued_to", "is_active"],
                 "description": "Mijoz shu so'zni «Darslar» bo'limiga kiritadi. "
                 "Katta-kichik harf va tirelar ahamiyatsiz.",
             },
@@ -141,6 +203,9 @@ class AccessCodeAdmin(RBModelAdmin):
     def usage(self, obj: AccessCode) -> str:
         limit = obj.max_uses or "∞"
         return f"{obj.uses_count} / {limit}"
+
+    def get_queryset(self, request: HttpRequest):
+        return super().get_queryset(request).select_related("issued_to")
 
     @admin.display(description="Holat")
     def state(self, obj: AccessCode) -> str:

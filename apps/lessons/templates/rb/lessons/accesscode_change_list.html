@@ -1,0 +1,155 @@
+{% extends "rb/change_list.html" %}
+{% comment %}
+Issuing codes is the seller's most frequent job on this page — one code per
+customer who just bought something — so it sits above the list as a two-tap
+action rather than behind the "add" form, which asks for six fields the seller
+does not care about.
+
+Freshly issued codes are shown once, large, with a copy button: a code is only
+useful in the seconds between generating it and reading it out at the counter.
+{% endcomment %}
+
+{% block content %}
+<div class="rbc">
+  {% if fresh_codes %}
+    <div class="rbc-fresh">
+      <div class="rbc-fresh-head">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <b>{{ fresh_codes|length }} ta kod tayyor</b>
+        <span>— mijozga o'qib bering yoki nusxa oling</span>
+      </div>
+      <div class="rbc-codes">
+        {% for c in fresh_codes %}
+          <button type="button" class="rbc-code" data-copy="{{ c }}" title="Nusxa olish">
+            <span>{{ c }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"/>
+              <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+            </svg>
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <form class="rbc-issue" method="post" action="{% url 'admin:lessons_accesscode_issue' %}">
+    {% csrf_token %}
+    <div class="rbc-issue-text">
+      <b>Yangi kod chiqarish</b>
+      <span>Har bir kod <b>bitta mijozga</b> ishlaydi. Xarid qilgan mijozga bering.</span>
+    </div>
+    <label class="rbc-count">
+      <span>Nechta</span>
+      <select name="count">
+        <option value="1">1</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+      </select>
+    </label>
+    <button type="submit" class="rbc-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Chiqarish
+    </button>
+  </form>
+</div>
+
+<style>
+.rbc {
+  --rbc-sky: #6ec6d9; --rbc-deep: #2c7d9b;
+  --rbc-ink: #16242e; --rbc-dim: #64808d; --rbc-line: #cfdee5;
+  --rbc-card: #fff; --rbc-soft: #f6fafc; --rbc-ok: #059669;
+  margin-bottom: 18px; font-family: inherit;
+}
+.dark .rbc, html.dark .rbc {
+  --rbc-ink: #e4eff3; --rbc-dim: #93a9b5; --rbc-line: #2b3b46;
+  --rbc-card: #1b2932; --rbc-soft: #16222b; --rbc-ok: #4dc59a;
+}
+
+.rbc-fresh {
+  border: 1px solid color-mix(in srgb, var(--rbc-ok) 40%, var(--rbc-line));
+  background: color-mix(in srgb, var(--rbc-ok) 8%, var(--rbc-card));
+  border-radius: 13px; padding: 14px 16px; margin-bottom: 12px;
+}
+.rbc-fresh-head {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 13.5px; color: var(--rbc-ink); margin-bottom: 11px;
+}
+.rbc-fresh-head svg { color: var(--rbc-ok); flex: 0 0 auto; }
+.rbc-fresh-head span { color: var(--rbc-dim); }
+.rbc-codes { display: flex; flex-wrap: wrap; gap: 8px; }
+.rbc-code {
+  display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 16px; font-weight: 700; letter-spacing: .12em;
+  color: var(--rbc-deep); background: var(--rbc-card);
+  border: 1px solid color-mix(in srgb, var(--rbc-sky) 45%, transparent);
+  border-radius: 10px; padding: 9px 13px;
+  transition: border-color .15s ease, color .15s ease;
+}
+.rbc-code:hover { border-color: var(--rbc-deep); }
+.rbc-code svg { opacity: .55; flex: 0 0 auto; }
+.rbc-code.copied { color: var(--rbc-ok); border-color: var(--rbc-ok); }
+
+.rbc-issue {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  border: 1px solid var(--rbc-line); border-radius: 13px;
+  padding: 13px 16px; background: var(--rbc-soft);
+}
+.rbc-issue-text { flex: 1; min-width: 210px; display: flex; flex-direction: column; gap: 2px; }
+.rbc-issue-text b { font-size: 14px; color: var(--rbc-ink); }
+.rbc-issue-text span { font-size: 12.5px; color: var(--rbc-dim); }
+.rbc-issue-text span b { font-size: inherit; color: var(--rbc-ink); }
+.rbc-count { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--rbc-dim); }
+.rbc-count select {
+  font: inherit; font-size: 14px; color: var(--rbc-ink); background: var(--rbc-card);
+  border: 1px solid var(--rbc-line); border-radius: 9px; padding: 8px 11px; cursor: pointer;
+}
+.rbc-btn {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: none; border-radius: 10px; padding: 11px 19px;
+  font: inherit; font-size: 14px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, var(--rbc-sky), var(--rbc-deep));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--rbc-sky) 35%, transparent);
+}
+.rbc-btn:hover { filter: brightness(1.05); }
+
+@media (max-width: 620px) {
+  .rbc-issue { align-items: stretch; }
+  .rbc-btn, .rbc-count { justify-content: center; }
+}
+</style>
+
+<script>
+(function () {
+  document.querySelectorAll('.rbc-code').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.dataset.copy;
+      var done = function () {
+        btn.classList.add('copied');
+        setTimeout(function () { btn.classList.remove('copied'); }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+        return;
+      }
+      // Older admin browsers on the shop's counter machine.
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done();
+    });
+  });
+})();
+</script>
+
+{{ block.super }}
+{% endblock %}

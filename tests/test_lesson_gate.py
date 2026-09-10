@@ -284,3 +284,48 @@ class LessonDeepLinkGateTests(TestCase):
         self.assertTrue(handled)
         sender.assert_not_awaited()
         self.assertEqual(len(msg.sent), 1)
+
+
+class IssueCodesAdminTests(TestCase):
+    """The counter's one-tap button for minting a code per buyer."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        User.objects.create_superuser("boss", "boss@example.com", "pw")
+        self.client.login(username="boss", password="pw")
+        self.url = reverse("admin:lessons_accesscode_issue")
+
+    def test_issuing_mints_single_use_codes_and_shows_them_once(self):
+        res = self.client.post(self.url, {"count": 5}, follow=True)
+
+        made = AccessCode.objects.all()
+        self.assertEqual(made.count(), 5)
+        self.assertTrue(all(c.max_uses == 1 for c in made))
+        self.assertEqual(len({c.code for c in made}), 5)
+
+        shown = res.context["fresh_codes"]
+        self.assertEqual(sorted(shown), sorted(c.code for c in made))
+
+        # Shown once: a reload must not re-print codes that were already read
+        # out at the counter.
+        again = self.client.get(reverse("admin:lessons_accesscode_changelist"))
+        self.assertIsNone(again.context["fresh_codes"])
+
+    def test_an_unlisted_count_falls_back_to_one(self):
+        self.client.post(self.url, {"count": "9999"})
+
+        self.assertEqual(AccessCode.objects.count(), 1)
+
+    def test_a_get_mints_nothing(self):
+        self.client.get(self.url)
+
+        self.assertEqual(AccessCode.objects.count(), 0)
+
+    def test_a_signed_out_visitor_mints_nothing(self):
+        self.client.logout()
+
+        self.client.post(self.url, {"count": 5})
+
+        self.assertEqual(AccessCode.objects.count(), 0)

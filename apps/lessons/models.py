@@ -119,11 +119,14 @@ class LessonVideo(models.Model):
 class AccessCode(models.Model):
     """A word that opens the course.
 
-    One row can serve a whole campaign (`max_uses = 0`) or a single customer
-    (`max_uses = 1`), which is the difference between a code printed on every
-    receipt and one handed to one buyer. Spending a code is counted rather than
-    consumed, so a customer who reinstalls Telegram and unlocks again does not
-    burn a second seat — `LessonUnlock` is keyed on the customer.
+    The default is one code per buyer (`max_uses = 1`): a word that works for
+    everyone travels — it gets screenshotted into a group chat and the course
+    stops being a reason to buy anything. A campaign-wide code is still
+    possible (`max_uses = 0`) when the shop deliberately wants one.
+
+    Spending is counted rather than consumed, so a customer who reinstalls
+    Telegram and unlocks again does not burn a second seat — `LessonUnlock` is
+    keyed on the customer, not on the code.
     """
 
     code = models.CharField(
@@ -141,9 +144,10 @@ class AccessCode(models.Model):
     )
     is_active = models.BooleanField(default=True, verbose_name="Faol")
     max_uses = models.PositiveIntegerField(
-        default=0,
+        default=1,
         verbose_name="Nechta mijozga",
-        help_text="0 — cheksiz. 1 — faqat bitta mijoz ishlatadi.",
+        help_text="1 — faqat bitta mijoz ishlatadi (tavsiya etiladi). "
+        "0 — cheksiz, butun aksiya uchun.",
     )
     uses_count = models.PositiveIntegerField(default=0, editable=False, verbose_name="Ishlatilgan")
     expires_at = models.DateTimeField(
@@ -153,6 +157,16 @@ class AccessCode(models.Model):
         help_text="Bo'sh qoldirsangiz — muddatsiz.",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan")
+    issued_to = models.ForeignKey(
+        "users.TelegramUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="issued_codes",
+        verbose_name="Kimga berilgan",
+        help_text="Ixtiyoriy: xaridorni tanlab qo'ysangiz, kimga qaysi kod "
+        "berilgani keyin ham ma'lum bo'ladi.",
+    )
 
     class Meta:
         ordering = ["-created_at"]
