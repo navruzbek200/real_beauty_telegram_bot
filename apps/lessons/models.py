@@ -90,6 +90,14 @@ class LessonVideo(models.Model):
         default=0, verbose_name="Davomiyligi (soniya)", editable=False
     )
 
+    poster = models.ImageField(
+        upload_to="lessons/posters/",
+        blank=True,
+        verbose_name="Muqova rasmi",
+        help_text="Bo'sh qoldirsangiz videodan avtomatik olinadi. "
+        "Yoqmasa o'z rasmingizni yuklang.",
+    )
+
     is_active = models.BooleanField(
         default=True,
         verbose_name="Faol",
@@ -114,6 +122,25 @@ class LessonVideo(models.Model):
             raise ValidationError(
                 {"video_file": "Video fayl yuklang yoki Telegram video ID kiriting."}
             )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # After the file is on disk, not before: ffmpeg needs a path to read.
+        # A shop-supplied poster is never overwritten — the automatic frame is
+        # a starting point, not a decision.
+        if self.poster or not (self.video_file and self.video_file.name):
+            return
+        from apps.lessons.posters import grab_poster
+
+        try:
+            frame = grab_poster(self.video_file.path, self.duration_seconds)
+        except (NotImplementedError, ValueError):
+            # Remote storage has no local path; nothing to grab from.
+            return
+        if frame is None:
+            return
+        self.poster.save(f"lesson-{self.pk}.jpg", frame, save=False)
+        super().save(update_fields=["poster"])
 
 
 class AccessCode(models.Model):

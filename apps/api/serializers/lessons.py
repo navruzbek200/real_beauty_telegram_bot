@@ -21,6 +21,7 @@ class LessonVideoSerializer(serializers.ModelSerializer):
             "order",
             "video_file",
             "video_file_id",
+            "poster",
             "duration_seconds",
             "has_video",
             "is_active",

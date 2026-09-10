@@ -184,6 +184,11 @@ class WebAppLessonsView(APIView):
                         "title": pick(v, "title", lang),
                         "description": pick(v, "description", lang),
                         "duration": v.duration_seconds or 0,
+                        "poster": (
+                            request.build_absolute_uri(v.poster.url)
+                            if v.poster and v.poster.name
+                            else None
+                        ),
                     }
                     for v in videos
                 ],

@@ -1571,6 +1571,12 @@ export interface components {
              * @description Birinchi yuborishdan keyin bot o'zi to'ldiradi. Boshqa botdan ko'chirayotgan bo'lsangiz qo'lda ham kiritishingiz mumkin.
              */
             video_file_id?: string;
+            /**
+             * Muqova rasmi
+             * Format: uri
+             * @description Bo'sh qoldirsangiz videodan avtomatik olinadi. Yoqmasa o'z rasmingizni yuklang.
+             */
+            poster?: string | null;
             /** Davomiyligi (soniya) */
             readonly duration_seconds: number;
             readonly has_video: boolean;
@@ -2318,6 +2324,12 @@ export interface components {
              * @description Birinchi yuborishdan keyin bot o'zi to'ldiradi. Boshqa botdan ko'chirayotgan bo'lsangiz qo'lda ham kiritishingiz mumkin.
              */
             video_file_id?: string;
+            /**
+             * Muqova rasmi
+             * Format: uri
+             * @description Bo'sh qoldirsangiz videodan avtomatik olinadi. Yoqmasa o'z rasmingizni yuklang.
+             */
+            poster?: string | null;
             /** Davomiyligi (soniya) */
             readonly duration_seconds?: number;
             readonly has_video?: boolean;

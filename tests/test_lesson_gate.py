@@ -566,3 +566,58 @@ class LessonPanelApiTests(TestCase):
         titles = [v["title"] for v in self.client.get("/api/v1/lesson-videos/").data["results"]]
 
         self.assertEqual(titles, ["Birinchi", "Ikkinchi", "Uchinchi"])
+
+
+class LessonPosterTests(TestCase):
+    """The picture that tells a customer which lesson is which."""
+
+    def test_the_unlocked_list_hands_over_a_poster_url(self):
+        from apps.users.models import TelegramUser as TU
+
+        user = TU.objects.create(
+            telegram_id=8400,
+            full_name="Mijoz",
+            registration_status=TU.RegistrationStatus.COMPLETED,
+        )
+        LessonUnlock.objects.create(user=user)
+        video = LessonVideo.objects.create(
+            title="Terini tozalash", order=1, video_file_id="cached"
+        )
+        video.poster.name = "lessons/posters/lesson-1.jpg"
+        video.save(update_fields=["poster"])
+
+        with override_settings(BOT_TOKEN=BOT_TOKEN):
+            body = self.client.get(
+                reverse("api_webapp_lessons"),
+                {"lang": "uz", "init_data": init_data_for(8400)},
+            ).json()
+
+        self.assertIn("lesson-1.jpg", body["videos"][0]["poster"])
+
+    def test_a_lesson_with_no_poster_says_so_rather_than_breaking(self):
+        from apps.users.models import TelegramUser as TU
+
+        user = TU.objects.create(
+            telegram_id=8401,
+            full_name="Mijoz",
+            registration_status=TU.RegistrationStatus.COMPLETED,
+        )
+        LessonUnlock.objects.create(user=user)
+        LessonVideo.objects.create(title="Rasmsiz", order=1, video_file_id="cached")
+
+        with override_settings(BOT_TOKEN=BOT_TOKEN):
+            body = self.client.get(
+                reverse("api_webapp_lessons"),
+                {"lang": "uz", "init_data": init_data_for(8401)},
+            ).json()
+
+        # None, not a broken URL: the grid draws its gradient placeholder.
+        self.assertIsNone(body["videos"][0]["poster"])
+
+    def test_a_shop_supplied_poster_is_never_overwritten(self):
+        video = LessonVideo.objects.create(title="Dars", order=1, video_file_id="cached")
+        video.poster.name = "lessons/posters/qolda.jpg"
+        video.save()
+
+        video.refresh_from_db()
+        self.assertEqual(video.poster.name, "lessons/posters/qolda.jpg")

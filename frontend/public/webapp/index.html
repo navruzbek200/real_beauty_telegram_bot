@@ -229,28 +229,62 @@
     .gate-link .ic { width: 34px; height: 34px; border-radius: 10px; }
     .gate-link .chev { margin-left: auto; color: var(--hint); }
 
-    .vlist { padding: 10px 16px 4px; display: flex; flex-direction: column; gap: 10px; }
-    .vrow {
-      display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
-      padding: 13px 14px; border-radius: var(--radius); font: inherit; color: inherit;
+    /* A course shown as identical play icons asks the customer to guess which
+       lesson is which. One frame from the video answers that before a word is
+       read — so the poster is the card, and the title sits under it. Two
+       columns of 9:16, the shape the videos are actually shot in, and the same
+       grid the shop tab uses so the app reads as one thing. */
+    .vgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 4px; }
+    .vcard {
+      display: flex; flex-direction: column; text-align: left; padding: 0;
+      border-radius: var(--radius); overflow: hidden; font: inherit; color: inherit;
       background: var(--card); border: 1px solid var(--line); cursor: pointer;
-      animation: rise .4s both; transition: transform .12s ease;
+      animation: rise .4s both; transition: transform .14s ease;
     }
-    .vrow:active { transform: scale(.98); }
-    .vplay {
-      width: 42px; height: 42px; border-radius: 14px; flex: 0 0 auto;
+    .vcard:active { transform: scale(.97); }
+    .vposter {
+      position: relative; display: block; aspect-ratio: 9 / 16; overflow: hidden;
+      background: linear-gradient(150deg,
+        color-mix(in srgb, var(--sky) 26%, transparent),
+        color-mix(in srgb, var(--sky-deep) 14%, transparent));
+    }
+    .vposter img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; transition: opacity .3s ease;
+    }
+    .vposter img.ready { opacity: 1; }
+    .vstep {
+      position: absolute; top: 8px; left: 8px; z-index: 2;
+      min-width: 22px; height: 22px; padding: 0 6px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, var(--sky), var(--sky-deep)); color: var(--on-sky);
+      font-size: 11.5px; font-weight: 800; color: var(--on-sky);
+      background: linear-gradient(135deg, var(--sky), var(--sky-deep));
+      box-shadow: 0 2px 8px rgba(0,0,0,.28);
     }
-    .vinfo { flex: 1; min-width: 0; }
-    .vinfo .t { font-size: 14.5px; font-weight: 650; line-height: 1.3; }
-    .vinfo .d {
-      margin-top: 3px; font-size: 12px; color: var(--hint); line-height: 1.4;
+    .vtime {
+      position: absolute; bottom: 8px; right: 8px; z-index: 2;
+      padding: 2px 7px; border-radius: 7px; font-size: 11px; font-weight: 700;
+      color: #fff; background: rgba(9,26,36,.62);
+      backdrop-filter: blur(4px); font-variant-numeric: tabular-nums;
+    }
+    .vplay {
+      position: absolute; inset: 0; margin: auto; z-index: 2;
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--on-sky); background: rgba(9,26,36,.42);
+      border: 1.5px solid rgba(255,255,255,.55);
+      backdrop-filter: blur(3px);
+      /* Nudged right so the triangle's visual mass sits on the circle's centre. */
+      padding-left: 3px;
+    }
+    .vinfo { padding: 10px 11px 12px; min-width: 0; }
+    .vinfo .t {
+      font-size: 13.5px; font-weight: 650; line-height: 1.3;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .vnum {
-      flex: 0 0 auto; font-size: 11.5px; font-weight: 700; color: var(--hint);
-      font-variant-numeric: tabular-nums;
+    .vinfo .d {
+      margin-top: 3px; font-size: 11.5px; color: var(--hint); line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .unlocked-note {
       margin: 14px 20px 0; padding: 11px 14px; border-radius: 13px;
@@ -917,19 +951,27 @@
         c.innerHTML = `<div class="state">${L.lessonsEmpty.replace('\n', '<br>')}</div>`;
         return;
       }
-      c.innerHTML = `<div class="vlist">${videos.map((v, i) => `
-        <button class="vrow" type="button" data-video="${v.id}" style="animation-delay:${Math.min(i, 8) * 30}ms">
-          <span class="vplay"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span>
+      c.innerHTML = `<div class="vgrid">${videos.map((v, i) => `
+        <button class="vcard" type="button" data-video="${v.id}" style="animation-delay:${Math.min(i, 8) * 40}ms">
+          <span class="vposter">
+            ${v.poster
+              ? `<img src="${esc(v.poster)}" alt="" loading="lazy"
+                     onload="this.classList.add('ready')"
+                     onerror="this.remove()">`
+              : ''}
+            <span class="vstep">${i + 1}</span>
+            ${v.duration ? `<span class="vtime">${clock(v.duration)}</span>` : ''}
+            <span class="vplay"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span>
+          </span>
           <span class="vinfo">
             <span class="t">${esc(v.title)}</span>
             ${v.description ? `<span class="d">${esc(v.description)}</span>` : ''}
           </span>
-          <span class="vnum">${v.duration ? clock(v.duration) : String(i + 1).padStart(2, '0')}</span>
         </button>`).join('')}</div>
         <p class="unlocked-note">${L.lessonNote}</p>`;
 
-      c.querySelectorAll('.vrow').forEach(el => el.addEventListener('click', () => {
+      c.querySelectorAll('.vcard').forEach(el => el.addEventListener('click', () => {
         haptic('medium');
         actInChat({ action: 'vlesson', id: Number(el.dataset.video) }, 'vlesson_' + el.dataset.video);
       }));

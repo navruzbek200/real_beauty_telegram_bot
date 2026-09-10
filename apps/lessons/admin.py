@@ -89,10 +89,11 @@ class LessonVideoAdmin(RBModelAdmin):
         (
             "Video",
             {
-                "fields": ["video_file", "video_file_id"],
-                "description": "Faylni tashlang yoki bosib tanlang. Birinchi marta "
-                "mijozga yuborilgach bot Telegram ID'ni o'zi saqlab qo'yadi — "
-                "keyingi yuborishlar bir zumda bo'ladi.",
+                "fields": ["video_file", "poster", "video_file_id"],
+                "description": "Faylni tashlang yoki bosib tanlang. Muqova rasmi "
+                "videodan avtomatik olinadi — yoqmasa o'zingiznikini yuklang. "
+                "Birinchi marta mijozga yuborilgach bot Telegram ID'ni o'zi "
+                "saqlab qo'yadi, keyingi yuborishlar bir zumda bo'ladi.",
             },
         ),
         (

@@ -12,6 +12,7 @@ export const lessonVideoFormSchema = z.object({
   order: z.coerce.number().int().min(1),
   is_active: z.boolean(),
   video_file: z.instanceof(File).optional(),
+  poster: z.instanceof(File).optional(),
   video_file_id: z.string().optional(),
 })
 export type LessonVideoFormValues = z.infer<typeof lessonVideoFormSchema>
@@ -46,6 +47,13 @@ export const lessonVideoFormConfig: ResourceFormConfig<LessonVideoFormValues> = 
         + 'nusxa olish taqiqlanadi.',
     },
     {
+      name: 'poster',
+      label: 'Muqova rasmi (ixtiyoriy)',
+      type: 'file',
+      help: 'Bo‘sh qoldirsangiz videodan avtomatik olinadi. Yoqmasa shu yerdan '
+        + 'o‘z rasmingizni yuklang — vertikal (9:16) bo‘lgani chiroyliroq chiqadi.',
+    },
+    {
       name: 'video_file_id',
       label: 'Telegram video ID (ixtiyoriy)',
       type: 'text',
@@ -77,6 +85,7 @@ export function toLessonVideoFormData(values: LessonVideoFormValues): FormData {
   formData.set('is_active', String(values.is_active))
   formData.set('video_file_id', values.video_file_id ?? '')
   if (values.video_file) formData.set('video_file', values.video_file)
+  if (values.poster) formData.set('poster', values.poster)
   return formData
 }
 
@@ -88,6 +97,22 @@ function clock(seconds: number): string {
 
 export const lessonVideoColumns: ResourceColumn<LessonVideo>[] = [
   { key: 'order', header: 'Tartib', sortField: 'order', render: (v) => v.order },
+  {
+    key: 'poster',
+    header: '',
+    render: (v) =>
+      v.poster ? (
+        <img
+          src={v.poster}
+          alt=""
+          className="h-16 w-9 rounded-md border border-slate-200 object-cover dark:border-slate-700"
+        />
+      ) : (
+        <div className="flex h-16 w-9 items-center justify-center rounded-md bg-slate-100 text-xs text-slate-300 dark:bg-slate-800">
+          —
+        </div>
+      ),
+  },
   { key: 'title', header: 'Nomi', sortField: 'title', render: (v) => v.title },
   {
     key: 'duration',
