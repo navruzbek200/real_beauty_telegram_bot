@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { ResourcePage } from '@/widgets/resource-crud'
-import { Button, Select } from '@/shared/ui'
+import { Button, CopyableCode, Select } from '@/shared/ui'
+import { useCopy } from '@/shared/lib/use-copy'
 import { hasPermission, useSessionStore } from '@/entities/session'
 import { accessCodeApi, type AccessCode } from '@/entities/lesson'
 import {
@@ -25,7 +26,7 @@ function IssuePanel() {
   const queryClient = useQueryClient()
   const [count, setCount] = useState('1')
   const [fresh, setFresh] = useState<string[]>([])
-  const [copied, setCopied] = useState<string | null>(null)
+  const { copied, copy } = useCopy()
 
   const issue = useMutation({
     mutationFn: () => accessCodeApi.issue(Number(count)),
@@ -35,45 +36,34 @@ function IssuePanel() {
     },
   })
 
-  async function copy(code: string) {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopied(code)
-      setTimeout(() => setCopied(null), 1400)
-    } catch {
-      // Clipboard is blocked on some desktop browsers over plain http; the
-      // code is on screen either way, which is what the seller reads out.
-    }
-  }
+  // A batch is usually pasted somewhere as a list — into a note, a message to
+  // a colleague — so copying them one at a time is the wrong unit of work.
+  const allCodes = fresh.join('\n')
 
   return (
     <div className="mb-4 space-y-3">
       {fresh.length > 0 && (
         <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/40">
-          <p className="mb-3 text-sm text-slate-700 dark:text-slate-200">
-            <b>{fresh.length} ta kod tayyor</b>
-            <span className="text-slate-500 dark:text-slate-400">
-              {' '}
-              — mijozga o&apos;qib bering yoki nusxa oling
-            </span>
-          </p>
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <p className="mr-auto text-sm text-slate-700 dark:text-slate-200">
+              <b>{fresh.length} ta kod tayyor</b>
+              <span className="text-slate-500 dark:text-slate-400">
+                {' '}
+                — kodning ustiga bosing, nusxa olinadi
+              </span>
+            </p>
+            {fresh.length > 1 && (
+              <Button variant="ghost" onClick={() => copy(allCodes)}>
+                {copied === allCodes ? '✓ Nusxa olindi' : 'Hammasini nusxa olish'}
+              </Button>
+            )}
+            <Button variant="ghost" onClick={() => setFresh([])}>
+              Yopish
+            </Button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {fresh.map((code) => (
-              <button
-                key={code}
-                type="button"
-                onClick={() => copy(code)}
-                title="Nusxa olish"
-                className={
-                  'rounded-lg border px-3 py-2 font-mono text-base font-bold tracking-widest transition '
-                  + (copied === code
-                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                    : 'border-brand-300 text-brand-700 hover:border-brand-500 dark:border-brand-800 dark:text-brand-300')
-                }
-              >
-                {code}
-                {copied === code && <span className="ml-2 text-xs">✓</span>}
-              </button>
+              <CopyableCode key={code} value={code} size="lg" />
             ))}
           </div>
         </div>

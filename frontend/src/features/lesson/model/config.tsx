@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { ResourceColumn, ResourceFormConfig } from '@/shared/lib/resource-crud-types'
-import { Badge } from '@/shared/ui'
+import { Badge, CopyableCode } from '@/shared/ui'
 import type { AccessCode, LessonUnlock, LessonVideo } from '@/entities/lesson'
 
 /* ------------------------------------------------------------------ videos */
@@ -133,11 +133,7 @@ export const accessCodeColumns: ResourceColumn<AccessCode>[] = [
     key: 'code',
     header: 'Kalit so‘z',
     sortField: 'code',
-    render: (c) => (
-      <span className="font-mono text-sm font-bold tracking-widest text-brand-700 dark:text-brand-300">
-        {c.code}
-      </span>
-    ),
+    render: (c) => <CopyableCode value={c.code} />,
   },
   {
     key: 'state',
