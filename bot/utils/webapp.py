@@ -12,7 +12,7 @@ from __future__ import annotations
 from django.conf import settings
 
 # Bump on every visible change to frontend/public/webapp/index.html.
-WEBAPP_VERSION = "16"
+WEBAPP_VERSION = "17"
 
 
 def webapp_url(lang: str = None, tab: str = None) -> str:

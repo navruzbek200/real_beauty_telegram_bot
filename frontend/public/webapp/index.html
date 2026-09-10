@@ -154,21 +154,34 @@
     /* The gate is the whole tab, not a banner over a visible list: a customer
        who cannot watch should not be shown what they are missing item by item,
        and the API does not send the titles anyway. */
-    .gate { padding: 26px 22px 30px; text-align: center; animation: rise .4s both; }
+    /* Everything above the input is a cost the customer pays before they can
+       do the one thing this screen is for. The badge and the headline earn
+       their place; the explanation reads just as well underneath. */
+    .gate { padding: 14px 22px 30px; text-align: center; animation: rise .4s both; }
     .gate-badge {
-      width: 76px; height: 76px; margin: 0 auto 16px; border-radius: 26px;
+      width: 60px; height: 60px; margin: 0 auto 12px; border-radius: 21px;
       display: flex; align-items: center; justify-content: center;
       background: linear-gradient(140deg, var(--sky), var(--sky-deep));
       color: var(--on-sky);
       box-shadow: 0 12px 28px color-mix(in srgb, var(--sky) 40%, transparent);
     }
-    .gate h3 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: .01em; }
+    .gate h3 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: .01em; }
     .gate p { margin: 8px auto 0; font-size: 13.5px; color: var(--hint); line-height: 1.55; max-width: 32ch; }
     .gate .gate-lead { font-size: 14.5px; color: var(--text); max-width: 30ch; }
 
-    .code-form { margin: 20px auto 0; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .code-form { margin: 16px auto 0; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .code-row { position: relative; display: flex; }
+    .paste-btn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      width: 38px; height: 38px; border-radius: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--tint); background: color-mix(in srgb, var(--sky) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sky) 30%, transparent);
+    }
+    .paste-btn:active { transform: translateY(-50%) scale(.93); }
+    .gate-how { margin-top: 18px !important; }
     .code-input {
-      width: 100%; border-radius: 15px; padding: 15px 16px; font: inherit;
+      width: 100%; border-radius: 15px; padding: 15px 54px 15px 16px; font: inherit;
       font-size: 19px; font-weight: 700; letter-spacing: .22em; text-align: center;
       text-transform: uppercase; color: var(--text); background: var(--card);
       border: 1.5px solid var(--line); outline: none;
@@ -426,9 +439,10 @@
         soonPrice: 'Narx tez orada', askPrice: '💬 Narxni so‘rash', found: (n) => n + ' ta mahsulot',
         lessonsLockedSub: 'Xaridorlarimiz uchun',
         gateTitle: 'Parvarish darslari',
-        gateLead: 'Real Beauty mutaxassislaridan video qo‘llanmalar — mahsulotdan to‘liq natija olish uchun.',
+        gateLead: 'Real Beauty mutaxassislaridan video qo‘llanmalar.',
         gateHow: 'Darslar xaridorlarimiz uchun ochiq. Do‘kondan mahsulot olganingizda kalit so‘zni beramiz.',
         gatePlaceholder: 'KALIT SO‘Z',
+        gatePaste: 'Qo‘yish',
         gateUnlock: 'Ochish',
         gateChecking: 'Tekshirilmoqda…',
         gateOpened: 'Ochildi! Darslar yuklanmoqda…',
@@ -462,9 +476,10 @@
         soonPrice: 'Цена скоро', askPrice: '💬 Узнать цену', found: (n) => n + ' товар(ов)',
         lessonsLockedSub: 'Для наших покупателей',
         gateTitle: 'Уроки ухода',
-        gateLead: 'Видеоинструкции от специалистов Real Beauty — чтобы получить от средства полный результат.',
+        gateLead: 'Видеоинструкции от специалистов Real Beauty.',
         gateHow: 'Уроки открыты для наших покупателей. Кодовое слово выдаём при покупке товара.',
         gatePlaceholder: 'КОДОВОЕ СЛОВО',
+        gatePaste: 'Вставить',
         gateUnlock: 'Открыть',
         gateChecking: 'Проверяем…',
         gateOpened: 'Открыто! Загружаем уроки…',
@@ -498,9 +513,10 @@
         soonPrice: 'Price coming soon', askPrice: '💬 Ask the price', found: (n) => n + ' product(s)',
         lessonsLockedSub: 'For our customers',
         gateTitle: 'Skincare lessons',
-        gateLead: 'Video guides from the Real Beauty specialists — so a product gives you its full result.',
+        gateLead: 'Video guides from the Real Beauty specialists.',
         gateHow: 'The lessons are open to our customers. We hand you an access word with your purchase.',
         gatePlaceholder: 'ACCESS WORD',
+        gatePaste: 'Paste',
         gateUnlock: 'Unlock',
         gateChecking: 'Checking…',
         gateOpened: 'Unlocked! Loading lessons…',
@@ -734,16 +750,27 @@
           <div class="gate-badge">${lockIcon()}</div>
           <h3>${L.gateTitle}</h3>
           <p class="gate-lead">${L.gateLead}</p>
-          <p>${L.gateHow}</p>
 
           <form class="code-form" id="code-form" novalidate>
-            <input class="code-input" id="code-input" type="text" inputmode="latin"
-                   autocomplete="off" autocapitalize="characters" spellcheck="false"
-                   maxlength="32" placeholder="${L.gatePlaceholder}"
-                   aria-label="${L.gatePlaceholder}">
+            <div class="code-row">
+              <input class="code-input" id="code-input" type="text" inputmode="latin"
+                     autocomplete="off" autocapitalize="characters" spellcheck="false"
+                     enterkeyhint="go" maxlength="32" placeholder="${L.gatePlaceholder}"
+                     aria-label="${L.gatePlaceholder}">
+              <button class="paste-btn" id="paste-btn" type="button" hidden
+                      aria-label="${L.gatePaste}" title="${L.gatePaste}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="8" y="3" width="8" height="4" rx="1"/>
+                  <path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/>
+                </svg>
+              </button>
+            </div>
             <button class="code-btn" id="code-btn" type="submit">${L.gateUnlock}</button>
             <div class="gate-msg" id="gate-msg" role="status" aria-live="polite"></div>
           </form>
+
+          <p class="gate-how">${L.gateHow}</p>
 
           <div class="gate-alt">${L.gateNoCode}</div>
           <div class="gate-links">
@@ -775,6 +802,49 @@
         msg.className = 'gate-msg' + (kind ? ' ' + kind : '');
       }
       input.addEventListener('input', () => { input.classList.remove('bad'); say(''); });
+
+      // The keyboard covers the bottom half of the screen, and the field sits
+      // in the middle of a scrolling page — without this it slides underneath
+      // the moment it is tapped, which is the one thing it must not do.
+      input.addEventListener('focus', () => {
+        setTimeout(() => {
+          try { input.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+          catch (e) { input.scrollIntoView(); }
+        }, 250);
+      });
+
+      // Paste. A code arrives by message or gets copied off a receipt photo,
+      // so the customer almost never types it — but a long-press-to-paste on a
+      // field this small is fiddly. Telegram's own clipboard call is the only
+      // one a Mini App can rely on; the browser API is the desktop fallback.
+      // The button stays hidden when neither is available rather than sitting
+      // there doing nothing.
+      const pasteBtn = document.getElementById('paste-btn');
+      function fillFrom(text) {
+        const clean = String(text || '').trim();
+        if (!clean) return;
+        input.value = clean.slice(0, 32);
+        input.classList.remove('bad');
+        say('');
+        input.focus();
+      }
+      const canTgPaste = !!(tg && tg.readTextFromClipboard
+        && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.4')));
+      const canWebPaste = !!(navigator.clipboard && navigator.clipboard.readText);
+      if (canTgPaste || canWebPaste) {
+        pasteBtn.hidden = false;
+        pasteBtn.addEventListener('click', () => {
+          haptic('light');
+          if (canTgPaste) {
+            try { tg.readTextFromClipboard(fillFrom); return; } catch (e) { /* fall through */ }
+          }
+          navigator.clipboard.readText().then(fillFrom).catch(() => {
+            // Permission refused: leave the field alone and let them paste the
+            // usual way rather than claiming something happened.
+            input.focus();
+          });
+        });
+      }
 
       form.addEventListener('submit', (ev) => {
         ev.preventDefault();
@@ -881,11 +951,13 @@
           if (data.bot_username) BOT_USERNAME = data.bot_username;
           const note = document.getElementById('lesson-note');
           if (note) note.hidden = true;
+          const head = document.querySelector('#view-lessons .section-head');
           if (data.locked) {
-            set('lessons-sub', L.lessonsLockedSub);
+            if (head) head.hidden = true;
             renderGate(data);
             return;
           }
+          if (head) head.hidden = false;
           set('lessons-sub', L.lessonsAll);
           renderLessons(data.videos || []);
         })
