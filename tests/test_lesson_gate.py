@@ -66,9 +66,9 @@ class LessonGateApiTests(TestCase):
         body = res.json()
         self.assertTrue(body["locked"])
         self.assertEqual(body["videos"], [])
-        # The count is fine to publish — it is a promise, not content — but the
-        # title must not appear anywhere in the payload.
-        self.assertEqual(body["available"], 1)
+        # Not even the number of lessons: a locked answer says nothing about
+        # the course beyond the fact that there is one.
+        self.assertNotIn("available", body)
         self.assertNotIn("Terini tozalash", res.content.decode())
 
     def test_a_correct_word_opens_the_course(self):
@@ -329,3 +329,53 @@ class IssueCodesAdminTests(TestCase):
         self.client.post(self.url, {"count": 5})
 
         self.assertEqual(AccessCode.objects.count(), 0)
+
+
+class SpentCodeCleanupTests(TestCase):
+    """Tidying the codes list must not take anyone's course away."""
+
+    def setUp(self):
+        self.user = TelegramUser.objects.create(
+            telegram_id=8100,
+            full_name="Mijoz",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+        self.code = AccessCode.objects.create(code="BIRMARTA", max_uses=1)
+
+    def test_deleting_a_spent_code_leaves_its_customer_unlocked(self):
+        self.assertTrue(redeem(self.user, "BIRMARTA").ok)
+
+        self.code.delete()
+
+        # The unlock row survives with a null pointer, so the customer keeps
+        # what they paid for even after the shop clears old codes away.
+        unlock = LessonUnlock.objects.get(user=self.user)
+        self.assertIsNone(unlock.code)
+        from apps.lessons.services import is_unlocked
+
+        self.assertTrue(is_unlocked(self.user))
+
+    def test_access_granted_by_hand_needs_no_code(self):
+        from apps.lessons.services import is_unlocked
+
+        # What the shop does when a customer deletes Telegram and comes back
+        # as a new account, or simply loses the word they were given.
+        LessonUnlock.objects.create(user=self.user)
+
+        self.assertTrue(is_unlocked(self.user))
+
+    def test_a_fresh_telegram_account_starts_locked(self):
+        from apps.lessons.services import is_unlocked
+
+        self.assertTrue(redeem(self.user, "BIRMARTA").ok)
+        reinstalled = TelegramUser.objects.create(
+            telegram_id=8101,
+            full_name="Mijoz (yangi akkaunt)",
+            registration_status=TelegramUser.RegistrationStatus.COMPLETED,
+        )
+
+        # Deleting Telegram and signing up again produces a different id, so
+        # the shop has to re-open the course deliberately — the spent code
+        # will not do it a second time.
+        self.assertFalse(is_unlocked(reinstalled))
+        self.assertEqual(redeem(reinstalled, "BIRMARTA").reason, "code_spent")

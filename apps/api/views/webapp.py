@@ -157,27 +157,22 @@ class WebAppLessonsView(APIView):
         if telegram_id:
             user = TelegramUser.objects.filter(telegram_id=telegram_id).first()
 
-        videos = lesson_services.published_videos()
-
         if not lesson_services.is_unlocked(user):
             return Response(
                 {
                     "locked": True,
                     "identified": user is not None,
                     "bot_username": bot_username,
-                    # How many lessons are waiting, so the gate can promise
-                    # something concrete instead of an unspecified "content".
-                    "available": len(videos),
                     "videos": [],
                 }
             )
 
+        videos = lesson_services.published_videos()
         return Response(
             {
                 "locked": False,
                 "identified": True,
                 "bot_username": bot_username,
-                "available": len(videos),
                 "videos": [
                     {
                         "id": v.pk,

@@ -15,9 +15,45 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.html import format_html
 
+from django.utils import timezone
+
 from core.admin import RBModelAdmin, yes_no_filter
 
 from .models import AccessCode, LessonUnlock, LessonVideo, generate_code
+
+
+class CodeStateFilter(admin.SimpleListFilter):
+    """The question a seller actually asks: which codes can I still hand out?
+
+    A plain is_active filter cannot answer it — a code can be active and
+    already spent, which is the state most of them end up in.
+    """
+
+    title = "Holati"
+    parameter_name = "state"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("free", "Ishlatilmagan — berish mumkin"),
+            ("used", "Ishlatilgan"),
+            ("expired", "Muddati tugagan"),
+            ("off", "O'chirilgan"),
+        ]
+
+    def queryset(self, request, queryset):
+        now = timezone.now()
+        value = self.value()
+        if value == "free":
+            return queryset.filter(is_active=True, uses_count=0).exclude(
+                expires_at__lte=now
+            )
+        if value == "used":
+            return queryset.filter(uses_count__gt=0)
+        if value == "expired":
+            return queryset.filter(expires_at__lte=now)
+        if value == "off":
+            return queryset.filter(is_active=False)
+        return queryset
 from .widgets import TELEGRAM_MAX_MB, VideoDropWidget
 
 
@@ -105,13 +141,13 @@ class AccessCodeForm(forms.ModelForm):
 class AccessCodeAdmin(RBModelAdmin):
     form = AccessCodeForm
     change_list_template = "rb/lessons/accesscode_change_list.html"
-    list_display = ["code_badge", "label", "issued_to", "usage", "state", "created_at"]
+    list_display = ["code_badge", "state", "redeemed_by", "issued_to", "usage", "created_at"]
     list_display_links = ["code_badge"]
-    list_filter = [yes_no_filter("is_active", "Holat", "Faol", "O'chirilgan")]
+    list_filter = [CodeStateFilter]
     search_fields = ["code", "label", "issued_to__full_name", "issued_to__phone_number"]
     autocomplete_fields = ["issued_to"]
     readonly_fields = ["uses_count", "created_at"]
-    actions = ["activate", "deactivate"]
+    actions = ["activate", "deactivate", "delete_used"]
 
     # How many codes one "Chiqarish" press may mint. A seller issuing them at
     # the counter never needs more, and a typed-in number never reaches the
@@ -199,13 +235,25 @@ class AccessCodeAdmin(RBModelAdmin):
             obj.code,
         )
 
+    @admin.display(description="Kim ishlatgan")
+    def redeemed_by(self, obj: AccessCode) -> str:
+        names = [u.user.full_name or str(u.user.telegram_id) for u in obj.unlocks.all()]
+        if not names:
+            return format_html('<span style="color:#9ca3af">—</span>')
+        return ", ".join(names[:3]) + ("…" if len(names) > 3 else "")
+
     @admin.display(description="Ishlatilgan")
     def usage(self, obj: AccessCode) -> str:
         limit = obj.max_uses or "∞"
         return f"{obj.uses_count} / {limit}"
 
     def get_queryset(self, request: HttpRequest):
-        return super().get_queryset(request).select_related("issued_to")
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("issued_to")
+            .prefetch_related("unlocks__user")
+        )
 
     @admin.display(description="Holat")
     def state(self, obj: AccessCode) -> str:
@@ -214,8 +262,10 @@ class AccessCodeAdmin(RBModelAdmin):
         if obj.is_expired:
             return format_html('<span style="color:#c2410c">Muddati tugagan</span>')
         if obj.is_spent:
-            return format_html('<span style="color:#c2410c">Tugagan</span>')
-        return format_html('<span style="color:#059669">✅ Ishlaydi</span>')
+            return format_html('<span style="color:#6b7280">✔️ Ishlatilgan</span>')
+        return format_html(
+            '<span style="color:#059669;font-weight:600">🟢 Berish mumkin</span>'
+        )
 
     @admin.action(description="🟢 Yoqish")
     def activate(self, request: HttpRequest, queryset) -> None:
@@ -227,16 +277,73 @@ class AccessCodeAdmin(RBModelAdmin):
         n = queryset.update(is_active=False)
         self.message_user(request, f"{n} ta kalit o‘chirildi.", messages.SUCCESS)
 
+    @admin.action(description="🧹 Ishlatilganlarini ro‘yxatdan o‘chirish")
+    def delete_used(self, request: HttpRequest, queryset) -> None:
+        """Clear spent codes out of the way.
+
+        Deleting one does not take the customer's access with it: the unlock
+        row keeps its own record and only loses the pointer, so the course
+        stays open for whoever already redeemed it.
+        """
+        spent = queryset.filter(uses_count__gt=0)
+        count = spent.count()
+        if not count:
+            self.message_user(
+                request, "Tanlanganlar orasida ishlatilgani yo‘q.", messages.WARNING
+            )
+            return
+        spent.delete()
+        self.message_user(
+            request,
+            f"{count} ta ishlatilgan kalit o‘chirildi. "
+            "Ularni ishlatgan mijozlarda darslar ochiq qoladi.",
+            messages.SUCCESS,
+        )
+
 
 @admin.register(LessonUnlock)
 class LessonUnlockAdmin(RBModelAdmin):
+    """Who has the course open — and the way to open it by hand.
+
+    Access is keyed on the Telegram account. A customer who deletes Telegram
+    and signs up again arrives as a different person as far as the bot is
+    concerned, and their old code is already spent, so without a way to grant
+    access directly the shop would have to mint a replacement code and walk
+    them through redeeming it again. Adding a row here does the same thing in
+    one step. Removing one takes the course away again.
+    """
+
     list_display = ["user", "code", "unlocked_at"]
     search_fields = ["user__full_name", "user__phone_number", "code__code"]
-    readonly_fields = ["user", "code", "unlocked_at"]
+    autocomplete_fields = ["user"]
+    readonly_fields = ["unlocked_at"]
     ordering = ["-unlocked_at"]
 
-    def has_add_permission(self, request: HttpRequest) -> bool:
-        return False
+    fieldsets = (
+        (
+            "Darslarni ochish",
+            {
+                "fields": ["user"],
+                "description": "Xaridorni tanlang — unga darslar kalit so'zsiz "
+                "ochiladi. Mijoz Telegramini o'chirib qayta ro'yxatdan o'tgan "
+                "bo'lsa yoki kalitini yo'qotgan bo'lsa shu yerdan bering.",
+            },
+        ),
+    )
 
-    def has_change_permission(self, request: HttpRequest, obj=None) -> bool:
-        return False
+    def get_fieldsets(self, request: HttpRequest, obj=None):
+        if obj is None:
+            return self.fieldsets
+        return (
+            (
+                "Ochilgan",
+                {"fields": ["user", "code", "unlocked_at"]},
+            ),
+        )
+
+    def get_readonly_fields(self, request: HttpRequest, obj=None):
+        # An existing row is a record of something that happened; only a new
+        # one is a decision the shop is making now.
+        if obj is None:
+            return ["unlocked_at"]
+        return ["user", "code", "unlocked_at"]

@@ -163,8 +163,8 @@
       box-shadow: 0 12px 28px color-mix(in srgb, var(--sky) 40%, transparent);
     }
     .gate h3 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: .01em; }
-    .gate p { margin: 8px auto 0; font-size: 14px; color: var(--hint); line-height: 1.5; max-width: 30ch; }
-    .gate .waiting { color: var(--accent); font-weight: 650; }
+    .gate p { margin: 8px auto 0; font-size: 13.5px; color: var(--hint); line-height: 1.55; max-width: 32ch; }
+    .gate .gate-lead { font-size: 14.5px; color: var(--text); max-width: 30ch; }
 
     .code-form { margin: 20px auto 0; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
     .code-input {
@@ -401,10 +401,10 @@
         lessonNote: 'Darsni tanlasangiz, video bot chatida ochiladi 📲', soon: 'Tez orada',
         contactSub: 'Savolingiz bormi? Jamoamiz doim aloqada.',
         soonPrice: 'Narx tez orada', askPrice: '💬 Narxni so‘rash', found: (n) => n + ' ta mahsulot',
-        lessonsLockedSub: 'Kalit so‘z bilan ochiladi',
-        lessonsWaiting: (n) => n + ' ta dars sizni kutmoqda',
-        gateTitle: 'Video darslar yopiq',
-        gateHow: 'Ochish uchun kalit so‘zni kiriting. Kalit so‘zni do‘konimizdan mahsulot xarid qilganingizda beramiz.',
+        lessonsLockedSub: 'Xaridorlarimiz uchun',
+        gateTitle: 'Parvarish darslari',
+        gateLead: 'Real Beauty mutaxassislaridan video qo‘llanmalar — mahsulotdan to‘liq natija olish uchun.',
+        gateHow: 'Darslar xaridorlarimiz uchun ochiq. Do‘kondan mahsulot olganingizda kalit so‘zni beramiz.',
         gatePlaceholder: 'KALIT SO‘Z',
         gateUnlock: 'Ochish',
         gateChecking: 'Tekshirilmoqda…',
@@ -431,10 +431,10 @@
         lessonNote: 'Выберите урок — видео откроется в чате с ботом 📲', soon: 'Скоро',
         contactSub: 'Есть вопрос? Наша команда всегда на связи.',
         soonPrice: 'Цена скоро', askPrice: '💬 Узнать цену', found: (n) => n + ' товар(ов)',
-        lessonsLockedSub: 'Открывается по кодовому слову',
-        lessonsWaiting: (n) => 'Вас ждёт уроков: ' + n,
-        gateTitle: 'Видеоуроки закрыты',
-        gateHow: 'Введите кодовое слово. Мы выдаём его при покупке товара в нашем магазине.',
+        lessonsLockedSub: 'Для наших покупателей',
+        gateTitle: 'Уроки ухода',
+        gateLead: 'Видеоинструкции от специалистов Real Beauty — чтобы получить от средства полный результат.',
+        gateHow: 'Уроки открыты для наших покупателей. Кодовое слово выдаём при покупке товара.',
         gatePlaceholder: 'КОДОВОЕ СЛОВО',
         gateUnlock: 'Открыть',
         gateChecking: 'Проверяем…',
@@ -461,10 +461,10 @@
         lessonNote: 'Pick a lesson — the video opens in the bot chat 📲', soon: 'Soon',
         contactSub: 'Got a question? Our team is always in touch.',
         soonPrice: 'Price coming soon', askPrice: '💬 Ask the price', found: (n) => n + ' product(s)',
-        lessonsLockedSub: 'Opens with an access word',
-        lessonsWaiting: (n) => n + ' lesson(s) waiting for you',
-        gateTitle: 'Video lessons are locked',
-        gateHow: 'Enter your access word to open them. We give one with every purchase from our shop.',
+        lessonsLockedSub: 'For our customers',
+        gateTitle: 'Skincare lessons',
+        gateLead: 'Video guides from the Real Beauty specialists — so a product gives you its full result.',
+        gateHow: 'The lessons are open to our customers. We hand you an access word with your purchase.',
         gatePlaceholder: 'ACCESS WORD',
         gateUnlock: 'Unlock',
         gateChecking: 'Checking…',
@@ -682,13 +682,11 @@
     }
 
     function renderGate(data) {
-      const waiting = data.available
-        ? `<p><span class="waiting">${L.lessonsWaiting(data.available)}</span></p>` : '';
       document.getElementById('lessons-content').innerHTML = `
         <div class="gate">
           <div class="gate-badge">${lockIcon()}</div>
           <h3>${L.gateTitle}</h3>
-          ${waiting}
+          <p class="gate-lead">${L.gateLead}</p>
           <p>${L.gateHow}</p>
 
           <form class="code-form" id="code-form" novalidate>
