@@ -103,6 +103,22 @@ Yangi mahsulot qo'shish: rasmni `assets/catalog/`ga (kvadrat JPEG) qo'ying,
 buyruqni yuriting. Narxni admin panelda belgilaysiz — narxsiz mahsulot Mini
 App'da «Narx tez orada» bo'lib chiqadi va sotib olinmaydi.
 
+**Mahsulot holati — ikki bosqichli.** `Faol` (`is_active`) belgisi olib
+tashlansa mahsulot katalogdan ham, Mini App'dan ham butunlay yo'qoladi.
+Vaqtincha sotuvdan olish uchun `Sotuvda mavjud` (`in_stock`) belgisini
+ishlating: mahsulot katalogda «⛔️ tugagan» yozuvi bilan ko'rinib turadi,
+lekin buyurtma qilib bo'lmaydi (Mini App checkout `out_of_stock` xatosini
+qaytaradi). Adminda ommaviy «🔴 Tugagan deb belgilash» / «🟢 Sotuvda bor»
+amallari ham bor.
+
+**Naqd to'lov.** Karta orqali to'lov `.env`dagi `PAYMENT_PROVIDER_TOKEN`
+bilan yoqiladi; «yetkazishda naqd» esa admin paneldagi «Umumiy sozlamalar →
+To'lov va yetkazish» bo'limidagi `cash_on_delivery_enabled` belgisi bilan.
+Checkout mantig'i: karta imkoni bo'lsa — karta; bo'lmasa va naqd yoniq —
+naqd; ikkalasi ham yo'q bo'lsa buyurtma qabul qilinmaydi
+(`no_payment_method`). Mini App katalog javobida `payments_enabled` va
+`cash_enabled` bayroqlari qaytadi.
+
 ## Lokal ishga tushirish
 
 ```bash

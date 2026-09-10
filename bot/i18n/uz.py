@@ -314,6 +314,8 @@ STRINGS: dict[str, str] = {
         "Mahsulotni tanlang — video darslar ochiladi 👇"
     ),
     "catalog.gone": "Bu mahsulot endi mavjud emas.",
+    "product.out_of_stock": "⛔️ <b>Hozircha tugagan</b> — buyurtma berib bo'lmaydi.",
+    "product.out_of_stock_short": "tugagan",
     "browse.prev": "◀️ Oldingi",
     "browse.next": "Keyingi ▶️",
     "browse.counter": "{page}/{total}",

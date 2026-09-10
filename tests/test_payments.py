@@ -185,6 +185,13 @@ class CheckoutPaymentChoiceTests(OrderPaymentTestCase):
             content_type="application/json",
         )
 
+    def _set_cash(self, enabled: bool) -> None:
+        from apps.bot_settings.models import GlobalSettings
+
+        conf = GlobalSettings.get()
+        conf.cash_on_delivery_enabled = enabled
+        conf.save()
+
     @override_settings(PAYMENT_PROVIDER_TOKEN=PROVIDER)
     def test_every_order_is_invoiced_by_card(self):
         response = self._checkout("online")
@@ -203,9 +210,9 @@ class CheckoutPaymentChoiceTests(OrderPaymentTestCase):
         self.assertEqual(len(self._invoice_calls()), 1)
 
     @override_settings(PAYMENT_PROVIDER_TOKEN="")
-    def test_a_broken_provider_leaves_the_operator_to_arrange_payment(self):
-        # Losing the token must not shut the shop; the order is taken and the
-        # group card flags that payment is unresolved.
+    def test_a_broken_provider_leaves_the_order_on_cash(self):
+        # Losing the token must not shut the shop; with cash on (the default)
+        # the order is taken as «yetkazishda naqd».
         response = self._checkout("online")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["payment"], "cod")
@@ -215,9 +222,11 @@ class CheckoutPaymentChoiceTests(OrderPaymentTestCase):
         self.assertEqual(order.payment_method, Order.PaymentMethod.COD)
 
     @override_settings(PAYMENT_PROVIDER_TOKEN=PROVIDER)
-    def test_a_basket_telegram_would_refuse_is_rejected_outright(self):
-        # No carrier collects cash, so there is no fallback to book: an
-        # amount that cannot be invoiced cannot be ordered either.
+    def test_an_uninvoiceable_basket_is_rejected_when_cash_is_off(self):
+        # A provider is configured but the amount is outside the band Telegram
+        # will invoice, and the shop has switched cash off — nothing can take
+        # the order, so it is refused rather than booked against no method.
+        self._set_cash(False)
         self.product.current_price = MAX_INVOICE_SOM + 1
         self.product.save()
 
@@ -227,6 +236,33 @@ class CheckoutPaymentChoiceTests(OrderPaymentTestCase):
         self.assertEqual(response.json()["detail"], "amount")
         self.assertEqual(Order.objects.count(), 0)
         self.assertEqual(self._invoice_calls(), [])
+
+    @override_settings(PAYMENT_PROVIDER_TOKEN=PROVIDER)
+    def test_an_uninvoiceable_basket_falls_back_to_cash_when_cash_is_on(self):
+        # Cash on delivery has no amount limit, so an order Telegram would not
+        # invoice is still taken — as cash — while the shop leaves cash on.
+        self.product.current_price = MAX_INVOICE_SOM + 1
+        self.product.save()
+
+        response = self._checkout("online")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["payment"], "cod")
+        self.assertFalse(response.json()["invoice_sent"])
+        order = Order.objects.get(pk=response.json()["order_id"])
+        self.assertEqual(order.payment_method, Order.PaymentMethod.COD)
+
+    @override_settings(PAYMENT_PROVIDER_TOKEN="")
+    def test_nothing_takes_the_order_when_cash_is_off_and_no_provider(self):
+        # Both methods unavailable: the Mini App must not be able to place an
+        # order at all.
+        self._set_cash(False)
+
+        response = self._checkout("online")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["detail"], "no_payment_method")
+        self.assertEqual(Order.objects.count(), 0)
 
 
 class CatalogFlagTests(TestCase):
@@ -239,3 +275,17 @@ class CatalogFlagTests(TestCase):
     def test_catalog_reports_payments_on(self):
         response = self.client.get("/api/v1/webapp/catalog/")
         self.assertTrue(response.json()["payments_enabled"])
+
+    def test_catalog_reports_cash_enabled_by_default(self):
+        response = self.client.get("/api/v1/webapp/catalog/")
+        self.assertTrue(response.json()["cash_enabled"])
+
+    def test_catalog_reports_cash_disabled_when_switched_off(self):
+        from apps.bot_settings.models import GlobalSettings
+
+        conf = GlobalSettings.get()
+        conf.cash_on_delivery_enabled = False
+        conf.save()
+
+        response = self.client.get("/api/v1/webapp/catalog/")
+        self.assertFalse(response.json()["cash_enabled"])

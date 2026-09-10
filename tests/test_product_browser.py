@@ -96,6 +96,35 @@ class CatalogBrowserTests(TestCase):
         self.assertNotIn("reply_markup", msg.sent[0])
 
 
+class OutOfStockBrowserTests(TestCase):
+    """An out-of-stock product still browses — it is only deactivation that
+    removes a product from the shop window."""
+
+    def test_it_lists_with_a_sold_out_tag_and_no_price(self):
+        Product.objects.create(name="Serum", current_price=1000, in_stock=False)
+        msg = FakeMessage()
+        async_to_sync(browse.open_catalog)(msg, 5001, "uz")
+
+        labels = _labels(msg.sent[0]["reply_markup"])
+        serum = next(l for l in labels if "Serum" in l)
+        self.assertIn("tugagan", serum)
+        self.assertNotIn("1 000", serum)  # the price is dropped
+
+    def test_its_card_says_it_cannot_be_ordered(self):
+        product = Product.objects.create(
+            name="Serum", current_price=1000, in_stock=False
+        )
+        cb = FakeCallback(
+            f"{inline.CB_BROWSE}:{inline.PB_CATALOG}:{inline.PB_VIEW}:{product.pk}:0"
+        )
+        async_to_sync(browse.browse_callback)(cb, "uz")
+
+        self.assertEqual(len(cb.message.sent), 1)
+        sent = cb.message.sent[0]
+        body = sent.get("caption") or sent.get("text") or ""
+        self.assertIn("tugagan", body)
+
+
 class CatalogEntryTests(TestCase):
     """«Mahsulotlar» opens the Mini App when configured, browser otherwise."""
 

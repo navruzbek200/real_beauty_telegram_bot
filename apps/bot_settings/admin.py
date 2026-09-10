@@ -45,6 +45,20 @@ class GlobalSettingsAdmin(RBModelAdmin):
                 "tarmoq havolalari. Bo'sh havola — o'sha tugma yashiriladi.",
             },
         ),
+        (
+            "To'lov va yetkazish",
+            {
+                "fields": [
+                    "cash_on_delivery_enabled",
+                    "delivery_fee_yandex",
+                    "delivery_fee_bts",
+                ],
+                "description": "Karta orqali to'lov .env'dagi provayder tokeni "
+                "bilan yoqiladi — bu yerda faqat naqd variantini boshqarasiz. "
+                "Ikkalasi ham o'chirilsa Mini App buyurtma qabul qila olmaydi. "
+                "Yetkazish haqi savatchada alohida qator bo'lib qo'shiladi.",
+            },
+        ),
     )
 
     def changelist_view(self, request: HttpRequest, extra_context=None) -> HttpResponse:

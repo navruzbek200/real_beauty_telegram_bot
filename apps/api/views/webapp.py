@@ -49,6 +49,7 @@ def _serialize(product: Product, lang: str, request) -> dict:
         "old_price": product.old_price or None,
         "discount_percent": product.discount_percent,
         "photo": photo,
+        "in_stock": product.in_stock,
         "is_top": product.is_top,
         "top_note": pick(product, "top_note", lang) if product.is_top else "",
     }
@@ -122,6 +123,10 @@ class WebAppCatalogView(APIView):
                 "bot_username": getattr(settings, "BOT_USERNAME", "") or "",
                 # Whether checkout may offer the card option at all.
                 "payments_enabled": payments_enabled(),
+                # Whether checkout may offer «yetkazishda naqd». With this off
+                # *and* payments_enabled false the app must block checkout —
+                # there is no method left to take the order.
+                "cash_enabled": conf.cash_on_delivery_enabled,
                 "delivery_fees": {
                     "yandex": conf.delivery_fee_yandex,
                     "bts": conf.delivery_fee_bts,
@@ -346,6 +351,14 @@ class WebAppOrderView(APIView):
             return Response(
                 {"detail": "unpriced"}, status=http_status.HTTP_400_BAD_REQUEST
             )
+        # An out-of-stock product still shows in the catalogue (marked
+        # «tugagan») so the customer can see it exists — but it cannot be
+        # ordered. A distinct code lets the app point at the offending line.
+        if any(not product.in_stock for product, _ in lines):
+            return Response(
+                {"detail": "out_of_stock"},
+                status=http_status.HTTP_400_BAD_REQUEST,
+            )
 
         conf = GlobalSettings.get()
         delivery_fee = (
@@ -355,13 +368,21 @@ class WebAppOrderView(APIView):
         )
         total = sum(p.current_price * qty for p, qty in lines) + delivery_fee
 
-        # Neither carrier collects money — a Yandex courier only carries, and
-        # the shop has no BTS cash-collection contract — so the customer pays
-        # up front by card. The cash fallback exists for one case only: the
-        # provider token being missing or broken, where a shop that can take
-        # no orders at all would be worse than an operator ringing to arrange
-        # payment. An amount Telegram won't invoice is refused outright.
-        if payments_enabled() and not can_invoice(total):
+        # Card is preferred whenever it is configured and the amount is one
+        # Telegram will invoice. Otherwise the order falls to «yetkazishda
+        # naqd» — but only while the shop leaves that switch on. With card
+        # unavailable and cash switched off there is nothing left to take the
+        # order, so it is refused rather than booked against no payment method.
+        card_ok = payments_enabled() and can_invoice(total)
+        cash_ok = conf.cash_on_delivery_enabled
+        if card_ok:
+            payment_method = Order.PaymentMethod.ONLINE
+        elif cash_ok:
+            payment_method = Order.PaymentMethod.COD
+        elif payments_enabled():
+            # A provider is configured but this basket is outside the band it
+            # will invoice, and cash is off — name the limits so the app can
+            # explain why.
             return Response(
                 {
                     "detail": "amount",
@@ -370,11 +391,11 @@ class WebAppOrderView(APIView):
                 },
                 status=http_status.HTTP_400_BAD_REQUEST,
             )
-        payment_method = (
-            Order.PaymentMethod.ONLINE
-            if payments_enabled()
-            else Order.PaymentMethod.COD
-        )
+        else:
+            return Response(
+                {"detail": "no_payment_method"},
+                status=http_status.HTTP_400_BAD_REQUEST,
+            )
 
         with transaction.atomic():
             order = Order.objects.create(
