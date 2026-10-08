@@ -5,8 +5,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# ffmpeg earns its ~70MB twice over: it lifts a poster frame out of every
+# lesson video so the course is a wall of pictures rather than a list of
+# identical play icons, and it reads the dimensions Telegram needs to show a
+# video at its real aspect ratio instead of a guess.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential libpq-dev \
+    && apt-get install -y --no-install-recommends build-essential libpq-dev ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

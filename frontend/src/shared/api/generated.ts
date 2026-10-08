@@ -4,6 +4,60 @@
  */
 
 export interface paths {
+    "/api/v1/access-codes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["access_codes_list"];
+        put?: never;
+        post: operations["access_codes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/access-codes/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["access_codes_retrieve"];
+        put: operations["access_codes_update"];
+        post?: never;
+        delete: operations["access_codes_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["access_codes_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/access-codes/issue/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Mint single-use codes and hand them back once.
+         *
+         *     The response is the only time these are shown as a set — a code
+         *     matters in the seconds between minting it and reading it out.
+         */
+        post: operations["access_codes_issue_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/app-users/": {
         parameters: {
             query?: never;
@@ -318,6 +372,94 @@ export interface paths {
         patch: operations["discounts_partial_update"];
         trace?: never;
     };
+    "/api/v1/lesson-unlocks/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Who has the course open — and the way to open it by hand.
+         *
+         *     Access is keyed on the Telegram account, so a customer who deletes
+         *     Telegram and signs up again arrives as a different person with a code
+         *     that is already spent. Creating a row here is the one-step answer;
+         *     deleting one takes the course back.
+         */
+        get: operations["lesson_unlocks_list"];
+        put?: never;
+        /**
+         * @description Who has the course open — and the way to open it by hand.
+         *
+         *     Access is keyed on the Telegram account, so a customer who deletes
+         *     Telegram and signs up again arrives as a different person with a code
+         *     that is already spent. Creating a row here is the one-step answer;
+         *     deleting one takes the course back.
+         */
+        post: operations["lesson_unlocks_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lesson-unlocks/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * @description Who has the course open — and the way to open it by hand.
+         *
+         *     Access is keyed on the Telegram account, so a customer who deletes
+         *     Telegram and signs up again arrives as a different person with a code
+         *     that is already spent. Creating a row here is the one-step answer;
+         *     deleting one takes the course back.
+         */
+        delete: operations["lesson_unlocks_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lesson-videos/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["lesson_videos_list"];
+        put?: never;
+        post: operations["lesson_videos_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lesson-videos/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["lesson_videos_retrieve"];
+        put: operations["lesson_videos_update"];
+        post?: never;
+        delete: operations["lesson_videos_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["lesson_videos_partial_update"];
+        trace?: never;
+    };
     "/api/v1/message-templates/": {
         parameters: {
             query?: never;
@@ -504,6 +646,45 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["products_add_to_top_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/mark_in_stock/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["products_mark_in_stock_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/mark_out_of_stock/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Take a product off sale without taking it out of the shop.
+         *
+         *     Clearing `is_active` would make it vanish, and a product a customer
+         *     has been eyeing for a week should not simply disappear — it should say
+         *     it is coming back.
+         */
+        post: operations["products_mark_out_of_stock_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -949,15 +1130,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description The «Darslar» tab: products with their video-lesson steps.
+         * @description The «Darslar» tab — a course that stays shut until a code opens it.
          *
-         *     Only steps that actually carry a video are listed, and only products left
-         *     with at least one of them. A step whose video has not been uploaded yet is
-         *     an empty promise — the tab says "coming soon" instead, and each lesson
-         *     appears by itself the moment its video is added in the panel.
-         *
-         *     Personalized to the customer's own products when a *verified* initData is
-         *     supplied; otherwise every product that has a lesson, top ones first.
+         *     The lock is on the *payload*, not on the page: a locked answer carries no
+         *     titles, no ids and no file references, so nothing about the course leaks to
+         *     someone poking at the endpoint directly. Only a verified initData can be
+         *     unlocked against, because the Telegram id is the only identity a Mini App
+         *     can prove.
          */
         get: operations["webapp_lessons_retrieve"];
         put?: never;
@@ -992,10 +1171,73 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/webapp/unlock/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Spend a code and open the course for this customer.
+         *
+         *     Rate-limited per Telegram id: a code is short enough to guess by brute
+         *     force otherwise, and the id is the only stable handle a Mini App gives us.
+         */
+        post: operations["webapp_unlock_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AccessCode: {
+            readonly id: number;
+            /**
+             * Kalit so'z
+             * @description Katta-kichik harf va tirelar ahamiyatsiz — mijoz qanday yozsa ham topiladi.
+             */
+            code?: string;
+            /**
+             * Izoh
+             * @description O'zingiz uchun: bu kalit kimga berilgani, masalan «Sentabr aksiyasi».
+             */
+            label?: string;
+            /** Faol */
+            is_active?: boolean;
+            /**
+             * Nechta mijozga
+             * @description 1 — faqat bitta mijoz ishlatadi (tavsiya etiladi). 0 — cheksiz, butun aksiya uchun.
+             */
+            max_uses?: number;
+            /** Ishlatilgan */
+            readonly uses_count: number;
+            /**
+             * Amal qilish muddati
+             * Format: date-time
+             * @description Bo'sh qoldirsangiz — muddatsiz.
+             */
+            expires_at?: string | null;
+            /**
+             * Kimga berilgan
+             * @description Ixtiyoriy: xaridorni tanlab qo'ysangiz, kimga qaysi kod berilgani keyin ham ma'lum bo'ladi.
+             */
+            issued_to?: number | null;
+            readonly issued_to_name: string;
+            readonly state: string;
+            readonly redeemed_by: string;
+            /**
+             * Yaratilgan
+             * Format: date-time
+             */
+            readonly created_at: string;
+        };
         AppUser: {
             readonly id: number;
             /** To'liq ism */
@@ -1232,6 +1474,10 @@ export interface components {
             shop_name?: string;
             /** Do'kon shiori */
             shop_tagline?: string;
+            /** Do'kon shiori (ruscha) */
+            shop_tagline_ru?: string;
+            /** Do'kon shiori (inglizcha) */
+            shop_tagline_en?: string;
             /** Instagram havolasi */
             instagram_url?: string;
             /** YouTube havolasi */
@@ -1248,12 +1494,25 @@ export interface components {
              * @description Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_bts?: number;
+            /**
+             * Naqd to'lov (yetkazishda)
+             * @description O'chirilsa Mini App'da «yetkazishda naqd» varianti ko'rsatilmaydi — faqat karta orqali to'lov qoladi.
+             */
+            cash_on_delivery_enabled?: boolean;
         };
         InitSessionResponse: {
             session_token: string;
             deep_link: string;
             /** @description Seconds until the token expires. */
             expires_in: number;
+        };
+        IssueCodes: {
+            /** @default 1 */
+            count: number;
+            label?: string;
+        };
+        IssuedCodesResult: {
+            codes: string[];
         };
         /**
          * @description * `uz` - O'zbekcha
@@ -1262,6 +1521,76 @@ export interface components {
          * @enum {string}
          */
         LanguageEnum: "uz" | "ru" | "en";
+        LessonUnlock: {
+            readonly id: number;
+            /** Xaridor */
+            user: number;
+            readonly user_name: string;
+            /** Ishlatilgan kalit */
+            readonly code: number | null;
+            readonly code_value: string;
+            /**
+             * Ochilgan vaqt
+             * Format: date-time
+             */
+            readonly unlocked_at: string;
+        };
+        LessonVideo: {
+            readonly id: number;
+            /**
+             * Nomi
+             * @description Mijoz ko'radigan sarlavha, masalan: «Terini to'g'ri tozalash».
+             */
+            title: string;
+            /** Nomi (ruscha) */
+            title_ru?: string;
+            /** Nomi (inglizcha) */
+            title_en?: string;
+            /**
+             * Qisqa izoh
+             * @description Ixtiyoriy. Ro'yxatda sarlavha ostida ko'rinadi.
+             */
+            description?: string;
+            /** Qisqa izoh (ruscha) */
+            description_ru?: string;
+            /** Qisqa izoh (inglizcha) */
+            description_en?: string;
+            /**
+             * Tartib
+             * @description Kichik raqam yuqorida turadi: 1, 2, 3 …
+             */
+            order?: number;
+            /**
+             * Video fayl
+             * Format: uri
+             * @description MP4 tavsiya qilinadi. Telegram bitta faylga 50 MB ruxsat beradi.
+             */
+            video_file?: string | null;
+            /**
+             * Telegram video ID
+             * @description Birinchi yuborishdan keyin bot o'zi to'ldiradi. Boshqa botdan ko'chirayotgan bo'lsangiz qo'lda ham kiritishingiz mumkin.
+             */
+            video_file_id?: string;
+            /**
+             * Muqova rasmi
+             * Format: uri
+             * @description Bo'sh qoldirsangiz videodan avtomatik olinadi. Yoqmasa o'z rasmingizni yuklang.
+             */
+            poster?: string | null;
+            /** Davomiyligi (soniya) */
+            readonly duration_seconds: number;
+            readonly has_video: boolean;
+            /**
+             * Faol
+             * @description Belgi olib tashlansa dars ro'yxatdan yo'qoladi.
+             */
+            is_active?: boolean;
+            /**
+             * Qo'shilgan
+             * Format: date-time
+             */
+            readonly created_at: string;
+        };
         /** @description Same username/password login as /admin/, issuing JWT instead of a session. */
         Login: {
             username: string;
@@ -1416,6 +1745,21 @@ export interface components {
          * @enum {string}
          */
         OrderStatusEnum: "new" | "confirmed" | "shipped" | "delivered" | "cancelled";
+        PaginatedAccessCodeList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["AccessCode"][];
+        };
         PaginatedAppUserList: {
             /** @example 123 */
             count: number;
@@ -1475,6 +1819,36 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Discount"][];
+        };
+        PaginatedLessonUnlockList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["LessonUnlock"][];
+        };
+        PaginatedLessonVideoList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["LessonVideo"][];
         };
         PaginatedMessageTemplateList: {
             /** @example 123 */
@@ -1677,6 +2051,47 @@ export interface components {
          * @enum {string}
          */
         ParseModeEnum: "HTML" | "Markdown";
+        PatchedAccessCode: {
+            readonly id?: number;
+            /**
+             * Kalit so'z
+             * @description Katta-kichik harf va tirelar ahamiyatsiz — mijoz qanday yozsa ham topiladi.
+             */
+            code?: string;
+            /**
+             * Izoh
+             * @description O'zingiz uchun: bu kalit kimga berilgani, masalan «Sentabr aksiyasi».
+             */
+            label?: string;
+            /** Faol */
+            is_active?: boolean;
+            /**
+             * Nechta mijozga
+             * @description 1 — faqat bitta mijoz ishlatadi (tavsiya etiladi). 0 — cheksiz, butun aksiya uchun.
+             */
+            max_uses?: number;
+            /** Ishlatilgan */
+            readonly uses_count?: number;
+            /**
+             * Amal qilish muddati
+             * Format: date-time
+             * @description Bo'sh qoldirsangiz — muddatsiz.
+             */
+            expires_at?: string | null;
+            /**
+             * Kimga berilgan
+             * @description Ixtiyoriy: xaridorni tanlab qo'ysangiz, kimga qaysi kod berilgani keyin ham ma'lum bo'ladi.
+             */
+            issued_to?: number | null;
+            readonly issued_to_name?: string;
+            readonly state?: string;
+            readonly redeemed_by?: string;
+            /**
+             * Yaratilgan
+             * Format: date-time
+             */
+            readonly created_at?: string;
+        };
         PatchedAppUser: {
             readonly id?: number;
             /** To'liq ism */
@@ -1847,6 +2262,10 @@ export interface components {
             shop_name?: string;
             /** Do'kon shiori */
             shop_tagline?: string;
+            /** Do'kon shiori (ruscha) */
+            shop_tagline_ru?: string;
+            /** Do'kon shiori (inglizcha) */
+            shop_tagline_en?: string;
             /** Instagram havolasi */
             instagram_url?: string;
             /** YouTube havolasi */
@@ -1863,6 +2282,67 @@ export interface components {
              * @description Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_bts?: number;
+            /**
+             * Naqd to'lov (yetkazishda)
+             * @description O'chirilsa Mini App'da «yetkazishda naqd» varianti ko'rsatilmaydi — faqat karta orqali to'lov qoladi.
+             */
+            cash_on_delivery_enabled?: boolean;
+        };
+        PatchedLessonVideo: {
+            readonly id?: number;
+            /**
+             * Nomi
+             * @description Mijoz ko'radigan sarlavha, masalan: «Terini to'g'ri tozalash».
+             */
+            title?: string;
+            /** Nomi (ruscha) */
+            title_ru?: string;
+            /** Nomi (inglizcha) */
+            title_en?: string;
+            /**
+             * Qisqa izoh
+             * @description Ixtiyoriy. Ro'yxatda sarlavha ostida ko'rinadi.
+             */
+            description?: string;
+            /** Qisqa izoh (ruscha) */
+            description_ru?: string;
+            /** Qisqa izoh (inglizcha) */
+            description_en?: string;
+            /**
+             * Tartib
+             * @description Kichik raqam yuqorida turadi: 1, 2, 3 …
+             */
+            order?: number;
+            /**
+             * Video fayl
+             * Format: uri
+             * @description MP4 tavsiya qilinadi. Telegram bitta faylga 50 MB ruxsat beradi.
+             */
+            video_file?: string | null;
+            /**
+             * Telegram video ID
+             * @description Birinchi yuborishdan keyin bot o'zi to'ldiradi. Boshqa botdan ko'chirayotgan bo'lsangiz qo'lda ham kiritishingiz mumkin.
+             */
+            video_file_id?: string;
+            /**
+             * Muqova rasmi
+             * Format: uri
+             * @description Bo'sh qoldirsangiz videodan avtomatik olinadi. Yoqmasa o'z rasmingizni yuklang.
+             */
+            poster?: string | null;
+            /** Davomiyligi (soniya) */
+            readonly duration_seconds?: number;
+            readonly has_video?: boolean;
+            /**
+             * Faol
+             * @description Belgi olib tashlansa dars ro'yxatdan yo'qoladi.
+             */
+            is_active?: boolean;
+            /**
+             * Qo'shilgan
+             * Format: date-time
+             */
+            readonly created_at?: string;
         };
         PatchedLoyaltySettings: {
             /**
@@ -2005,6 +2485,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2233,6 +2715,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2316,6 +2800,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2696,6 +3182,8 @@ export interface components {
             photo?: string | null;
             /** Faol */
             is_active?: boolean;
+            /** Sotuvda mavjud */
+            in_stock?: boolean;
             /** Hozirgi narxi (so'm) */
             current_price?: number;
             /**
@@ -2760,6 +3248,184 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    access_codes_list: {
+        parameters: {
+            query?: {
+                is_active?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAccessCodeList"];
+                };
+            };
+        };
+    };
+    access_codes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AccessCode"];
+                "application/x-www-form-urlencoded": components["schemas"]["AccessCode"];
+                "multipart/form-data": components["schemas"]["AccessCode"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessCode"];
+                };
+            };
+        };
+    };
+    access_codes_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Kalit so'z. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessCode"];
+                };
+            };
+        };
+    };
+    access_codes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Kalit so'z. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AccessCode"];
+                "application/x-www-form-urlencoded": components["schemas"]["AccessCode"];
+                "multipart/form-data": components["schemas"]["AccessCode"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessCode"];
+                };
+            };
+        };
+    };
+    access_codes_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Kalit so'z. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    access_codes_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Kalit so'z. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedAccessCode"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedAccessCode"];
+                "multipart/form-data": components["schemas"]["PatchedAccessCode"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessCode"];
+                };
+            };
+        };
+    };
+    access_codes_issue_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["IssueCodes"];
+                "application/x-www-form-urlencoded": components["schemas"]["IssueCodes"];
+                "multipart/form-data": components["schemas"]["IssueCodes"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssuedCodesResult"];
+                };
+            };
+        };
+    };
     app_users_list: {
         parameters: {
             query?: {
@@ -3705,6 +4371,233 @@ export interface operations {
             };
         };
     };
+    lesson_unlocks_list: {
+        parameters: {
+            query?: {
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLessonUnlockList"];
+                };
+            };
+        };
+    };
+    lesson_unlocks_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LessonUnlock"];
+                "application/x-www-form-urlencoded": components["schemas"]["LessonUnlock"];
+                "multipart/form-data": components["schemas"]["LessonUnlock"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonUnlock"];
+                };
+            };
+        };
+    };
+    lesson_unlocks_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Ochilgan dars. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lesson_videos_list: {
+        parameters: {
+            query?: {
+                is_active?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLessonVideoList"];
+                };
+            };
+        };
+    };
+    lesson_videos_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["LessonVideo"];
+                "application/x-www-form-urlencoded": components["schemas"]["LessonVideo"];
+                "application/json": components["schemas"]["LessonVideo"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonVideo"];
+                };
+            };
+        };
+    };
+    lesson_videos_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Video dars. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonVideo"];
+                };
+            };
+        };
+    };
+    lesson_videos_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Video dars. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["LessonVideo"];
+                "application/x-www-form-urlencoded": components["schemas"]["LessonVideo"];
+                "application/json": components["schemas"]["LessonVideo"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonVideo"];
+                };
+            };
+        };
+    };
+    lesson_videos_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Video dars. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lesson_videos_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Video dars. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": components["schemas"]["PatchedLessonVideo"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedLessonVideo"];
+                "application/json": components["schemas"]["PatchedLessonVideo"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LessonVideo"];
+                };
+            };
+        };
+    };
     message_templates_list: {
         parameters: {
             query?: {
@@ -4109,6 +5002,7 @@ export interface operations {
     products_list: {
         parameters: {
             query?: {
+                in_stock?: boolean;
                 is_active?: boolean;
                 is_top?: boolean;
                 /** @description Which field to use when ordering the results. */
@@ -4261,6 +5155,56 @@ export interface operations {
         };
     };
     products_add_to_top_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductBulkIds"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProductBulkIds"];
+                "multipart/form-data": components["schemas"]["ProductBulkIds"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkUpdateResult"];
+                };
+            };
+        };
+    };
+    products_mark_in_stock_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductBulkIds"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProductBulkIds"];
+                "multipart/form-data": components["schemas"]["ProductBulkIds"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkUpdateResult"];
+                };
+            };
+        };
+    };
+    products_mark_out_of_stock_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -5493,6 +6437,24 @@ export interface operations {
         };
     };
     webapp_orders_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    webapp_unlock_create: {
         parameters: {
             query?: never;
             header?: never;

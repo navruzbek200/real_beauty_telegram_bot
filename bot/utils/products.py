@@ -63,6 +63,9 @@ def product_caption(product, lang: str, rank: int | None = None) -> str:
         title = f"{t('top.rank', lang, rank=rank)} {title}"
     caption = f"<b>{title}</b>"
 
+    if not getattr(product, "in_stock", True):
+        caption += f"\n{t('product.out_of_stock', lang)}"
+
     note = pick(product, "top_note", lang) if rank is not None else ""
     if note:
         caption += f"\n🏷 <i>{html.escape(note)}</i>"
@@ -85,6 +88,10 @@ def product_button_label(product, lang: str, rank: int | None = None) -> str:
     label = f"{prefix}{name}"
     if len(label) > BUTTON_LABEL_LIMIT:
         label = label[: BUTTON_LABEL_LIMIT - 1].rstrip() + "…"
+    if not getattr(product, "in_stock", True):
+        # The "sold out" tag replaces the price — a price on a product you
+        # can't buy just invites the tap.
+        return f"⛔️ {label} · {t('product.out_of_stock_short', lang)}"
     if price:
         money = f"{price:,}".replace(",", " ")
         label = f"{label} · {money}"

@@ -139,6 +139,25 @@ class WebAppOrderTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], "items")
 
+    def test_an_out_of_stock_product_cannot_be_ordered(self):
+        # Unlike a deactivated one it is still in the catalogue, but the order
+        # endpoint refuses the line so the app can point at it.
+        self.serum.in_stock = False
+        self.serum.save()
+        response = self._post()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["detail"], "out_of_stock")
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_an_out_of_stock_product_still_shows_in_the_catalogue(self):
+        self.serum.in_stock = False
+        self.serum.save()
+        response = self.client.get("/api/v1/webapp/catalog/")
+        by_id = {p["id"]: p for p in response.json()["products"]}
+        self.assertIn(self.serum.pk, by_id)
+        self.assertFalse(by_id[self.serum.pk]["in_stock"])
+        self.assertTrue(by_id[self.cream.pk]["in_stock"])
+
     def test_explicit_phone_overrides_the_profile_one(self):
         response = self._post(phone="+998 93 765 43 21")
         self.assertEqual(response.status_code, 200)

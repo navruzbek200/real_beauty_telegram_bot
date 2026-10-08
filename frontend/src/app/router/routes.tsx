@@ -3,7 +3,10 @@ import { Route, Routes } from 'react-router-dom'
 import { AutoMessagesPage } from '@/pages/auto-messages'
 import { BroadcastsPage } from '@/pages/broadcasts'
 import { CustomersPage } from '@/pages/customers'
+import { AccessCodesPage } from '@/pages/access-codes'
 import { DashboardPage } from '@/pages/dashboard'
+import { LessonUnlocksPage } from '@/pages/lesson-unlocks'
+import { LessonVideosPage } from '@/pages/lesson-videos'
 import { LoginPage } from '@/pages/login'
 import { MessageTemplatesPage } from '@/pages/message-templates'
 import { OrdersPage } from '@/pages/orders'
@@ -12,7 +15,6 @@ import { SettingsPage } from '@/pages/settings'
 import { SkinQuizResultsPage } from '@/pages/skin-quiz-results'
 import { SupportThreadsPage } from '@/pages/support-threads'
 import { TopProductsPage } from '@/pages/top-products'
-import { TutorialStepsPage } from '@/pages/tutorial-steps'
 import { ProtectedRoute } from './protected-route'
 
 export function AppRoutes() {
@@ -43,13 +45,18 @@ export function AppRoutes() {
         path="/top-products"
         element={<ProtectedRoute permission="products.view_product"><TopProductsPage /></ProtectedRoute>}
       />
+
       <Route
-        path="/tutorial-steps"
-        element={
-          <ProtectedRoute permission="products.view_producttutorialstep">
-            <TutorialStepsPage />
-          </ProtectedRoute>
-        }
+        path="/lesson-videos"
+        element={<ProtectedRoute permission="lessons.view_lessonvideo"><LessonVideosPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/access-codes"
+        element={<ProtectedRoute permission="lessons.view_accesscode"><AccessCodesPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/lesson-unlocks"
+        element={<ProtectedRoute permission="lessons.view_lessonunlock"><LessonUnlocksPage /></ProtectedRoute>}
       />
 
       <Route

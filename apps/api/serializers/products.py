@@ -43,6 +43,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "description_en",
             "photo",
             "is_active",
+            "in_stock",
             "current_price",
             "old_price",
             "discount_percent",

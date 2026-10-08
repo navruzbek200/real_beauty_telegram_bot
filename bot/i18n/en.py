@@ -301,6 +301,12 @@ STRINGS: dict[str, str] = {
         "Pick a product to open its video lessons 👇"
     ),
     "catalog.gone": "This product is no longer available.",
+    "product.out_of_stock": (
+        "🔥 <b>Sold out for now</b>\n"
+        "Customers like you love this one — we are bringing it back soon. "
+        "Write to us and we will tell you when it lands."
+    ),
+    "product.out_of_stock_short": "sold out",
     "browse.prev": "◀️ Prev",
     "browse.next": "Next ▶️",
     "browse.counter": "{page}/{total}",
@@ -386,6 +392,35 @@ STRINGS: dict[str, str] = {
         "Status: waiting to be filled in."
     ),
     "admin.user_registered": "✅ <b>{full_name}</b> completed registration.",
+    # ------------------------------------------------------- video lessons
+    "lessons.locked": (
+        "🔒 <b>Video lessons are locked</b>\n\n"
+        "You need an access word to open them. We give one with every "
+        "purchase from our shop."
+    ),
+    "lessons.unlocked": (
+        "✅ <b>Lessons unlocked!</b>\n\n"
+        "Every video lesson is open to you now. Tap the button below."
+    ),
+    "lessons.open": "🎓 Open the lessons",
+    "lessons.err.unknown_code": (
+        "❌ No such access word.\n\n"
+        "Check the spelling, or ask the shop for a new one."
+    ),
+    "lessons.err.code_spent": (
+        "❌ This access word has already been used.\n\n"
+        "Each one is issued to a single customer — ask the shop for a new one."
+    ),
+    "lessons.err.code_expired": (
+        "❌ This access word has expired.\n\n"
+        "Ask the shop for a new one."
+    ),
+    "lessons.err.code_inactive": (
+        "❌ This access word is switched off.\n\n"
+        "Ask the shop for a new one."
+    ),
+    "lessons.not_found": "This lesson was not found or has been removed.",
+    "lessons.video_soon": "The video will be added shortly.",
     # ------------------------------------------------------- bot command menu
     # ------------------------------------------------------- loyalty / bonus
     "loyalty.disabled": "💎 The bonus program is currently off. It'll be back soon!",

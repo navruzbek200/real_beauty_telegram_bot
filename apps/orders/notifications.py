@@ -82,9 +82,12 @@ def group_card(order: Order) -> str:
     username = f"@{html.escape(order.user.username)}" if order.user.username else "—"
     if order.payment_method == Order.PaymentMethod.ONLINE:
         pay_line = "💳 Karta orqali — to'lov kutilmoqda"
+    elif order.payment_method == Order.PaymentMethod.COD:
+        # A deliberate choice now (the shop leaves cash on), or the fallback
+        # when the card provider is unavailable — either way the courier
+        # collects on delivery.
+        pay_line = "💵 Yetkazishda naqd — kuryer olib keladi"
     else:
-        # Only happens when the provider token is missing; the operator has to
-        # arrange payment by hand, and must not be left to guess that.
         pay_line = "⚠️ To'lov usuli kelishilmagan — operator hal qilsin"
     return (
         f"🛒 <b>Yangi buyurtma #{order.pk}</b>\n"

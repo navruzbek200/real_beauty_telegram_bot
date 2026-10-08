@@ -28,10 +28,17 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/products', label: 'Mahsulotlar', permission: 'products.view_product' },
       { to: '/top-products', label: 'Bu oydagi top', permission: 'products.view_product' },
+    ],
+  },
+  {
+    title: 'Video darslar',
+    items: [
+      { to: '/lesson-videos', label: 'Video darslar', permission: 'lessons.view_lessonvideo' },
+      { to: '/access-codes', label: "Kalit so'zlar", permission: 'lessons.view_accesscode' },
       {
-        to: '/tutorial-steps',
-        label: 'Video darsliklar',
-        permission: 'products.view_producttutorialstep',
+        to: '/lesson-unlocks',
+        label: 'Kim darslarni ochgan',
+        permission: 'lessons.view_lessonunlock',
       },
     ],
   },

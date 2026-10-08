@@ -23,9 +23,13 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [ModelPermissions]
     pagination_class = DefaultPagination
-    filterset_fields = ["is_active", "is_top"]
+    filterset_fields = ["is_active", "is_top", "in_stock"]
     search_fields = ["name", "description"]
     ordering_fields = ["name", "created_at", "top_order"]
+    # Postgres is free to return an unordered query in any order it likes, so
+    # paging a 59-row catalogue without one can show a product twice and skip
+    # another. `id` breaks ties between rows created in the same second.
+    ordering = ["-created_at", "id"]
 
     @extend_schema(request=ProductBulkIdsSerializer, responses=BulkUpdateResultSerializer)
     @action(detail=False, methods=["post"])
@@ -52,6 +56,32 @@ class ProductViewSet(viewsets.ModelViewSet):
         updated = Product.objects.filter(
             pk__in=serializer.validated_data["ids"]
         ).update(is_top=False)
+        return Response({"updated": updated})
+
+    @extend_schema(request=ProductBulkIdsSerializer, responses=BulkUpdateResultSerializer)
+    @action(detail=False, methods=["post"])
+    def mark_out_of_stock(self, request):
+        """Take a product off sale without taking it out of the shop.
+
+        Clearing `is_active` would make it vanish, and a product a customer
+        has been eyeing for a week should not simply disappear — it should say
+        it is coming back.
+        """
+        serializer = ProductBulkIdsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        updated = Product.objects.filter(
+            pk__in=serializer.validated_data["ids"]
+        ).update(in_stock=False)
+        return Response({"updated": updated})
+
+    @extend_schema(request=ProductBulkIdsSerializer, responses=BulkUpdateResultSerializer)
+    @action(detail=False, methods=["post"])
+    def mark_in_stock(self, request):
+        serializer = ProductBulkIdsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        updated = Product.objects.filter(
+            pk__in=serializer.validated_data["ids"]
+        ).update(in_stock=True)
         return Response({"updated": updated})
 
 
@@ -86,11 +116,13 @@ class TopProductViewSet(
             Product.objects.filter(is_top=True).aggregate(top=Max("top_order"))["top"]
             or 0
         )
-        # `is_active` isn't on this form (the shop only fills in what the top
-        # list needs); a brand-new entry must actually show up in the bot, not
-        # sit invisible because a multipart POST without the field would
-        # otherwise resolve to False.
-        serializer.save(is_top=True, top_order=start + 1, is_active=True)
+        # `is_active` / `in_stock` aren't on this form (the shop only fills in
+        # what the top list needs); a brand-new entry must actually show up in
+        # the bot and be orderable, not sit invisible or tagged «tugagan»
+        # because a multipart POST without the field would resolve to False.
+        serializer.save(
+            is_top=True, top_order=start + 1, is_active=True, in_stock=True
+        )
 
     def perform_destroy(self, instance):
         instance.is_top = False

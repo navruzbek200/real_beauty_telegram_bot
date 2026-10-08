@@ -80,6 +80,18 @@ class GlobalSettings(models.Model):
         help_text="Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.",
     )
 
+    # --- payment ---------------------------------------------------------------
+    # Card payments are switched on by a provider token in the environment
+    # (see apps/orders/payments.py); cash on delivery is switched on here, so
+    # the shop can turn it off during a period it does not want couriers
+    # carrying money. With both off the Mini App cannot take an order at all.
+    cash_on_delivery_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Naqd to'lov (yetkazishda)",
+        help_text="O'chirilsa Mini App'da «yetkazishda naqd» varianti "
+        "ko'rsatilmaydi — faqat karta orqali to'lov qoladi.",
+    )
+
     class Meta:
         verbose_name = "Umumiy sozlamalar"
         verbose_name_plural = "Umumiy sozlamalar"

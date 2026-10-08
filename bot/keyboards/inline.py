@@ -32,6 +32,25 @@ def webapp_button_keyboard(label: str, url: str) -> InlineKeyboardMarkup:
         inline_keyboard=[[InlineKeyboardButton(text=label, web_app=WebAppInfo(url=url))]]
     )
 
+def lessons_open_keyboard(lang: str) -> InlineKeyboardMarkup | None:
+    """Reopen the Mini App on the lessons tab, right after unlocking.
+
+    Sending data from a Mini App closes it, so the customer who just typed
+    their word is looking at the chat, not at the course they paid for. The
+    button puts it one tap away instead of asking them to find the menu again.
+    """
+    from bot.utils.webapp import webapp_url
+
+    url = webapp_url(lang, tab="lessons")
+    if not url:
+        return None
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=t("lessons.open", lang), web_app=WebAppInfo(url=url))]
+        ]
+    )
+
+
 # --- Callback data prefixes (no magic strings in handlers) ---
 # Two distinct prefixes for what looks like "the same" language picker:
 # CB_LANGUAGE_SETUP only ever matches inside the registration FSM states, so a

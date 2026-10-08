@@ -106,8 +106,15 @@ export const productColumns: ResourceColumn<Product>[] = [
   {
     key: 'status',
     header: 'Holat',
+    // Two independent switches, shown separately: "hidden" and "sold out" are
+    // different decisions with different consequences for the customer.
     render: (p) => (
-      <Badge tone={p.is_active ? 'success' : 'neutral'}>{p.is_active ? 'Faol' : "O'chirilgan"}</Badge>
+      <div className="flex flex-wrap gap-1">
+        <Badge tone={p.is_active ? 'success' : 'neutral'}>
+          {p.is_active ? 'Faol' : "O'chirilgan"}
+        </Badge>
+        {p.is_active && p.in_stock === false && <Badge tone="danger">Tugadi</Badge>}
+      </div>
     ),
   },
   {

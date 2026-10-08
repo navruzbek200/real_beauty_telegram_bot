@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.analytics",
     "apps.support",
     "apps.loyalty",
+    "apps.lessons",
     "apps.orders",
     "apps.api",
 ]
@@ -309,6 +310,27 @@ UNFOLD = {
                         "title": "Bu oydagi top",
                         "icon": "local_fire_department",
                         "link": reverse_lazy("admin:products_topproduct_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Video darslar",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Video darslar",
+                        "icon": "play_circle",
+                        "link": reverse_lazy("admin:lessons_lessonvideo_changelist"),
+                    },
+                    {
+                        "title": "Kalit so'zlar",
+                        "icon": "key",
+                        "link": reverse_lazy("admin:lessons_accesscode_changelist"),
+                    },
+                    {
+                        "title": "Kim darslarni ochgan",
+                        "icon": "lock_open",
+                        "link": reverse_lazy("admin:lessons_lessonunlock_changelist"),
                     },
                 ],
             },
