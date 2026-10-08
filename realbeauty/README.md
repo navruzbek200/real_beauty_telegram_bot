@@ -187,19 +187,31 @@ qayta yuritish kerak — aks holda frontend eski tiplarga qarab ishlaydi.
 
 ## Deploy (VPS, Docker)
 
-1. **Server:** Docker + docker compose o'rnatilgan bo'lsin. DNS A-yozuv
-   domeningizni serverga qaratsin.
+Butun stack bitta ommaviy hostga bog'langan: **`PUBLIC_HOST`**. `ALLOWED_HOSTS`,
+CSRF, nginx `server_name`, TLS sertifikat va Telegram Mini App manzili —
+hammasi shundan kelib chiqadi. Boshqa serverga ko'chish = `.env` dagi bitta
+qatorni o'zgartirish.
+
+Domen bo'lmasa **sslip.io** ishlating: IP `1.2.3.4` bo'lsa host
+`1-2-3-4.sslip.io` bo'ladi — u to'g'ridan-to'g'ri o'sha IP ga yechiladi va
+Let's Encrypt unga sertifikat beradi.
+
+1. **Server:** Docker + docker compose o'rnatilgan bo'lsin. Domen ishlatsangiz,
+   DNS A-yozuv uni serverga qaratsin. 80 va 443 portlar ochiq bo'lsin.
 
 2. **Sozlash:**
 
    ```bash
-   git clone <repo> && cd realbeauty
+   git clone <repo> /opt/realbeauty && cd /opt/realbeauty
    cp .env.example .env
    nano .env    # hamma qiymatni to'ldiring — fayl ichida yo'riqnoma bor
    ```
 
-   Majburiy: `DJANGO_SECRET_KEY` (kuchli), `ALLOWED_HOSTS` (domen),
+   Majburiy: `PUBLIC_HOST`, `LETSENCRYPT_EMAIL`, `DJANGO_SECRET_KEY` (kuchli),
    `POSTGRES_PASSWORD` (kuchli), `BOT_TOKEN`, `BOT_USERNAME`.
+   `TLS_ENABLED=False` qoldiring — 4-qadamdan keyin `True` qilasiz.
+   `ALLOWED_HOSTS` va `WEBAPP_URL` ni **bo'sh qoldiring**: Django ikkalasini
+   ham `PUBLIC_HOST` dan yasaydi, ya'ni ular eskirib qolmaydi.
    `prod.py` bo'sh/zaif qiymat bilan ataylab ishga tushmaydi.
 
 3. **Ishga tushirish:**
@@ -213,16 +225,52 @@ qayta yuritish kerak — aks holda frontend eski tiplarga qarab ishlaydi.
    `frontend-sync` servisi React SPA'ni build qilib, nginx o'qiydigan
    volume'ga nusxalaydi — alohida qadam kerak emas, `--build` bilan birga
    ishlaydi. nginx `/` ostida SPA'ni, `/admin/` va `/api/v1/` ostida
-   Django'ni, `/tg-file/` ostida Telegram fayl proksisini beradi.
+   Django'ni, `/webapp/` ostida Telegram Mini App'ni, `/tg-file/` ostida
+   Telegram fayl proksisini beradi.
 
-4. **HTTPS:** `certbot --nginx` (yoki Cloudflare proxy). `prod.py`da
-   `SECURE_SSL_REDIRECT=True` — TLS'siz ishlamaydi, bu ataylab.
+4. **HTTPS (bir marta):**
+
+   ```bash
+   sh docker/nginx/init-letsencrypt.sh
+   ```
+
+   Skript `PUBLIC_HOST` va `LETSENCRYPT_EMAIL` ni `.env` dan o'qiydi, vaqtinchalik
+   sertifikat bilan nginx'ni ko'taradi, so'ng haqiqiysini oladi. Keyin `.env` da
+   `TLS_ENABLED=True` qilib `docker compose up -d django bot celery` qiling.
+   `certbot` servisi sertifikatni o'zi yangilab turadi.
 
 5. **Yangilash:**
 
+   Lokal mashinadan:
+
    ```bash
-   git pull && docker compose up -d --build
+   DEPLOY_HOST=<server-ip> ./deploy.sh
    ```
+
+   `deploy.sh` kodni rsync qiladi, konteynerlarni qayta quradi, Django javob
+   berguncha kutadi, keyin nginx'ni restart qiladi (nginx `django` nomini faqat
+   startda yechadi — restartsiz har bir `/api/` chaqiruvi 502 bo'ladi), va
+   oxirida tashqaridan API, admin panel hamda Mini App uchligini 200 ga
+   tekshiradi. Deploydan oldin serverdagi `.env` ni ham tekshiradi va
+   `WEBAPP_URL` eski serverga qarab turgan bo'lsa deployni to'xtatadi.
+
+   Serverning o'zida:
+
+   ```bash
+   git pull && docker compose up -d --build && docker compose restart nginx
+   ```
+
+### Boshqa serverga ko'chirish
+
+1. Yangi serverda 1–4 qadamlarni bajaring, `.env` da `PUBLIC_HOST` ni yangi
+   host bilan to'ldiring (`WEBAPP_URL` bo'sh).
+2. Bazani ko'chiring (pastdagi «Zaxira nusxa» bo'limi) va `media/` ni rsync
+   qiling.
+3. Eski serverda `docker compose down` qiling — aks holda ikkala bot bitta
+   token bilan polling qilib `TelegramConflictError` beradi.
+4. Mijozlar telefonidagi klaviatura eski Mini App manzilini keshlab turadi.
+   `bot/utils/webapp.py` dagi `WEBAPP_VERSION` ni oshiring, mijoz esa `/start`
+   bossa klaviatura yangi manzil bilan qayta quriladi.
 
 ### Diqqat — bitta bot qoidasi
 

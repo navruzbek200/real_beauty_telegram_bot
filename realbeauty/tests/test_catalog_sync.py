@@ -78,7 +78,12 @@ class SyncCatalogTests(TestCase):
         self.assertEqual(Product.objects.count(), count)
 
     def test_fills_translations_and_photo_of_an_existing_product(self):
-        entry = next(e for e in CATALOG if e.get("photo") and not e.get("uz"))
+        # Any entry with a photo will do. This used to pick one whose Uzbek
+        # text was still missing, back when the catalogue had such gaps —
+        # every entry carries uz now, and the behaviour under test (fill the
+        # empty columns of a product the shop typed in by hand, touch nothing
+        # else) never depended on that gap.
+        entry = next(e for e in CATALOG if e.get("photo"))
         product = Product.objects.create(
             name=entry["name"], description="Do'kon yozgan matn", current_price=99_000
         )

@@ -22,16 +22,20 @@ if os.environ.get("POSTGRES_PASSWORD", "") in {"", "strongpassword"}:
         "yozing: python -c \"import secrets; print(secrets.token_urlsafe(24))\""
     )
 
-# Explicit hosts only — the base "*" default is for local runs.
+# Explicit hosts only — the base "*" default is for local runs. PUBLIC_HOST is
+# the fallback so a fresh server needs one variable, not two that must agree;
+# ALLOWED_HOSTS stays available for the multi-domain case.
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
     if host.strip() and host.strip() != "*"
 ]
+if not ALLOWED_HOSTS and PUBLIC_HOST:  # noqa: F405
+    ALLOWED_HOSTS = [PUBLIC_HOST]  # noqa: F405
 if not ALLOWED_HOSTS:
     raise RuntimeError(
-        "ALLOWED_HOSTS bo'sh yoki '*'. .env ga domen yozing, masalan: "
-        "ALLOWED_HOSTS=crm.realbeauty.uz"
+        "PUBLIC_HOST ham, ALLOWED_HOSTS ham bo'sh. .env ga serverning domenini "
+        "yozing, masalan: PUBLIC_HOST=crm.realbeauty.uz"
     )
 
 # No TLS cert exists until a domain is pointed at this host and `certbot

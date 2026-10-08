@@ -50,6 +50,18 @@ MERIKIT: list[dict] = [
         "name": "Merikit Double Peeling Gel — ikki bosqichli peeling",
         "name_ru": "Merikit Double Peeling Gel — двухступенчатый пилинг",
         "name_en": "Merikit Double Peeling Gel — two-step peeling",
+        "uz": (
+            "Nozik formulaga ega peeling gel: o'lik hujayralarni yumshoq olib "
+            "tashlab, terini yangilaydi va silliqlaydi. Ikki bosqichli ta'sir "
+            "terining tabiiy yorqinligini tiklaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• O'lik hujayralarni tozalaydi, yangilanishni tezlashtiradi\n"
+            "• Teriga yumshoqlik va silliqlik beradi\n"
+            "• Poralarni ochib, keyingi parvarish samarasini oshiradi\n"
+            "• Tirnashtirmaydigan yumshoq formula\n\n"
+            "🧴 Kimga mos: xiralashgan, quruq, yog'li, normal va aralash teri. "
+            "Ta'sirchan teriga ham mos."
+        ),
         "ru": (
             "Деликатный пилинг-гель: мягко снимает омертвевшие клетки, "
             "обновляет и разглаживает кожу. Двухступенчатое действие "
@@ -80,6 +92,18 @@ MERIKIT: list[dict] = [
         "name": "Merikit One Point Cleansing Oil — tozalovchi yog'",
         "name_ru": "Merikit One Point Cleansing Oil — очищающее масло",
         "name_en": "Merikit One Point Cleansing Oil",
+        "uz": (
+            "Yumshoq teksturali tozalovchi yog': makiyaj, quyoshdan himoya "
+            "vositasi va chuqur kirni bir harakatda eritadi — terining "
+            "yog'-nam muvozanatini buzmaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Qattiq makiyajni ham samarali yechadi\n"
+            "• Poralarni tozalab, qora nuqtalarni kamaytiradi\n"
+            "• Teri yumshoqligi va namligini saqlaydi\n"
+            "• Har qanday teriga, ta'sirchan teriga ham mos\n\n"
+            "💧 Qo'llanish: quruq teriga massaj qiling, iliq suv bilan "
+            "ko'pirtirib yuvib tashlang."
+        ),
         "ru": (
             "Мягкое очищающее масло: растворяет макияж, SPF и глубокие "
             "загрязнения одним движением, не нарушая жиро-водный баланс "
@@ -107,6 +131,18 @@ MERIKIT: list[dict] = [
     {
         "photo": None,
         "name": "Merikit Rose Waterproof Lip & Eye Remover",
+        "uz": (
+            "Ikki fazali tozalagich: suvga chidamli makiyajni ham nozik "
+            "teriga zarar yetkazmasdan tezda yechadi. Atirgul ekstrakti "
+            "terini tinchlantiradi va namlaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Suvga chidamli makiyajni oson eritadi\n"
+            "• Ko'z va lab atrofidagi nozik teriga mos\n"
+            "• Atirgul ekstrakti qizarishni kamaytiradi\n"
+            "• Yog'li qoldiq qoldirmaydi\n\n"
+            "🧴 Kimga mos: har qanday teri turi; kundalik va professional "
+            "makiyaj qiladiganlar; nozik, sezgir teri."
+        ),
         "ru": (
             "Двухфазная формула: быстро снимает водостойкий макияж, не "
             "травмируя нежную кожу. Экстракт розы успокаивает и "
@@ -134,6 +170,19 @@ MERIKIT: list[dict] = [
     {
         "photo": None,
         "name": "Merikit Cica Perfect Sun Cream SPF50+/PA++++",
+        "uz": (
+            "Cica (Centella Asiatica) ekstrakti asosidagi quyoshdan himoya "
+            "kremi: UVA/UVB nurlanishidan ishonchli himoya qiladi, ayni "
+            "paytda tinchlantiradi va namlik beradi. Yengil tekstura, terida "
+            "og'irlik qoldirmaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Yuqori darajali SPF50+/PA++++ himoya\n"
+            "• Cica terini tinchlantiradi va tiklanishni qo'llab-quvvatlaydi\n"
+            "• Yog'siz, yengil formula\n"
+            "• Kundalik foydalanishga va makiyaj ostiga mos\n\n"
+            "🧴 Kimga mos: sezgir, yallig'lanishga moyil teri; quruq va normal "
+            "teri."
+        ),
         "ru": (
             "Солнцезащитный крем с экстрактом Cica (центелла азиатская): "
             "надёжно защищает от UVA/UVB, одновременно успокаивая и "
@@ -163,6 +212,16 @@ MERIKIT: list[dict] = [
         "name": "Merikit Grain Rice Foam — guruchli tozalovchi penka",
         "name_ru": "Merikit Grain Rice Foam — рисовая очищающая пенка",
         "name_en": "Merikit Grain Rice Foam — rice cleansing foam",
+        "uz": (
+            "Guruch ekstrakti va tabiiy donli komponentlarga boy tozalovchi "
+            "penka: terini yumshoq tozalaydi va ayni paytda oziqlantiradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Kir, chang va ortiqcha yog'ni samarali olib tashlaydi\n"
+            "• Guruch ekstrakti terini yorqinlashtiradi\n"
+            "• Namlikni saqlaydi — qattiq tortish hissi qolmaydi\n"
+            "• Yumshoq pufakchalari nozik teriga ham mos\n\n"
+            "🧴 Kimga mos: normal va quruq teri. Ertalab va kechqurun."
+        ),
         "ru": (
             "Пенка с экстрактом риса и натуральными зерновыми компонентами: "
             "мягко очищает и питает кожу.\n\n"
@@ -236,6 +295,18 @@ MERIKIT: list[dict] = [
         "name": "Merikit Multi Protection Balm SPF37/PA++ (BB krem)",
         "name_ru": "Merikit Multi Protection Balm SPF37/PA++ (BB-крем)",
         "name_en": "Merikit Multi Protection Balm SPF37/PA++ (BB cream)",
+        "uz": (
+            "Himoya va tabiiy pardoz bir mahsulotda. Yengil teksturasi teriga "
+            "singadi, rangni tenglashtiradi, namlik beradi va SPF37/PA++ "
+            "bilan himoyalaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• BB krem va himoya balzami bitta bosqichda\n"
+            "• Teri rangini tabiiy tarzda tekislaydi\n"
+            "• Qoplayotib namlaydi va parvarish qiladi\n"
+            "• Yengil, yopishqoq bo'lmagan qoplama\n\n"
+            "🧴 Kimga mos: quruq, yog'li va aralash teri; bir tubada ham "
+            "parvarish, ham makiyaj xohlaydiganlar."
+        ),
         "ru": (
             "Защита и естественный тон в одном средстве. Лёгкая текстура "
             "идеально ложится, выравнивает тон, увлажняет и защищает "
@@ -263,6 +334,18 @@ MERIKIT: list[dict] = [
     {
         "photo": "aqua_shining_sun_bloc",
         "name": "Merikit Aqua Shining Sunblock",
+        "uz": (
+            "Namlik beruvchi quyoshdan himoya kremi: UVA/UVB dan ishonchli "
+            "himoya va yorqin, sog'lom ko'rinish. Yengil suvli teksturasi tez "
+            "so'riladi, yopishqoq qoldiq qoldirmaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Yuqori darajali SPF himoya\n"
+            "• Aqua kompleksi terini chuqur namlaydi\n"
+            "• Yorqinlik va sog'lom ko'rinish beradi\n"
+            "• Makiyaj ostida ham qulay\n\n"
+            "🧴 Kimga mos: yog'li va aralash teri; kundalik himoya bilan birga "
+            "yorqin effekt istaydiganlar."
+        ),
         "ru": (
             "Увлажняющий солнцезащитный крем: надёжная защита от UVA/UVB и "
             "сияющий, здоровый вид. Лёгкая водная текстура быстро "
@@ -292,6 +375,21 @@ MERIKIT: list[dict] = [
     {
         "photo": "vita_c_return_serum",
         "name": "Merikit Vita C Return Serum (50 ml)",
+        "uz": (
+            "Vitaminlarga boy tiklovchi serum: rangsiz, toliqqan terini "
+            "jonlantirib, sog'lom yaltirash beradi. Vitamin C, niacinamide va "
+            "vitamin E hujayralarni uyg'otadi, rangni tenglashtiradi va "
+            "qarish belgilariga qarshi ishlaydi. Tez so'riladi, yog'li his "
+            "qoldirmaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Rangni tiniqlashtiradi, sog'lom yaltirash qaytaradi\n"
+            "• Hujayra yangilanishini rag'batlantiradi\n"
+            "• Dog'lar va xiralikni kamaytiradi\n"
+            "• Namlikni chuqur saqlaydi, qarishga qarshi ta'sir\n\n"
+            "🧴 Faol tarkib: vitamin C, niacinamide (B3), vitamin E, "
+            "panthenol, adenosine, gialuron kislotasi.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, yuz va bo'yinga."
+        ),
         "ru": (
             "Восстанавливающая сыворотка на витаминах: оживляет тусклую, "
             "уставшую кожу и возвращает здоровое сияние. Витамин C, "
@@ -324,6 +422,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "vita_c_return_cream",
         "name": "Merikit Vita Return Cream (50 ml)",
+        "uz": (
+            "Vitamin kompleksiga asoslangan tiklovchi krem: charchagan, "
+            "rangsiz teriga yaltirash, namlik va tiniqlik qaytaradi. Himoya "
+            "qatlamini mustahkamlab, hujayra yangilanishini uyg'otadi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Sog'lom yaltirash va tiniqlik beradi\n"
+            "• Vitaminlar bilan oziqlantiradi va tiklaydi\n"
+            "• Rangni tenglashtiradi, dog'larni asta oqartiradi\n"
+            "• Yengil, ammo chuqur namlaydi, tez so'riladi\n\n"
+            "🧴 Faol tarkib: vitamin C, niacinamide (B3), vitamin E, "
+            "panthenol, gialuron kislotasi.\n"
+            "💧 Qo'llanish: toner/serumdan keyin, ertalab va kechqurun."
+        ),
         "ru": (
             "Восстанавливающий крем с витаминным комплексом: возвращает "
             "уставшей, тусклой коже сияние, влагу и прозрачность. Укрепляет "
@@ -354,6 +465,20 @@ MERIKIT: list[dict] = [
     {
         "photo": "clarity_skin",
         "name": "Merikit Clarity Snow Skin Toner (500 ml)",
+        "uz": (
+            "Tiniqlik, muvozanat va yangilanish beruvchi yumshoq toner. "
+            "Tozalashdan keyin pH ni tiklaydi, namlik bilan to'ldiradi va "
+            "keyingi bosqichga tayyorlaydi. Niacinamide va vitamin C rangni "
+            "tiniqlashtiradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• pH muvozanatini tiklaydi, tiniqlik beradi\n"
+            "• Dog'lar va xiralikni yumshatadi\n"
+            "• Yog' balansi va poralarni me'yorda ushlaydi\n"
+            "• Tez so'riladi va tetiklantiradi\n\n"
+            "🧴 Faol tarkib: niacinamide, vitamin C, yashil choy, allantoin, "
+            "panthenol, gialuron kislotasi.\n"
+            "💧 Qo'llanish: tozalashdan keyin paxta disk yoki kaft bilan."
+        ),
         "ru": (
             "Мягкий тоник для прозрачности, баланса и свежести кожи. После "
             "очищения восстанавливает pH, наполняет влагой и готовит кожу к "
@@ -384,6 +509,20 @@ MERIKIT: list[dict] = [
     {
         "photo": "clarity_serum",
         "name": "Merikit Clarity Serum (250 ml)",
+        "uz": (
+            "Tiniqlik va tekis ohang uchun yuqori samarali serum. "
+            "Niacinamide, vitamin C va sodium hyaluronate melanin ishlab "
+            "chiqarilishini nazorat qilib, teriga silliq va sog'lom ko'rinish "
+            "beradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Rangni tiniqlashtiradi va notekislikni tekislaydi\n"
+            "• Qora dog'lar va pigment izlarini kamaytiradi\n"
+            "• Poralarni toraytiradi, yog' balansini nazorat qiladi\n"
+            "• Chuqur namlaydi — teri elastik va yumshoq bo'ladi\n\n"
+            "🧴 Faol tarkib: niacinamide (B3), vitamin C, apelsin po'sti "
+            "yog'i, sodium hyaluronate.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, so'ng krem."
+        ),
         "ru": (
             "Высокоэффективная сыворотка для прозрачности и ровного тона. "
             "Ниацинамид, витамин C и гиалуронат контролируют выработку "
@@ -414,6 +553,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "clarity_c_cream",
         "name": "Merikit Clarity C Cream (210 ml)",
+        "uz": (
+            "Pigmentli, xiralashgan yoki notekis rangli teri uchun "
+            "anti-pigment krem. Teri tuzilishini yaxshilaydi, rangni "
+            "tenglashtiradi va chuqur namlaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Rangni tiniqlashtiradi, dog' va pigment bilan kurashadi\n"
+            "• Yuzani silliqlaydi, poralar kichikroq ko'rinadi\n"
+            "• Xiralashgan teriga energiya va tabiiy yaltirash beradi\n"
+            "• Yengil va tez so'riluvchi — kundalik foydalanishga\n\n"
+            "🧴 Faol tarkib: niacinamide, acerola ekstrakti (vitamin C ga juda "
+            "boy), apelsin po'sti yog'i, artemisia, MultiEx Rosanic.\n"
+            "💧 Qo'llanish: tonerdan keyin, ertalab va kechqurun."
+        ),
         "ru": (
             "Анти-пигментный крем: для кожи с пигментацией, тусклостью или "
             "неровным тоном. Улучшает текстуру, выравнивает цвет и глубоко "
@@ -445,6 +597,19 @@ MERIKIT: list[dict] = [
         "name": "Merikit Vita-C 13 Ampoule (5 ml × 10 flakon)",
         "name_ru": "Merikit Vita-C 13 Ampoule (5 мл × 10 флаконов)",
         "name_en": "Merikit Vita-C 13 Ampoule (5 ml × 10 vials)",
+        "uz": (
+            "13% sof vitamin C li kuchli ampula: melanin ishlab "
+            "chiqarilishini tiyadi, xiralik va dog'larni kamaytiradi, rangni "
+            "tenglashtiradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• 13% vitamin C — rangni tiniqlashtiradi, dog'larni kamaytiradi\n"
+            "• Glutathione va niacinamide rangni tekislaydi\n"
+            "• Elastiklikni yaxshilaydi, sog'lom nur beradi\n"
+            "• Poralarni toraytiradi, mat ko'rinish beradi\n\n"
+            "🧴 Faol tarkib: 13% ascorbic acid, glutathione, niacinamide, "
+            "beta-karotin, beta-glukan, trehaloza, seramidlar.\n"
+            "💧 Qo'llanish: tonerdan keyin bitta flakon, yuz va bo'yinga."
+        ),
         "ru": (
             "Мощная ампула с 13% чистого витамина C: подавляет выработку "
             "меланина, уменьшает тусклость и пятна, выравнивает тон.\n\n"
@@ -475,6 +640,20 @@ MERIKIT: list[dict] = [
         "name": "Merikit Vita C 13 Mask (5 dona)",
         "name_ru": "Merikit Vita C 13 Mask (5 шт.)",
         "name_en": "Merikit Vita C 13 Mask (5 sheets)",
+        "uz": (
+            "13% sof vitamin C li premium niqob: pigmentli, xiralashgan "
+            "teriga chuqur ta'sir qiladi, rangni tiniqlashtiradi va ichki "
+            "qatlamlardan yangilaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Xiralik va dog'lar ko'rinishini kamaytiradi\n"
+            "• Melanin sintezini nazorat qiladi\n"
+            "• Yuzani silliqlaydi, poralarni toraytiradi\n"
+            "• Antioksidant himoya va chuqur namlik\n\n"
+            "🧴 Faol tarkib: vitamin C 13%, glutathione, niacinamide, "
+            "alpha-arbutin, beta-karotin, trehaloza.\n"
+            "💧 Qo'llanish: toza teriga 10–15 daqiqa, haftada 1–2 marta. "
+            "Qutida 5 dona."
+        ),
         "ru": (
             "Премиальная маска с 13% чистого витамина C: работает глубоко на "
             "пигментированной, тусклой коже, осветляет тон и обновляет "
@@ -508,6 +687,19 @@ MERIKIT: list[dict] = [
         "name": "Merikit Brightening Sheet Mask (10 dona)",
         "name_ru": "Merikit Brightening Sheet Mask (10 шт.)",
         "name_en": "Merikit Brightening Sheet Mask (10 sheets)",
+        "uz": (
+            "Xiralashgan, notekis ohangli yoki pigmentli teri uchun premium "
+            "yorqinlashtiruvchi sheet niqob. Bir marta qo'llagandayoq natija "
+            "ko'rinadi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Notekis rangni tekislaydi, xiralikni ko'taradi\n"
+            "• Pigment dog'lari va qorayishlar bilan kurashadi\n"
+            "• Chuqur namlik, teri yumshoq ko'rinadi\n"
+            "• 15–20 daqiqada sezilarli yorqinlik\n\n"
+            "🧴 Faol tarkib: niacinamide, arbutin, glutathione, aloe suvi, "
+            "gialuron kislotasi.\n"
+            "💧 Qo'llanish: toza teriga 15–20 daqiqa, haftada 1–2 marta."
+        ),
         "ru": (
             "Премиальная тканевая маска для сияния и прозрачности: для "
             "тусклой, неровной по тону или пигментированной кожи. Заметный "
@@ -538,6 +730,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "regenerating_calming_mask",
         "name": "Merikit Regenerating Calming Mask (300 ml)",
+        "uz": (
+            "Sezuvchan, quruq yoki muolajadan keyingi teri uchun "
+            "tinchlantiruvchi va tiklovchi krem-niqob. Himoya to'sig'ini "
+            "tiklaydi va qizarishni tushiradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Sezuvchan terini tinchlantiradi, qizarishni kamaytiradi\n"
+            "• Yallig'lanishga qarshi va tiklovchi ta'sir\n"
+            "• Namlikni uzoq soatlar davomida ushlab turadi\n"
+            "• Teri silliq, elastik va sog'lom bo'ladi\n\n"
+            "🧴 Faol tarkib: madecassoside, aloe vera, panthenol, allantoin.\n"
+            "💧 Qo'llanish: toza teriga yupqa qatlam, 10–15 daqiqadan keyin "
+            "yuvib yoki artib oling."
+        ),
         "ru": (
             "Успокаивающая и восстанавливающая крем-маска: для "
             "чувствительной, сухой кожи и кожи после процедур. Укрепляет "
@@ -569,6 +774,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "regenetaing_calming_serum",
         "name": "Merikit Regenerating Calming Serum (250 ml)",
+        "uz": (
+            "Sezuvchan, yallig'langan yoki quruq teri uchun tinchlantiruvchi "
+            "serum: himoya to'sig'ini mustahkamlaydi, namlikni ushlaydi va "
+            "tiklanishni yoqadi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Yallig'lanishni kamaytiradi, tirnashning oldini oladi\n"
+            "• Himoya to'sig'ini qayta tiklaydi\n"
+            "• Quruqlik va qichishishni yo'qotadi\n"
+            "• Teriga silliqlik va elastiklik beradi\n\n"
+            "🧴 Faol tarkib: centella asiatica, madecassoside, panthenol, "
+            "gialuron kislotasi.\n"
+            "💧 Qo'llanish: toza teriga bir necha tomchi, yengil massaj bilan."
+        ),
         "ru": (
             "Успокаивающая сыворотка для чувствительной, воспалённой или "
             "сухой кожи: укрепляет защитный барьер, удерживает влагу и "
@@ -599,6 +817,20 @@ MERIKIT: list[dict] = [
     {
         "photo": "azulene_blue1000_cream",
         "name": "Merikit Azulene Blue 1000 Cream (210 ml)",
+        "uz": (
+            "77% romashka gullari suvi asosidagi premium tinchlantiruvchi "
+            "krem: sezuvchan, qizarishga moyil, stressdan charchagan teri "
+            "uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Tirnashga moyil terini tinchlantiradi\n"
+            "• Namlik va yog' miqdorini muvozanatda ushlaydi\n"
+            "• Qizarish va stress belgilarini kamaytiradi\n"
+            "• Makiyaj ostida mukammal asos\n\n"
+            "🧴 Faol tarkib: sodium guaiacolate sulfonate 1000 ppm, panthenol "
+            "50 000 ppm, romashka suvi, shea yog'i, Super Berry kompleksi, 8 "
+            "qatlamli gialuron kompleksi.\n"
+            "💧 Qo'llanish: tonerdan keyin, ertalab va kechqurun."
+        ),
         "ru": (
             "Премиальный успокаивающий крем на 77% ромашковой воде: для "
             "чувствительной, склонной к покраснениям, ослабленной стрессом "
@@ -632,6 +864,19 @@ MERIKIT: list[dict] = [
         "name": "Merikit Revital Mask (1 dona)",
         "name_ru": "Merikit Revital Mask (1 шт.)",
         "name_en": "Merikit Revital Mask (1 sheet)",
+        "uz": (
+            "Intensiv namlantiruvchi premium tiklovchi sheet niqob: "
+            "charchagan, rangsiz va himoyasi zaiflashgan teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Rang ohangini tekislaydi, xiralikni ko'taradi\n"
+            "• Qizarish va stress belgilarini yumshatadi\n"
+            "• Mayda ajinlarni kamaytiradi, taranglikni oshiradi\n"
+            "• Estetik muolajadan keyingi teriga mos\n\n"
+            "🧴 Faol tarkib: snail secretion filtrate, adenosine, koenzim Q10, "
+            "anor ekstrakti, centella asiatica.\n"
+            "💧 Qo'llanish: toza teriga 15–20 daqiqa, qolgan essensiyani "
+            "yengil urib singdiring."
+        ),
         "ru": (
             "Премиальная восстанавливающая тканевая маска с интенсивным "
             "увлажнением: для уставшей, тусклой кожи с ослабленной "
@@ -664,6 +909,19 @@ MERIKIT: list[dict] = [
     {
         "photo": None,
         "name": "Merikit Multi Vitamin Ampoule (50 ml)",
+        "uz": (
+            "Vitaminlar majmuasiga ega parvarishlovchi ampula: charchagan, "
+            "rangsiz teriga yaltirash va tiniqlik qaytaradi. Antioksidantlar "
+            "hujayralarni erkin radikallardan himoya qiladi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Rangni tiniqlashtiradi va tenglashtiradi\n"
+            "• Terini vitaminlar bilan oziqlantiradi\n"
+            "• Charchagan teriga energiya qaytaradi\n"
+            "• Himoya to'sig'ini mustahkamlaydi\n\n"
+            "🧴 Faol tarkib: vitamin C, niacinamide (B3), vitamin E, "
+            "adenosine, gialuron kislotasi.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, so'ng krem."
+        ),
         "ru": (
             "Ухаживающая ампула с витаминным комплексом: возвращает "
             "уставшей, тусклой коже сияние и прозрачность. Антиоксиданты "
@@ -694,6 +952,18 @@ MERIKIT: list[dict] = [
     {
         "photo": "multi_hyrdo_ampoule",
         "name": "Merikit Hydro Ampoule (50 ml)",
+        "uz": (
+            "Chuqur namlik beruvchi ampula: suv tanqisligidan quruq, toliqqan "
+            "va elastikligini yo'qotgan teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Chuqur namlaydi, suv muvozanatini tiklaydi\n"
+            "• Quruqlik va tirnashni kamaytiradi\n"
+            "• Elastiklik va silliqlikni oshiradi\n"
+            "• Yengil, yog'siz — tez so'riladi\n\n"
+            "🧴 Faol tarkib: gialuron kislotasi, panthenol, betaine, "
+            "allantoin.\n"
+            "💧 Qo'llanish: toner yoki essensiyadan keyin 2–3 tomchi."
+        ),
         "ru": (
             "Ампула глубокого увлажнения: идеальна для сухой, уставшей кожи "
             "и кожи, потерявшей эластичность из-за нехватки воды.\n\n"
@@ -722,6 +992,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "multi_campo_ampoule",
         "name": "Merikit Campo Ampoule (50 ml)",
+        "uz": (
+            "Sezuvchan, yallig'langan va aknega moyil teri uchun "
+            "tinchlantiruvchi ampula. Himoya to'sig'ini tiklaydi va "
+            "qizarishni tushiradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Sezuvchan terini tinchlantiradi\n"
+            "• Qizarish va tirnashni kamaytiradi\n"
+            "• Himoya qatlamini tiklaydi\n"
+            "• Yuzani silliq va yumshoq qiladi\n\n"
+            "🧴 Faol tarkib: centella asiatica, madecassoside, panthenol, "
+            "allantoin, gialuron kislotasi.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, yengil massaj bilan."
+        ),
         "ru": (
             "Успокаивающая противовоспалительная ампула: для чувствительной, "
             "воспалённой, склонной к акне кожи. Восстанавливает защитный "
@@ -752,6 +1035,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "multi_peptide_ampoule",
         "name": "Merikit Peptide Ampoule (50 ml)",
+        "uz": (
+            "Peptidlar kompleksiga asoslangan premium yoshartiruvchi ampula: "
+            "yangilanishni faollashtiradi, ajinlarni yumshatadi va "
+            "taranglikni oshiradi. Ayniqsa yetuk va quruq teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Yengil lifting va taranglashtiruvchi effekt\n"
+            "• Ajinlar va mimika chiziqlarini kamaytiradi\n"
+            "• Kollagen ishlab chiqarilishini qo'llab-quvvatlaydi\n"
+            "• Chuqur oziqlantiradi — teri yoshroq ko'rinadi\n\n"
+            "🧴 Faol tarkib: peptidlar kompleksi, adenosine, gialuron "
+            "kislotasi, panthenol, betaine.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, yuz va bo'yinga."
+        ),
         "ru": (
             "Премиальная омолаживающая ампула с комплексом пептидов: "
             "активирует обновление, уменьшает морщины, повышает упругость. "
@@ -783,6 +1079,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "super_moisturizing_serum",
         "name": "Merikit Super Moisturizing Serum (250 ml)",
+        "uz": (
+            "Chuqur namlik va oziqlanish beruvchi serum: M3+ kompleks "
+            "(o'simlik va qo'ziqorin ekstraktlari), makadamiya yog'i va "
+            "sodium hyaluronate. Elastikligini yo'qotgan quruq teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Chuqur namlaydi, suvsizlanish belgilarini yo'qotadi\n"
+            "• Yumshatadi, silliqlaydi va oziqlantiradi\n"
+            "• Kollagen va elastin ishlab chiqarilishini qo'llab-quvvatlaydi\n"
+            "• Antioksidant himoya, yog'li his qoldirmaydi\n\n"
+            "🧴 Faol tarkib: makadamiya yog'i, qo'ziqorin ekstraktlari, "
+            "gialuron kislotasi, allantoin, centella asiatica.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, so'ng krem."
+        ),
         "ru": (
             "Сыворотка глубокого увлажнения и питания: комплекс M3+ "
             "(растительные и грибные экстракты), масло макадамии и "
@@ -813,6 +1122,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "super_moisturizing_cream",
         "name": "Merikit Super Moisturizing Cream (210 ml)",
+        "uz": (
+            "Chuqur namlik, yumshoqlik va himoya beruvchi krem: gialuron "
+            "kislotasi, makadamiya yog'i va panthenol suv balansini tiklab, "
+            "uni ushlab turadi. Quruq va suvsizlangan teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Chuqur va uzoq davom etuvchi namlik\n"
+            "• Quruqlik, tirnash va qichishishni kamaytiradi\n"
+            "• Himoya to'sig'ini mustahkamlaydi\n"
+            "• Yengil, tez so'riladi — kundalik foydalanishga\n\n"
+            "🧴 Faol tarkib: gialuron kislotasi, makadamiya yog'i, panthenol, "
+            "allantoin, centella asiatica.\n"
+            "💧 Qo'llanish: toner/serumdan keyin, ertalab va kechqurun."
+        ),
         "ru": (
             "Крем для глубокого увлажнения, мягкости и защиты: гиалуроновая "
             "кислота, масло макадамии и пантенол восстанавливают водный "
@@ -844,6 +1166,19 @@ MERIKIT: list[dict] = [
     {
         "photo": None,
         "name": "Merikit Ceramide E5 Intensive Cream (50 ml)",
+        "uz": (
+            "Besh turdagi seramid (NP, NS, AS, AP, EOP) asosidagi krem: "
+            "himoya to'sig'ini qayta tiklaydi va chuqur namlaydi. Himoyasi "
+            "zaiflashgan quruq, sezuvchan teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Lipid qatlami va himoya to'sig'ini mustahkamlaydi\n"
+            "• Quruqlik va tirnashni kamaytiradi\n"
+            "• Mikrorelefni va mayda chiziqlarni silliqlaydi\n"
+            "• Og'irlik qoldirmasdan namlikni ushlaydi\n\n"
+            "🧴 Faol tarkib: 5 turdagi seramid, skvalan, panthenol (B5), "
+            "trehaloza, gialuron kislotasi.\n"
+            "💧 Qo'llanish: tonerdan keyin, ertalab va kechqurun."
+        ),
         "ru": (
             "Крем с комплексом из 5 керамидов (NP, NS, AS, AP, EOP): "
             "укрепляет защитный барьер и даёт глубокое увлажнение. Для "
@@ -874,6 +1209,20 @@ MERIKIT: list[dict] = [
     {
         "photo": "pure_aloevera",
         "name": "Merikit Pure Aloe Vera Gel (500 ml)",
+        "uz": (
+            "95% sof aloe vera ekstraktli gel: chuqur namlik va tinchlik. "
+            "Qizarish, tirnash yoki quyosh ta'siridan keyin terini tez "
+            "tinchlantiradi. Yuz va tana uchun bitta vosita.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Muloyim namlaydi, suvsizlanishni yo'qotadi\n"
+            "• Qizarish va tirnashni tinchlantiradi\n"
+            "• Muolajadan keyingi teriga mos\n"
+            "• Gel teksturasi tez singadi, yog' hissi qoldirmaydi\n\n"
+            "🧴 Faol tarkib: aloe barbadensis (≈95%), centella asiatica, "
+            "yashil choy, betaine, glitserin.\n"
+            "💧 Qo'llanish: toza teriga — ayniqsa quyoshdan, lazer yoki "
+            "peelingdan keyin."
+        ),
         "ru": (
             "Гель с 95% чистого экстракта алоэ вера: глубокое увлажнение и "
             "покой. Быстро успокаивает кожу после покраснений, раздражения "
@@ -1089,6 +1438,19 @@ MERIKIT: list[dict] = [
     {
         "photo": "amante_body_milk",
         "name": "Merikit Amante Body Milk (500 ml)",
+        "uz": (
+            "Nozik hidli hashamatli tana suti: quruq va suvsizlangan teri "
+            "uchun. Sovuq yoki quruq iqlimda ham terini yumshoq, namlangan va "
+            "silliq saqlaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Intensiv, chuqur namlik beradi\n"
+            "• Yumshatadi, silliqlaydi va oziqlantiradi\n"
+            "• Yog'siz, tez singadi — og'irlik hissi yo'q\n"
+            "• Nafis, ayollarga xos hid\n\n"
+            "🧴 Faol tarkib: shea yog'i, sodium hyaluronate, betaine, "
+            "panthenol (B5), centella asiatica, yashil choy, romashka.\n"
+            "💧 Qo'llanish: dushdan keyin butun tanaga, kuniga 1–2 marta."
+        ),
         "ru": (
             "Роскошное молочко для тела с тонким ароматом: для сухой, "
             "обезвоженной кожи. Даже в холод и сухой климат кожа остаётся "

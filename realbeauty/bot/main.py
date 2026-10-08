@@ -86,8 +86,39 @@ async def main() -> None:
 
     await _publish_commands(bot)
 
+    _log_webapp_state()
     logger.info("Starting Real Beauty bot polling…")
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+
+
+def _log_webapp_state() -> None:
+    """Say at boot whether the Mini App is reachable through this deployment.
+
+    Without a usable URL the «Mahsulotlar» button quietly degrades to the
+    in-chat browser — correct behaviour, but indistinguishable from a broken
+    shop when it was not intended. One line in `docker compose logs bot` turns
+    a support conversation into a glance.
+    """
+    from django.conf import settings
+
+    from bot.utils.webapp import webapp_url
+
+    url = webapp_url()
+    if url:
+        logger.info("Mini App enabled: %s", url)
+        return
+    configured = (getattr(settings, "WEBAPP_URL", "") or "").strip()
+    if configured:
+        logger.warning(
+            "Mini App DISABLED: WEBAPP_URL=%r is not an https:// URL. "
+            "«Mahsulotlar» will fall back to the in-chat browser.",
+            configured,
+        )
+    else:
+        logger.warning(
+            "Mini App DISABLED: neither PUBLIC_HOST nor WEBAPP_URL is set in "
+            ".env. «Mahsulotlar» will fall back to the in-chat browser."
+        )
 
 
 async def _publish_commands(bot: Bot) -> None:
