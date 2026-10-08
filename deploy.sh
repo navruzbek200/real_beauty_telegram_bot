@@ -2,28 +2,84 @@
 #
 # deploy.sh — push the working tree to the production server and bring it up.
 #
-#   ./deploy.sh
+#   ./deploy.sh                      # host taken from .env / DEPLOY_HOST
+#   DEPLOY_HOST=1.2.3.4 ./deploy.sh  # or passed in for a one-off
 #
 # Run from the repo root. Needs SSH access to the server as root.
 #
-# The one thing this exists for: nginx resolves the `django` hostname once, at
-# startup, and caches the address. `docker compose up --build` gives django a
-# new container with a new address, so nginx keeps proxying to the old one and
-# every /api/ call answers 502 while the SPA's static files still load fine —
-# a shop that looks up but sells nothing. Restarting nginx *after* django is
-# actually serving is the fix, and doing it by hand is how it gets forgotten.
+# Two things this exists for:
+#
+# 1. nginx resolves the `django` hostname once, at startup, and caches the
+#    address. `docker compose up --build` gives django a new container with a
+#    new address, so nginx keeps proxying to the old one and every /api/ call
+#    answers 502 while the SPA's static files still load fine — a shop that
+#    looks up but sells nothing. Restarting nginx *after* django is actually
+#    serving is the fix, and doing it by hand is how it gets forgotten.
+#
+# 2. The server's own .env is never shipped (it holds secrets this repo must
+#    not carry), so it is the one file that can silently disagree with the box
+#    it lives on. The preflight below reads it over ssh and refuses to deploy
+#    when PUBLIC_HOST is missing or when WEBAPP_URL still points at a previous
+#    server — that combination leaves the «Mahsulotlar» button opening a dead
+#    address, which is indistinguishable from the shop being broken.
 set -euo pipefail
-
-HOST="${DEPLOY_HOST:-169.58.58.145}"
-USER="${DEPLOY_USER:-root}"
-REMOTE="${DEPLOY_PATH:-/opt/realbeauty}"
 
 cd "$(dirname "$0")"
 
+# A local .env is optional here — it only supplies defaults for where to ssh.
+if [[ -f .env ]]; then
+  set -a; source .env; set +a
+fi
+
+HOST="${DEPLOY_HOST:-${PUBLIC_HOST:-}}"
+USER="${DEPLOY_USER:-root}"
+REMOTE="${DEPLOY_PATH:-/opt/realbeauty}"
+
 info() { printf "\033[1;36m[deploy]\033[0m %s\n" "$*"; }
+warn() { printf "\033[1;33m[deploy]\033[0m %s\n" "$*"; }
 die()  { printf "\033[1;31m[deploy]\033[0m %s\n" "$*"; exit 1; }
 
+[[ -n "$HOST" ]] || die "Server manzili yo'q. DEPLOY_HOST bering yoki .env ga PUBLIC_HOST yozing:
+    DEPLOY_HOST=1.2.3.4 ./deploy.sh"
+
 ssh_do() { ssh -o StrictHostKeyChecking=no "${USER}@${HOST}" "$@"; }
+
+# --- 0. preflight: the remote .env has to describe the remote box ------------
+info "Checking ${HOST}:${REMOTE}/.env …"
+ssh_do "test -f ${REMOTE}/.env" \
+  || die "${REMOTE}/.env serverda yo'q. Avval .env.example dan nusxa olib to'ldiring:
+    scp .env.example ${USER}@${HOST}:${REMOTE}/.env  &&  ssh ${USER}@${HOST} nano ${REMOTE}/.env"
+
+# Reads one key out of the server's .env. Quote-stripping happens locally so
+# the remote command stays a single, quote-free sed.
+remote_env() {
+  local val
+  val="$(ssh_do "sed -n 's/^$1=//p' ${REMOTE}/.env | tail -1" 2>/dev/null || true)"
+  val="${val//[$'\r\n\t ']/}"
+  val="${val//\"/}"
+  val="${val//\'/}"
+  printf '%s' "$val"
+}
+
+PUBLIC="$(remote_env PUBLIC_HOST)"
+WEBAPP="$(remote_env WEBAPP_URL)"
+
+[[ -n "$PUBLIC" ]] || die "Serverdagi .env da PUBLIC_HOST bo'sh.
+Domen bo'lmasa sslip.io ishlating — masalan IP 1.2.3.4 uchun:
+    PUBLIC_HOST=1-2-3-4.sslip.io"
+
+# WEBAPP_URL is optional: Django derives https://PUBLIC_HOST/webapp/ from
+# PUBLIC_HOST when it is empty. It is only ever wrong when it is set *and*
+# names a different host — a leftover from the previous server.
+if [[ -n "$WEBAPP" && "$WEBAPP" != *"$PUBLIC"* ]]; then
+  die "Serverdagi .env da WEBAPP_URL boshqa hostga qarab turibdi:
+    WEBAPP_URL=${WEBAPP}
+    PUBLIC_HOST=${PUBLIC}
+Mini App o'lik manzilni ochadi. WEBAPP_URL ni o'chiring (Django uni
+PUBLIC_HOST dan o'zi yasaydi) yoki https://${PUBLIC}/webapp/ ga tuzating."
+fi
+
+info "Public host: ${PUBLIC}"
 
 # --- 1. ship the code ---------------------------------------------------------
 # No --delete: the server holds things the repo does not (.env, secrets, media).
@@ -31,7 +87,7 @@ info "Syncing working tree to ${HOST}:${REMOTE} …"
 rsync -az \
   --exclude '.git' --exclude '.venv' --exclude 'node_modules' \
   --exclude 'frontend/dist' --exclude 'media' --exclude 'staticfiles' \
-  --exclude '.env' --exclude 'secrets' --exclude 'celerybeat-schedule' \
+  --exclude '.env' --exclude 'secrets' --exclude 'celerybeat-schedule*' \
   --exclude '__pycache__' \
   -e "ssh -o StrictHostKeyChecking=no" \
   ./ "${USER}@${HOST}:${REMOTE}/"
@@ -61,13 +117,22 @@ info "Restarting nginx so it re-resolves django …"
 ssh_do "cd ${REMOTE} && docker compose restart nginx"
 
 # --- 5. prove it from outside -------------------------------------------------
-info "Verifying through the public URL …"
+# Every public entry point the customer or the shop actually touches. The Mini
+# App is checked too: it is served by nginx from a different volume than the
+# API, so it can be the only broken one.
+info "Verifying through https://${PUBLIC} …"
 sleep 3
-code=$(curl -sk -o /dev/null -w '%{http_code}' \
-  "https://169-58-58-145.sslip.io/api/v1/webapp/catalog/?lang=uz" || echo 000)
-[ "$code" = "200" ] || die "catalog API returned ${code}, not 200. Deploy is NOT healthy."
 
-login=$(curl -sk -o /dev/null -w '%{http_code}' "https://169-58-58-145.sslip.io/login" || echo 000)
-[ "$login" = "200" ] || die "admin panel returned ${login}, not 200."
+check() {  # check <label> <path> <expected>
+  local label="$1" path="$2" expect="$3" code
+  code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 20 "https://${PUBLIC}${path}" || echo 000)
+  [ "$code" = "$expect" ] || die "${label} (${path}) → ${code}, kutilgani ${expect}. Deploy is NOT healthy."
+  info "  ✓ ${label} → ${code}"
+}
 
-info "✅ Deployed and healthy — catalog API and admin panel both answer 200."
+check "catalog API"  "/api/v1/webapp/catalog/?lang=uz" 200
+check "admin panel"  "/login"                          200
+check "Mini App"     "/webapp/"                        200
+
+info "✅ Deployed and healthy — API, admin panel and Mini App all answer 200."
+info "   Mini App: https://${PUBLIC}/webapp/"

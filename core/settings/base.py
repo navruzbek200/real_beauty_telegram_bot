@@ -15,6 +15,13 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
+# The one public hostname this deployment answers on — the sslip.io name of the
+# VPS, or a real domain once there is one. Everything outward-facing derives
+# from it (ALLOWED_HOSTS, CSRF origins, the Mini App URL, nginx's server_name
+# and its TLS certificate), so moving to a new server is a single edit in .env
+# instead of the same address copy-pasted across five files.
+PUBLIC_HOST = os.environ.get("PUBLIC_HOST", "").strip().rstrip("/")
+
 INSTALLED_APPS = [
     "unfold",
     "unfold.contrib.filters",
@@ -132,7 +139,15 @@ BOT_USERNAME = os.environ.get("BOT_USERNAME", "RealBeautyBot")
 # HTTPS URL of the Telegram Mini App (the product catalogue WebApp). Telegram
 # only allows web_app buttons with an https URL, so when this is unset or not
 # https the bot silently falls back to the in-chat message browser.
-WEBAPP_URL = os.environ.get("WEBAPP_URL", "")
+#
+# Defaulted from PUBLIC_HOST because nginx serves the Mini App at /webapp/ on
+# that same host. Deriving it is what stops the two from drifting apart: an
+# explicit WEBAPP_URL left pointing at the *old* server survives a move to a
+# new one, and the button then opens a dead address — which looks exactly like
+# "the shop is broken". Only set WEBAPP_URL when the app is hosted elsewhere.
+WEBAPP_URL = os.environ.get("WEBAPP_URL", "").strip() or (
+    f"https://{PUBLIC_HOST}/webapp/" if PUBLIC_HOST else ""
+)
 
 # Telegram payment provider token, from BotFather → Payments → Click/Payme.
 # Empty (the default) means card payment is switched off everywhere: the Mini

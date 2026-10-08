@@ -42,6 +42,15 @@ set -a; source .env; set +a
 # DEBUG=True (static finders serve unfold assets) and app procs reach services.
 export DJANGO_SETTINGS_MODULE=core.settings.dev
 export POSTGRES_HOST=localhost
+# A local run has no https, so the Mini App cannot open here at all — but .env
+# carries the *server's* PUBLIC_HOST/WEBAPP_URL, and leaving them set would put
+# a web_app button on the local bot that opens the production shop against the
+# production API. Blanked (not unset: settings/base.py calls load_dotenv, which
+# fills in any name missing from the environment, so `unset` would just be read
+# back out of .env). Empty means «Mahsulotlar» uses the in-chat browser, which
+# is the thing actually being developed locally.
+export PUBLIC_HOST=""
+export WEBAPP_URL=""
 export POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 export REDIS_URL="redis://localhost:6379/0"
 PG_DB="${POSTGRES_DB:-realbeauty}"

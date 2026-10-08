@@ -6,6 +6,19 @@ RONAS: list[dict] = [
     {
         "photo": "stem_sell_skin",
         "name": "Ronas Stem Cell Skin (500 ml)",
+        "uz": (
+            "O'simlik ildiz hujayralari asosidagi toner-skin: ichki "
+            "qatlamlarda tiklanishni uyg'otadi va kollagen sintezini "
+            "qo'llab-quvvatlaydi. Taranglikni yo'qotgan yetuk teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Teri strukturasini yaxshilaydi va silliqlaydi\n"
+            "• Ajoyib namlik, quruqlik belgilarini kamaytiradi\n"
+            "• Kollagen va elastin ishlab chiqarilishini rag'batlantiradi\n"
+            "• Pigmentatsiya va notekis rang bilan ishlaydi\n\n"
+            "🧴 Faol tarkib: hydrolyzed pea protein, sodium hyaluronate, "
+            "yashil choy kallus ekstrakti, soya platsentasi.\n"
+            "💧 Qo'llanish: tozalashdan keyin yuz va bo'yinga."
+        ),
         "ru": (
             "Омолаживающий тонер-скин на стволовых клетках растений: "
             "запускает восстановление в глубоких слоях и поддерживает синтез "
@@ -37,6 +50,20 @@ RONAS: list[dict] = [
     {
         "photo": "ronas",
         "name": "Ronas Stem Cell Coconut Ampoule Essence (150 ml)",
+        "uz": (
+            "Kokos yog'i va o'simlik ildiz hujayralari asosidagi "
+            "essence-ampula: sezuvchan, qizarishga moyil hamda muolajadan "
+            "keyin tiklanayotgan teri uchun. Himoya to'sig'ini tiklaydi va "
+            "chuqur namlaydi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Intensiv namlik, suvsizlanishni yo'qotadi\n"
+            "• Qizarish va yallig'lanishni yumshatadi\n"
+            "• Ajin va pigment izlariga qarshi antioksidant ta'sir\n"
+            "• Makiyaj ostida mukammal silliq asos\n\n"
+            "🧴 Faol tarkib: kokos yog'i, yashil choy kallus ekstrakti, sodium "
+            "hyaluronate, adenosine, panthenol, allantoin.\n"
+            "💧 Qo'llanish: tonerdan keyin 2–3 tomchi, ustidan krem."
+        ),
         "ru": (
             "Эссенция-ампула с кокосовым маслом и стволовыми клетками "
             "растений: для чувствительной, склонной к покраснениям кожи и "
@@ -68,6 +95,20 @@ RONAS: list[dict] = [
     {
         "photo": None,
         "name": "Ronas Stem Cell Coconut Re-Balance Balm (100 ml)",
+        "uz": (
+            "Kokos yog'i va o'simlik ildiz hujayralari asosidagi krem-balzam: "
+            "chuqur oziqlanish, tiklanish va himoya. Quruq yoki aralash hamda "
+            "muolajadan keyin tiklanayotgan teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Lipid va himoya qatlamlarini mustahkamlaydi\n"
+            "• Quruqlik va stress yallig'lanishini tinchlantiradi\n"
+            "• Yumshoqlik, taranglik va tabiiy nur qaytaradi\n"
+            "• Og'ir emas — har kuni qo'llashga qulay\n\n"
+            "🧴 Faol tarkib: skvalan, shea yog'i, kokos yog'i, yashil choy "
+            "kallus ekstrakti, sodium hyaluronate, adenosine.\n"
+            "💧 Qo'llanish: peeling yoki lazerdan keyingi tiklanish bosqichida "
+            "ayniqsa samarali."
+        ),
         "ru": (
             "Крем-бальзам на кокосовом масле и растительных стволовых "
             "клетках: глубокое питание, восстановление и защита. Для сухой, "
@@ -100,6 +141,19 @@ RONAS: list[dict] = [
     {
         "photo": None,
         "name": "Ronas Stem Cell Hydro Cream (100 ml)",
+        "uz": (
+            "O'simlik ildiz hujayralari asosidagi namlantiruvchi krem: chuqur "
+            "namlik, yangilanish va himoya. Normal yoki yog'li hamda "
+            "muolajadan keyin tiklanayotgan teri uchun.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Himoya to'siq funksiyasini mustahkamlaydi\n"
+            "• Namlikni chuqur qatlamlarga yetkazadi\n"
+            "• Teri yuzasini va mikrorelefni silliqlaydi\n"
+            "• Yog'li, muvozanatsiz terini muvozanatga qaytaradi\n\n"
+            "🧴 Faol tarkib: hydrolyzed pea protein, sodium hyaluronate, "
+            "yashil choy kallus ekstrakti, centella asiatica, artemisia.\n"
+            "💧 Qo'llanish: toner va serumdan keyin, ertalab va kechqurun."
+        ),
         "ru": (
             "Увлажняющий крем на стволовых клетках растений: даёт глубокое "
             "увлажнение, обновляет и защищает. Для нормальной, жирной кожи и "
@@ -131,6 +185,19 @@ RONAS: list[dict] = [
     {
         "photo": "resting_hedra_mist",
         "name": "Ronas Resting Hydra Mist (50 ml)",
+        "uz": (
+            "24 soat namlik beruvchi mist: quruq, charchagan yoki tirnashgan "
+            "teriga namlikni zudlik bilan qaytaradi va tinchlantiradi. "
+            "Makiyaj ustidan ham purkash mumkin.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Zudlik bilan namlik, suvsizlanishni yo'qotadi\n"
+            "• Qizarish va tortilishni yumshatadi\n"
+            "• Himoya to'sig'ini mustahkamlaydi\n"
+            "• Kun bo'yi tetiklik hissi\n\n"
+            "🧴 Faol tarkib: ActiSoothe, MultiEX BSASM™ (7 ta o'simlik "
+            "ekstrakti), betaine.\n"
+            "💧 Qo'llanish: 20–30 sm masofadan yuz va bo'yinga purkang."
+        ),
         "ru": (
             "Мист-спрей с 24-часовым увлажнением: мгновенно возвращает влагу "
             "сухой, уставшей или раздражённой коже и успокаивает её. Можно "
@@ -161,6 +228,18 @@ RONAS: list[dict] = [
     {
         "photo": "cc_color_change_cream",
         "name": "Ronas Color Change CC Cream",
+        "uz": (
+            "Rangga moslashuvchi CC krem: teriga oq krem sifatida qo'llanadi, "
+            "so'ng teri rangiga moslashib tabiiy, bir tekis tus beradi. "
+            "Qoplayotib namlaydi va himoya qiladi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Rangga moslashuvchi texnologiya\n"
+            "• Rangni tenglashtiradi va yoritadi\n"
+            "• Namlik beradi, qulay qoplama yaratadi\n"
+            "• Yengil, tabiiy effekt — kundalik foydalanishga ideal\n\n"
+            "🧴 Kimga mos: rangi notekis teri; yengil va tabiiy makiyaj "
+            "istovchilar; har qanday teri turi."
+        ),
         "ru": (
             "CC-крем, подстраивающийся под тон: наносится белым, затем "
             "адаптируется под цвет кожи и даёт естественный ровный тон. "

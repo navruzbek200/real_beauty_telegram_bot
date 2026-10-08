@@ -3,8 +3,9 @@ from __future__ import annotations
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.views.generic import RedirectView
+from django.views.static import serve
 
 from apps.users.api import (
     register_app_user_view,
@@ -48,3 +49,17 @@ if settings.DEBUG:
     # under runserver — adding a STATIC_URL route here would shadow that and
     # 404 app assets (e.g. django-unfold) since STATIC_ROOT is unpopulated.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # The Telegram Mini App. In production nginx serves it from /webapp/ (see
+    # docker/nginx/realbeauty.conf.template) and runserver had no equivalent,
+    # so the shop screen could only ever be opened against a deployed server —
+    # which is how it stayed broken here unnoticed. Serving it under runserver
+    # too means ./run_local.sh + http://localhost:8000/webapp/ is enough to see
+    # it, and its relative /api/v1/ calls land on this same origin exactly as
+    # they do behind nginx. DEBUG-only: in production this must stay nginx's
+    # job, straight off disk.
+    _WEBAPP_ROOT = settings.BASE_DIR / "frontend" / "public" / "webapp"
+    urlpatterns += [
+        path("webapp/", serve, {"path": "index.html", "document_root": _WEBAPP_ROOT}),
+        re_path(r"^webapp/(?P<path>.+)$", serve, {"document_root": _WEBAPP_ROOT}),
+    ]

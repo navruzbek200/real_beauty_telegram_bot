@@ -1,9 +1,19 @@
 # Real Beauty CRM — nginx in front of the React SPA + gunicorn API.
 #
-# TLS: a Let's Encrypt cert for the sslip.io hostname that resolves to this
-# server's IP (169-58-58-145.sslip.io). Issued over the ACME webroot below and
-# renewed by the `certbot` compose service. Bootstrap once with
-# docker/nginx/init-letsencrypt.sh.
+# This is a TEMPLATE, not a finished config. The nginx image's entrypoint runs
+# envsubst over /etc/nginx/templates/*.template at container start, so the
+# PUBLIC_HOST placeholder below is filled in from the compose environment
+# (which reads it from .env). nginx's own runtime variables — $uri, $host,
+# $scheme and the rest — are left alone: envsubst only substitutes names that
+# exist in the environment, and those do not.
+#
+# The hostname used to be written out by hand in five places. It moved here so
+# that pointing the stack at a new server is one line in .env.
+#
+# TLS: a Let's Encrypt cert for that same host — either a real domain or the
+# sslip.io name that resolves straight to this server's IP. Issued over the
+# ACME webroot below and renewed by the `certbot` compose service. Bootstrap
+# once with docker/nginx/init-letsencrypt.sh.
 
 gzip on;
 gzip_vary on;
@@ -24,7 +34,7 @@ server {
     }
 
     location / {
-        return 301 https://169-58-58-145.sslip.io$request_uri;
+        return 301 https://${PUBLIC_HOST}$request_uri;
     }
 }
 
@@ -34,10 +44,10 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name 169-58-58-145.sslip.io 169.58.58.145;
+    server_name ${PUBLIC_HOST};
 
-    ssl_certificate /etc/letsencrypt/live/169-58-58-145.sslip.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/169-58-58-145.sslip.io/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/${PUBLIC_HOST}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${PUBLIC_HOST}/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers off;
     ssl_session_cache shared:SSL:10m;

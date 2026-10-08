@@ -6,6 +6,22 @@ OTHER: list[dict] = [
     {
         "photo": None,  # the shop's own shot is already uploaded
         "name": "Erste Liebe Low pH Madeca Green Creamy Cleansing Foam (150 ml)",
+        "uz": (
+            "Terining pH muvozanatini saqlagan holda makiyaj, ifloslik va "
+            "ortiqcha yog'ni yechuvchi krem-penka. Yog'li, sezuvchan yoki "
+            "mikrobiomi buzilgan teri uchun: himoya qatlamini saqlaydi, "
+            "tirnashni kamaytiradi va terini yumshoq qoldiradi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• pH muvozanatini buzmasdan yuvadi\n"
+            "• Sezuvchan terini tinchlantiradi, qizarishni kamaytiradi\n"
+            "• Pora ichidagi ifloslik va yog'ni muloyim tozalaydi\n"
+            "• Poralarni toraytirishga yordam beradi\n"
+            "• Keyingi parvarish bosqichiga terini tayyorlaydi\n\n"
+            "🧴 Faol tarkib: madecassoside, laminaria japonica, bifida ferment "
+            "lysate, gialuron kislotasi, salitsil kislotasi.\n"
+            "💧 Qo'llanish: nam yuzda ko'pirtiring, 1–2 daqiqa massaj qilib "
+            "yuvib tashlang. Ertalab va kechqurun."
+        ),
         "ru": (
             "Крем-пенка, которая мягко снимает макияж, грязь и лишний себум, "
             "сохраняя pH-баланс кожи. Для жирной, чувствительной кожи или "
@@ -42,6 +58,21 @@ OTHER: list[dict] = [
     {
         "photo": None,
         "name": "Erste Liebe Madeca White Creamy Cleansing Foam (150 ml)",
+        "uz": (
+            "Sezuvchan va tirnashga moyil teri uchun krem teksturali "
+            "tozalovchi penka. Makiyaj qoldig'i, ortiqcha yog' va ifloslikni "
+            "terining o'z namligini saqlagan holda olib tashlaydi — quruqlik "
+            "ham, tortilish ham yo'q.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Yog', ifloslik va makiyaj qoldig'ini tozalaydi\n"
+            "• Tabiiy namlikni saqlaydi — teri tortilmaydi\n"
+            "• Sezuvchan va tiklanayotgan terini tinchlantiradi\n"
+            "• Teri mikrobiomi muvozanatini qo'llab-quvvatlaydi\n\n"
+            "🧴 Faol tarkib: madecassoside, oq gullar kompleksi, yumshoq "
+            "sirt-aktiv moddalar.\n"
+            "💧 Qo'llanish: nam yuzda ko'pirtiring, massaj qilib yuvib "
+            "tashlang. Ertalab va kechqurun."
+        ),
         "ru": (
             "Кремовая очищающая пенка для чувствительной, склонной к "
             "раздражению кожи. Мягко убирает остатки макияжа, себум и "
@@ -75,6 +106,19 @@ OTHER: list[dict] = [
     {
         "photo": None,
         "name": "Dr.G pH Cleansing R.E.D Blemish Clear Soothing Foam (150 ml)",
+        "uz": (
+            "pH muvozanatlangan tinchlantiruvchi tozalovchi penka. 5-CICA "
+            "kompleksi tufayli nozik va qichishishga moyil teri uchun kuchli "
+            "tanlov — terini quritmasdan ifloslikni yechadi.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Yumshoq yuvadi, terini quritmaydi\n"
+            "• Centella asiatica (Cica) tinchlantiradi, yallig'lanishni "
+            "kamaytiradi\n"
+            "• Madecassoside yangilaydi va tiklaydi\n"
+            "• Glitserin namlaydi va yumshatadi\n\n"
+            "💧 Qo'llanish: nam yuzda ko'pirtiring, massaj qilib yuvib "
+            "tashlang. Kuniga ikki marta — ertalab va kechqurun."
+        ),
         "ru": (
             "pH-сбалансированная успокаивающая пенка. С комплексом 5-CICA "
             "особенно рекомендуется для нежной и склонной к зуду кожи — "
@@ -103,6 +147,17 @@ OTHER: list[dict] = [
     {
         "photo": None,
         "name": "Dr.Itch Calming Moisture Cream",
+        "uz": (
+            "Qichishish va noqulaylikdan aziyat chekayotgan teri uchun "
+            "tinchlantiruvchi va namlantiruvchi krem.\n\n"
+            "✨ Asosiy foydalari:\n"
+            "• Seramidlar himoya to'sig'ini tiklaydi va namlikni ushlaydi\n"
+            "• Niacinamide (B3) yallig'lanishni kamaytiradi\n"
+            "• Centella asiatica (Cica) tinchlantiradi va tiklaydi\n"
+            "• Allantoin yumshatadi va yangilanishni qo'llab-quvvatlaydi\n\n"
+            "💧 Qo'llanish: toza teriga teng ravishda surting. Kuniga ikki "
+            "marta — ertalab va kechqurun."
+        ),
         "ru": (
             "Успокаивающе-увлажняющий крем для кожи, страдающей от зуда и "
             "дискомфорта.\n\n"
