@@ -55,7 +55,15 @@ server {
 
     client_max_body_size 100M;  # tutorial videos are uploaded through the admin
 
-    # Progress-photo thumbnails, product images, tutorial videos.
+    # The course videos reach customers only through the bot (protect_content),
+    # which reads them from disk. Serving them here would hand anyone with the
+    # URL a file to download and share without an access code. Posters live in
+    # lessons/posters/ and stay public; `[^/]+` keeps this to the top level.
+    location ~* ^/media/lessons/[^/]+\.(mp4|mov|m4v|webm|mkv)$ {
+        return 404;
+    }
+
+    # Progress-photo thumbnails, product images, posters.
     location /media/ {
         alias /srv/media/;
         expires 7d;
