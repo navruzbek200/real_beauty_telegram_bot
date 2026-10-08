@@ -1484,6 +1484,7 @@ export interface components {
             youtube_url?: string;
             /** Telegram kanal havolasi */
             telegram_url?: string;
+            linktree_url?: string;
             /**
              * Yandeks yetkazish haqi (so'm)
              * @description Toshkent bo'ylab. Savatchada alohida qator bo'lib qo'shiladi.
@@ -2272,6 +2273,7 @@ export interface components {
             youtube_url?: string;
             /** Telegram kanal havolasi */
             telegram_url?: string;
+            linktree_url?: string;
             /**
              * Yandeks yetkazish haqi (so'm)
              * @description Toshkent bo'ylab. Savatchada alohida qator bo'lib qo'shiladi.

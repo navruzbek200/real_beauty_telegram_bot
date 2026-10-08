@@ -108,6 +108,7 @@ class WebAppCatalogView(APIView):
                 ("instagram", conf.instagram_url),
                 ("youtube", conf.youtube_url),
                 ("telegram", conf.telegram_url),
+                ("linktree", conf.linktree_url),
             )
             if url
         ]

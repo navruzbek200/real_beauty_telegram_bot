@@ -103,6 +103,7 @@ export const shopSettingsFormSchema = z.object({
   instagram_url: url,
   youtube_url: url,
   telegram_url: url,
+  linktree_url: url,
 })
 export type ShopSettingsFormValues = z.infer<typeof shopSettingsFormSchema>
 export const shopSettingsFormConfig: ResourceFormConfig<ShopSettingsFormValues> = {
@@ -115,6 +116,7 @@ export const shopSettingsFormConfig: ResourceFormConfig<ShopSettingsFormValues> 
     { name: 'instagram_url', label: 'Instagram havolasi', type: 'text', help: 'Masalan: https://instagram.com/realbeauty — Mini App «Aloqa» bo\'limida chiqadi.' },
     { name: 'youtube_url', label: 'YouTube havolasi', type: 'text', help: 'Bo\'sh qoldirsangiz bu tugma ko\'rinmaydi.' },
     { name: 'telegram_url', label: 'Telegram kanal havolasi', type: 'text', help: 'Masalan: https://t.me/realbeauty_uz. Bo\'sh — ko\'rinmaydi.' },
+    { name: 'linktree_url', label: 'Linktree («Biz haqimizda») havolasi', type: 'text', help: 'Masalan: https://linktr.ee/realbeauty_uz. Bo\'sh — ko\'rinmaydi.' },
   ],
   defaultValues: {
     shop_name: 'Real Beauty',
@@ -124,6 +126,7 @@ export const shopSettingsFormConfig: ResourceFormConfig<ShopSettingsFormValues> 
     instagram_url: '',
     youtube_url: '',
     telegram_url: '',
+    linktree_url: '',
   },
   toFormValues: (item) => ({
     shop_name: (item.shop_name as string) ?? 'Real Beauty',
@@ -133,6 +136,7 @@ export const shopSettingsFormConfig: ResourceFormConfig<ShopSettingsFormValues> 
     instagram_url: (item.instagram_url as string) ?? '',
     youtube_url: (item.youtube_url as string) ?? '',
     telegram_url: (item.telegram_url as string) ?? '',
+    linktree_url: (item.linktree_url as string) ?? '',
   }),
 }
 export type { GlobalSettings }

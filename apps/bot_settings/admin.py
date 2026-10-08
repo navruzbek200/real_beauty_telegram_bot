@@ -40,6 +40,7 @@ class GlobalSettingsAdmin(RBModelAdmin):
                     "instagram_url",
                     "youtube_url",
                     "telegram_url",
+                    "linktree_url",
                 ],
                 "description": "Mini App'da ko'rinadigan nom, shior va ijtimoiy "
                 "tarmoq havolalari. Bo'sh havola — o'sha tugma yashiriladi.",

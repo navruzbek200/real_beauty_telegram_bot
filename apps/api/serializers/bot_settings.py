@@ -17,6 +17,7 @@ class GlobalSettingsSerializer(serializers.ModelSerializer):
             "instagram_url",
             "youtube_url",
             "telegram_url",
+            "linktree_url",
             "delivery_fee_yandex",
             "delivery_fee_bts",
             "cash_on_delivery_enabled",

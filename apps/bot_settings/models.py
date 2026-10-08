@@ -65,6 +65,11 @@ class GlobalSettings(models.Model):
     telegram_url = models.URLField(
         blank=True, verbose_name="Telegram kanal havolasi"
     )
+    linktree_url = models.URLField(
+        blank=True,
+        default="https://linktr.ee/realbeauty_uz",
+        verbose_name="Linktree («Biz haqimizda») havolasi",
+    )
 
     # --- delivery ----------------------------------------------------------
     # Charged to the customer as its own basket line. The shop pays the carrier

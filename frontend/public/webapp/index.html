@@ -306,6 +306,7 @@
     .ic.ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
     .ic.yt { background: linear-gradient(135deg,#ff4b41,#e00000); }
     .ic.tg { background: linear-gradient(135deg,#37bbfe,#007dbb); }
+    .ic.lt { background: linear-gradient(135deg,#6fe3a3,#1fb36b); }
     .ic.sp { background: linear-gradient(135deg, var(--sky), var(--sky-deep)); }
     .row .label { flex: 1; font-size: 15px; font-weight: 600; }
     .row .chev { color: var(--hint); font-size: 20px; }
@@ -464,7 +465,7 @@
       uz: { kicker: 'Go‘zallik do‘koni', search: 'Qidirish…', all: 'Hammasi', top: '🔥 TOP', sale: '💸 Chegirma',
         empty: 'Mahsulot topilmadi', err: 'Yuklab bo‘lmadi. Qayta urinib ko‘ring.', ask: '💬 Savol berish',
         askHint: 'Savolingiz botda — shu chatda davom etadi', badgeTop: 'TOP', som: 'so‘m', details: 'Batafsil',
-        links: 'Biz bilan bog‘laning', support: 'Savol / Murojaat yozish', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram kanal',
+        links: 'Biz bilan bog‘laning', support: 'Savol / Murojaat yozish', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram kanal', lt: 'Biz haqimizda',
         tabShop: 'Do‘kon', tabLessons: 'Darslar', tabContact: 'Aloqa',
         lessonsTitle: '🎓 Video darslar', lessonsMine: 'Mahsulotlaringiz bo‘yicha qo‘llanmalar', lessonsAll: 'Mahsulotlar bo‘yicha video qo‘llanmalar',
         lessonsEmpty: 'Hozircha video darslar yo‘q.\nTez orada qo‘shiladi!', lessonCount: (n) => n + ' ta dars',
@@ -501,7 +502,7 @@
       ru: { kicker: 'Магазин красоты', search: 'Поиск…', all: 'Все', top: '🔥 ТОП', sale: '💸 Скидка',
         empty: 'Товары не найдены', err: 'Не удалось загрузить. Попробуйте ещё раз.', ask: '💬 Задать вопрос',
         askHint: 'Вопрос продолжится в чате с ботом', badgeTop: 'ТОП', som: 'сум', details: 'Подробнее',
-        links: 'Мы на связи', support: 'Написать вопрос', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram канал',
+        links: 'Мы на связи', support: 'Написать вопрос', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram канал', lt: 'О нас',
         tabShop: 'Магазин', tabLessons: 'Уроки', tabContact: 'Связь',
         lessonsTitle: '🎓 Видеоуроки', lessonsMine: 'Инструкции по вашим товарам', lessonsAll: 'Видеоинструкции по товарам',
         lessonsEmpty: 'Видеоуроков пока нет.\nСкоро добавим!', lessonCount: (n) => n + ' урок(ов)',
@@ -538,7 +539,7 @@
       en: { kicker: 'Beauty shop', search: 'Search…', all: 'All', top: '🔥 TOP', sale: '💸 Sale',
         empty: 'No products found', err: 'Could not load. Try again.', ask: '💬 Ask a question',
         askHint: 'Your question continues in the bot chat', badgeTop: 'TOP', som: 'UZS', details: 'Details',
-        links: 'Get in touch', support: 'Write a question', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram channel',
+        links: 'Get in touch', support: 'Write a question', ig: 'Instagram', yt: 'YouTube', tgc: 'Telegram channel', lt: 'About us',
         tabShop: 'Shop', tabLessons: 'Lessons', tabContact: 'Contact',
         lessonsTitle: '🎓 Video lessons', lessonsMine: 'Guides for your products', lessonsAll: 'Video guides for our products',
         lessonsEmpty: 'No video lessons yet.\nComing soon!', lessonCount: (n) => n + ' lesson(s)',
@@ -1011,10 +1012,11 @@
       instagram: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
       youtube: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.4-.4-5a2.6 2.6 0 0 0-1.8-1.8C19 4.8 12 4.8 12 4.8s-7 0-8.8.4A2.6 2.6 0 0 0 1.4 7C1 8.6 1 12 1 12s0 3.4.4 5a2.6 2.6 0 0 0 1.8 1.8c1.8.4 8.8.4 8.8.4s7 0 8.8-.4A2.6 2.6 0 0 0 22.6 17c.4-1.6.4-5 .4-5ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>',
       telegram: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 20c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-4.9L18 6.5c.4-.3-.1-.5-.6-.2L6.6 13.2l-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3Z"/></svg>',
+      linktree: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></svg>',
       support: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.4 8.4 0 0 1 3 11.5 8.5 8.5 0 0 1 11.5 3 8.5 8.5 0 0 1 21 11.5Z"/></svg>',
     };
     function renderLinks(links) {
-      const rows = [], map = { instagram: ['ig', L.ig], youtube: ['yt', L.yt], telegram: ['tg', L.tgc] };
+      const rows = [], map = { instagram: ['ig', L.ig], youtube: ['yt', L.yt], telegram: ['tg', L.tgc], linktree: ['lt', L.lt] };
       rows.push(`<div class="row" data-support="1"><div class="ic sp">${ICONS.support}</div><span class="label">${L.support}</span><span class="chev">›</span></div>`);
       links.forEach(l => {
         const m = map[l.kind]; if (!m) return;

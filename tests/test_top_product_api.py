@@ -114,12 +114,19 @@ class WebAppCatalogTests(APITestCase):
         conf.instagram_url = "https://instagram.com/realbeauty_uz"
         conf.youtube_url = ""  # blank → its row must not appear
         conf.telegram_url = "https://t.me/realbeauty"
+        conf.linktree_url = ""  # blank → its row must not appear
         conf.save()
 
         data = self.client.get("/api/v1/webapp/catalog/").data
         self.assertEqual(data["shop"]["name"], "Real Beauty")
         kinds = {link["kind"] for link in data["links"]}
         self.assertEqual(kinds, {"instagram", "telegram"})  # youtube omitted
+
+    def test_catalog_ships_the_linktree_page_by_default(self):
+        """The «Biz haqimizda» row (the shop's Linktree) is there out of the box."""
+        links = {l["kind"]: l["url"] for l in self.client.get(
+            "/api/v1/webapp/catalog/").data["links"]}
+        self.assertEqual(links["linktree"], "https://linktr.ee/realbeauty_uz")
 
     def test_catalog_ships_the_youtube_channel_by_default(self):
         """A fresh settings row already carries the shop's YouTube channel.
