@@ -37,7 +37,13 @@ from bot.middlewares.db import DBSessionMiddleware  # noqa: E402
 from bot.middlewares.i18n import LanguageMiddleware  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Not getLogger(__name__): this module is started as `python -m bot.main`,
+# so __name__ is "__main__" — a logger outside the "bot" tree, which falls
+# back to the root level of WARNING and drops every INFO line below. That
+# is how "Mini App enabled: <url>" — the one line that shows at a glance
+# which URL customers are actually handed — went unprinted for a month
+# while the URL it would have shown was stale.
+logger = logging.getLogger("bot.main")
 
 _bot: Bot | None = None
 
