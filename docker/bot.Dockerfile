@@ -12,7 +12,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# The VPS this is built on drops long downloads: pip's two default
+# retries are not enough to get through a 300 MB install, and a build
+# that dies two thirds of the way through costs the whole layer.
+RUN pip install --no-cache-dir --retries 10 --timeout 60 -r requirements.txt
 
 COPY . .
 
