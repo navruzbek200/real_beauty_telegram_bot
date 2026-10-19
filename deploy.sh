@@ -33,7 +33,7 @@ fi
 
 HOST="${DEPLOY_HOST:-${PUBLIC_HOST:-}}"
 USER="${DEPLOY_USER:-root}"
-REMOTE="${DEPLOY_PATH:-/opt/realbeauty}"
+REMOTE="${DEPLOY_PATH:-/opt/real_beauty_telegram_bot}"
 
 info() { printf "\033[1;36m[deploy]\033[0m %s\n" "$*"; }
 warn() { printf "\033[1;33m[deploy]\033[0m %s\n" "$*"; }
@@ -158,5 +158,40 @@ check "catalog API"  "/api/v1/webapp/catalog/?lang=uz" 200
 check "admin panel"  "/login"                          200
 check "Mini App"     "/webapp/"                        200
 
-info "✅ Deployed and healthy — API, admin panel and Mini App all answer 200."
+# A 200 only proves *something* is served. These two checks prove it is the
+# build that was just shipped, and that a customer's phone will actually pick
+# it up — the pair of things that silently went wrong once and cost ten days
+# of "I pushed the fix but nobody can see it".
+
+# 5a. the bytes on the wire are the bytes in this working tree.
+sha() { shasum -a 256 2>/dev/null <"$1" || sha256sum <"$1"; }
+LOCAL_PAGE="frontend/public/webapp/index.html"
+if [[ -f "$LOCAL_PAGE" ]]; then
+  want="$(sha "$LOCAL_PAGE" | cut -d' ' -f1)"
+  tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
+  curl -sk --max-time 20 "https://${PUBLIC}/webapp/" -o "$tmp"
+  got="$(sha "$tmp" | cut -d' ' -f1)"
+  [[ "$want" == "$got" ]] || die "Mini App serverda eski versiya turibdi.
+    kutilgan: ${want}
+    serverda: ${got}
+frontend-sync konteyneri qayta ishlamagan. Majburlang:
+    ssh ${USER}@${HOST} 'cd ${REMOTE} && docker compose up -d --force-recreate frontend-sync && docker compose restart nginx'"
+  info "  ✓ Mini App bytes match this checkout"
+fi
+
+# 5b. the shell is served no-store. Without it Telegram's WebView keeps a
+# cached copy for days and a redeploy reaches nobody but whoever's cache
+# happened to expire.
+for path in /webapp/ /; do
+  cc=$(curl -skI --max-time 20 "https://${PUBLIC}${path}" | tr -d '\r' | grep -i '^cache-control:' || true)
+  case "$cc" in
+    *no-store*) info "  ✓ ${path} sends no-store" ;;
+    *) die "${path} no-store bilan uzatilmayapti (${cc:-sarlavha umuman topilmadi}).
+Mijozlarning telefoni eski nusxani ushlab qoladi. nginx yangi konfigni olmagan:
+    ssh ${USER}@${HOST} 'cd ${REMOTE} && docker compose up -d --force-recreate nginx'" ;;
+  esac
+done
+
+info "✅ Deployed and healthy — API, admin panel and Mini App all answer 200,"
+info "   the Mini App on the wire matches this checkout, and both shells are no-store."
 info "   Mini App: https://${PUBLIC}/webapp/"

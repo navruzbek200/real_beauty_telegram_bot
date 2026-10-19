@@ -78,9 +78,19 @@ server {
     }
 
     # Telegram Mini App (self-contained WebApp shell + assets).
+    #
+    # no-store for the same reason as the SPA shell below, but it matters more
+    # here: the Mini App is one self-contained page, so there are no hashed
+    # bundles to bust and a cached copy freezes the *entire* UI. Without this
+    # header a client falls back to heuristic freshness — roughly a tenth of
+    # the page's age, which grows every day the page is not touched — so a
+    # customer who opened the shop once keeps the old interface for days and
+    # restarting Telegram does not clear it. The ?v= stamp on the URL
+    # (bot/utils/webapp.py) is the other half of the belt and braces.
     location /webapp/ {
         alias /srv/frontend/webapp/;
         try_files $uri $uri/ /webapp/index.html;
+        add_header Cache-Control "no-store, must-revalidate";
     }
 
     # The old Unfold admin UI.

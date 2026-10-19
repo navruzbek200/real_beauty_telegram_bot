@@ -6,7 +6,7 @@
 # yet, use the sslip.io name that resolves straight to its IP — for 1.2.3.4
 # that is 1-2-3-4.sslip.io, a real publicly-valid name Let's Encrypt issues for.
 #
-# Run once from the compose directory (/opt/realbeauty):
+# Run once from the compose directory (/opt/real_beauty_telegram_bot):
 #
 #   sh docker/nginx/init-letsencrypt.sh
 #

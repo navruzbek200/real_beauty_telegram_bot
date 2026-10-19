@@ -108,11 +108,19 @@ services:
     restart: unless-stopped
 
   # Copies the baked static files out of the image into the volume nginx reads.
+  #
+  # The volume is emptied first. A plain `cp -r` only ever adds and overwrites,
+  # so a file dropped from the build lingered in the volume for good — and for
+  # the frontend below that is not merely untidy: the SPA shell is served
+  # no-store but the hashed bundles it names are served `immutable` for 30
+  # days, so a browser holding an *old* shell kept resolving its old bundle
+  # with a 200 instead of the 404 that would have forced it to reload. The
+  # panel then stayed frozen on a build that no longer exists, silently.
   static-sync:
     build:
       context: .
       dockerfile: docker/django.Dockerfile
-    command: sh -c "cp -r /app/staticfiles/. /srv/staticfiles/"
+    command: sh -c "set -e; find /srv/staticfiles -mindepth 1 -delete; cp -r /app/staticfiles/. /srv/staticfiles/"
     volumes:
       - static:/srv/staticfiles
 
@@ -122,7 +130,7 @@ services:
     build:
       context: .
       dockerfile: docker/frontend.Dockerfile
-    command: sh -c "cp -r /app/dist/. /srv/frontend/"
+    command: sh -c "set -e; find /srv/frontend -mindepth 1 -delete; cp -r /app/dist/. /srv/frontend/"
     volumes:
       - frontend_dist:/srv/frontend
 

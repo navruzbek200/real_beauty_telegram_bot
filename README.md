@@ -218,7 +218,7 @@ Let's Encrypt unga sertifikat beradi.
 2. **Sozlash:**
 
    ```bash
-   git clone <repo> /opt/realbeauty && cd /opt/realbeauty
+   git clone <repo> /opt/real_beauty_telegram_bot && cd /opt/real_beauty_telegram_bot
    cp .env.example .env
    nano .env    # hamma qiymatni to'ldiring — fayl ichida yo'riqnoma bor
    ```
