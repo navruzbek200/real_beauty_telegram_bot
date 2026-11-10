@@ -16,6 +16,7 @@ export interface ResourceFormField {
   type: FieldType
   options?: { value: string; label: string }[]
   help?: string
+  variables?: { label: string; value: string }[]
 }
 
 export interface ResourcePermissions {

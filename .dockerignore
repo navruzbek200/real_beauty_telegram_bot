@@ -1,0 +1,13 @@
+.git/
+.env
+.env.bak.*
+secrets/
+backups/
+media/
+staticfiles/
+.venv/
+venv/
+**/__pycache__/
+**/*.pyc
+frontend/node_modules/
+frontend/dist/

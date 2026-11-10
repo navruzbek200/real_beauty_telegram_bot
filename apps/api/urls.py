@@ -40,8 +40,10 @@ from apps.api.views.support import (
     SupportThreadViewSet,
 )
 from apps.api.views.users import AppUserViewSet, StaffViewSet, TelegramUserViewSet, UserProductViewSet
+from apps.api.views.billz import BillzReceiptViewSet
 
 router = DefaultRouter()
+router.register('billz-receipts',BillzReceiptViewSet,basename='billz-receipt')
 router.register("products", ProductViewSet, basename="product")
 router.register("top-products", TopProductViewSet, basename="top-product")
 router.register("product-tutorial-steps", ProductTutorialStepViewSet, basename="product-tutorial-step")

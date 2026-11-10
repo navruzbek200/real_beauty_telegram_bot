@@ -26,13 +26,13 @@ class PhoneNumberUniqueMixin:
         phone = (self.cleaned_data.get("phone_number") or "").strip()
         if not phone:
             return phone
-        tail = TelegramUser.phone_tail_of(phone)
-        if not tail:
+        normalized = TelegramUser.normalize_phone(phone)
+        if not normalized:
             raise forms.ValidationError(
                 "Raqam to'liq emas — kamida 9 ta raqam bo'lishi kerak."
             )
         # Two cards with the same number would both match the customer on /start.
-        clash = TelegramUser.objects.filter(phone_tail=tail)
+        clash = TelegramUser.objects.filter(phone_number=normalized)
         if self.instance.pk:
             clash = clash.exclude(pk=self.instance.pk)
         existing = clash.first()
@@ -40,4 +40,4 @@ class PhoneNumberUniqueMixin:
             raise forms.ValidationError(
                 f"Bu raqam «{existing}» xaridorga biriktirilgan."
             )
-        return phone
+        return normalized

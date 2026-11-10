@@ -4,6 +4,8 @@ import logging
 from datetime import timedelta
 
 from celery import shared_task
+from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 
 from core.telegram import TelegramError, send_message
@@ -23,12 +25,32 @@ def _due_purchases(rule, window):
         # produce a guaranteed-failing send that blocked the whole batch.
         user__telegram_id__isnull=False,
         user__is_active=True,
+        auto_messages_enabled=True,
         # Most recent purchase first, so the one message a customer gets after
         # a bulk assignment references their newest product (see _dispatch_rule).
     ).order_by("-purchased_at")
+    if settings.BILLZ_SECRET_TOKEN:
+        qs = qs.filter(user__phone_verified=True)
     if rule.is_test_mode:
         qs = qs.filter(user_id=rule.test_user_id) if rule.test_user_id else qs.none()
-    return [(f"up:{up.pk}", up.user, up.product) for up in qs]
+    candidates = [(f"up:{up.pk}", up.user, up.product) for up in qs]
+    from apps.billz.models import BillzPurchase, BillzReceipt
+    from django.db.models import F
+
+    imported = BillzPurchase.objects.filter(
+        purchased_at__lte=newest, purchased_at__gte=oldest,
+        historical=False, active=True, intro_sent_at__isnull=False,
+        user__telegram_id__isnull=False, user__is_active=True,
+        user__phone_verified=True, item__product__isnull=False,
+        phone_number=F('user__phone_number'),
+    ).filter(Q(receipt__isnull=True)|Q(receipt__historical=True)).select_related('user', 'item__product')
+    if rule.is_test_mode:
+        imported = imported.filter(user_id=rule.test_user_id) if rule.test_user_id else imported.none()
+    candidates.extend((f"billz:{purchase.pk}:{purchase.user_id}", purchase.user, purchase.item.product) for purchase in imported.order_by('-purchased_at'))
+    receipts=BillzReceipt.objects.filter(purchased_at__gte=oldest,purchased_at__lte=newest,historical=False,ready_at__isnull=False,user__telegram_id__isnull=False,user__is_active=True,user__phone_verified=True,phone_number=F('user__phone_number'),purchases__active=True).select_related('user').prefetch_related('purchases').distinct().order_by('-purchased_at')
+    if rule.is_test_mode:receipts=receipts.filter(user_id=rule.test_user_id) if rule.test_user_id else receipts.none()
+    candidates.extend((f'br:{receipt.pk}:{receipt.user_id}',receipt.user,receipt) for receipt in receipts)
+    return candidates
 
 
 def _due_registrations(rule, window):
@@ -99,7 +121,7 @@ def _dispatch_rule(rule) -> int:
 
     def _mark_done(items: list, *, success: bool = True, error: str = "") -> None:
         for anchor, user, _product in items:
-            AutoMessageLog.objects.get_or_create(
+            AutoMessageLog.objects.update_or_create(
                 auto_message=rule,
                 anchor=anchor,
                 defaults={
@@ -118,31 +140,60 @@ def _dispatch_rule(rule) -> int:
         if not pending:
             continue
 
-        anchor, user, product = pending[0]
-        lang = user.language
-        text = rule.render({"user": user, "product": product}, lang)
-        if not text.strip():
-            continue
-        keyboard = rule.keyboard_for(lang, product.pk if product else None)
-
+        from django.core.cache import cache
+        from django.db import transaction
+        from apps.billz.models import BillzReceipt
+        from core.purchase_context import purchase_context
+        import uuid
+        anchor,user,product=pending[0]
+        lock=f'campaign:{rule.pk}:{user.pk}'
+        owner=uuid.uuid4().hex
+        if not cache.add(lock,owner,180):continue
         try:
-            send_message(
-                user.telegram_id, text, parse_mode="HTML", reply_markup=keyboard
-            )
-        except TelegramError as exc:
-            # Permanent failures (blocked bot, deleted account) are logged as
-            # done so they stop being retried forever; transient ones are left
-            # alone and the next run picks them up again.
-            if exc.is_permanent:
-                _mark_done(pending, success=False, error=str(exc))
-            continue
-        except Exception:  # noqa: BLE001
-            logger.exception("auto-message %s crashed on %s", rule.pk, anchor)
-            continue
-
-        # One send settles every purchase this customer had due in this run.
-        _mark_done(pending)
-        sent += 1
+            claimed=[]
+            with transaction.atomic():
+                for item in pending:
+                    _log,created=AutoMessageLog.objects.get_or_create(auto_message=rule,anchor=item[0],defaults={'user':item[1],'success':False,'error_detail':'Yuborish holati tekshirilmoqda.'})
+                    if created:claimed.append(item)
+            if not claimed:continue
+            with transaction.atomic():
+                from apps.billz.receipts import receipt_can_notify
+                from apps.users.models import TelegramUser
+                user=TelegramUser.objects.get(pk=user.pk)
+                receipt_ids=[item.pk for _,_,item in claimed if isinstance(item,BillzReceipt)]
+                fresh={item.pk:item for item in BillzReceipt.objects.filter(pk__in=receipt_ids).select_for_update(of=('self',)).select_related('user').prefetch_related('purchases')}
+                valid=[];items=[];first_receipt=None
+                for candidate in claimed:
+                    item=candidate[2]
+                    if isinstance(item,BillzReceipt):
+                        item=fresh.get(item.pk)
+                        if not item or item.user_id!=user.pk or not receipt_can_notify(item):continue
+                        first_receipt=first_receipt or item
+                        items.extend({'name':line.product_name,'quantity':line.quantity-line.returned_quantity} for line in item.purchases.all() if line.active)
+                    elif item is not None:items.append(item)
+                    valid.append(candidate)
+                rejected={item[0] for item in claimed}-{item[0] for item in valid}
+                if rejected:AutoMessageLog.objects.filter(auto_message=rule,anchor__in=rejected).delete()
+                if not valid:continue
+                if not user.is_active or not user.telegram_id or (settings.BILLZ_SECRET_TOKEN and not user.phone_verified):
+                    AutoMessageLog.objects.filter(auto_message=rule,anchor__in=[item[0] for item in valid]).delete();continue
+                lang=user.language
+                text=rule.render(purchase_context(user,items,first_receipt),lang)
+                if not text.strip():
+                    AutoMessageLog.objects.filter(auto_message=rule,anchor__in=[item[0] for item in valid]).delete();continue
+                try:
+                    send_message(user.telegram_id,text,parse_mode='HTML',reply_markup=rule.keyboard_for(lang))
+                except TelegramError as exc:
+                    if exc.is_permanent or exc.delivery_uncertain:_mark_done(valid,success=False,error=str(exc))
+                    else:AutoMessageLog.objects.filter(auto_message=rule,anchor__in=[item[0] for item in valid]).delete()
+                    continue
+                except Exception:
+                    _mark_done(valid,success=False,error='Yuborish holati noaniq. Telegramni tekshiring.')
+                    continue
+                _mark_done(valid)
+                sent+=1
+        finally:
+            if cache.get(lock)==owner:cache.delete(lock)
     return sent
 
 

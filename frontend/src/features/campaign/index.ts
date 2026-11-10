@@ -1,4 +1,5 @@
 export {
+  purchaseVariables,
   autoMessageColumns,
   autoMessageFormConfig,
   autoMessageFormSchema,

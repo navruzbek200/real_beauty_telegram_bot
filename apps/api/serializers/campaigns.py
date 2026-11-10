@@ -6,6 +6,22 @@ from apps.campaigns.models import AutoMessage, Broadcast, MessageTemplate
 
 
 class MessageTemplateSerializer(serializers.ModelSerializer):
+    def validate(self,attrs):
+        if self.instance and self.instance.template_type=='purchase_thanks':
+            from apps.billz.receipts import validate_thanks_body
+            from core.purchase_context import purchase_context
+            from types import SimpleNamespace
+            context=purchase_context(SimpleNamespace(full_name='Navruz',phone_number='',language='uz'),[{'name':'Non','quantity':1}])
+            for field in ['body','body_ru','body_en']:
+                body=attrs.get(field,getattr(self.instance,field,''))
+                if not body and field!='body':continue
+                if len(body)>4096:raise serializers.ValidationError({field:'Matn 4096 belgidan oshmasin.'})
+                try:
+                    env,_=validate_thanks_body(body)
+                    env.from_string(body).render(**context)
+                except Exception:raise serializers.ValidationError({field:'O‘zgaruvchi yoki matn formati noto‘g‘ri. Ism uchun {{ first_name }}, mahsulotlar uchun {{ products_text }} ishlating.'}) from None
+        return attrs
+
     class Meta:
         model = MessageTemplate
         fields = [

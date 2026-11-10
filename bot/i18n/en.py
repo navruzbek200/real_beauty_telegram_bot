@@ -46,7 +46,8 @@ STRINGS: dict[str, str] = {
     "reg.date_future": "❌ A birth date can't be in the future. Please try again.",
     "reg.date_old": "❌ That date looks too far back. Please check and try again.",
     "reg.ask_phone": "📱 What is your phone number?",
-    "reg.ask_phone_again": "Please send or type your phone number.",
+    "reg.ask_phone_again": "Please share your own phone contact using the button below.",
+    "reg.phone_already_linked": "This phone is linked to another Telegram account. Please contact the shop administrator.",
     "reg.invalid_phone": (
         "❌ That number isn't valid. For example: <b>+998 90 123 45 67</b>\n"
         "Or share your contact with the button below."

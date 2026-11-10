@@ -35,7 +35,8 @@ export function PurchasesDialog({ customer, onClose }: PurchasesDialogProps) {
     enabled: customer !== null,
   })
 
-  const purchases = (detail.data?.purchases ?? []) as UserProduct[]
+  const purchases = ((detail.data?.purchases ?? []) as UserProduct[]).filter(purchase => !purchase.is_billz)
+  const billzPurchases = detail.data?.billz_purchases ?? []
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['customers'] })
@@ -75,6 +76,26 @@ export function PurchasesDialog({ customer, onClose }: PurchasesDialogProps) {
         </div>
       ) : (
         <div className="space-y-4">
+          {billzPurchases.length > 0 && (
+            <section aria-label="BILLZ xaridlari">
+              <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">BILLZ xaridlari</h3>
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                {billzPurchases.map((purchase) => (
+                  <li key={purchase.id} className="py-2">
+                    <p className="text-sm text-slate-800 dark:text-slate-200">{purchase.product_name} × {Number(purchase.quantity)}</p>
+                    <p className="text-xs text-slate-400">
+                      {new Date(purchase.purchased_at).toLocaleString('uz-UZ')} · Chek {purchase.order_number}
+                      {purchase.cancelled ? ' · Bekor qilingan' : !purchase.active && ' · Qaytarilgan yoki faol emas'}
+                    </p>
+                    {!purchase.has_tutorial && (
+                      <a className="text-xs text-cyan-700 underline dark:text-cyan-300" href={`/admin/billz/billzproduct/${encodeURIComponent(purchase.mapping_id)}/change/`} target="_blank" rel="noreferrer">Qo‘llanmani biriktirish</a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Biriktirilgan mahsulotlar</h3>
           {purchases.length === 0 ? (
             <EmptyState message="Hozircha biriktirilgan mahsulot yo'q." />
           ) : (

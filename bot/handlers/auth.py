@@ -9,6 +9,7 @@ from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.filters import CommandObject, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from django.conf import settings
 
 from apps.users.models import TelegramUser
 from bot.handlers import browse
@@ -191,6 +192,7 @@ async def _handled_as_login(
         existing is not None
         and existing.is_active
         and existing.registration_status == TelegramUser.RegistrationStatus.COMPLETED
+        and (not settings.BILLZ_SECRET_TOKEN or existing.phone_verified)
     ):
         await state.clear()
         user_lang = normalize(existing.language)
@@ -239,6 +241,13 @@ async def _handled_as_returning(
         # Started once but never finished — let the flow run again.
         return False
 
+    if settings.BILLZ_SECRET_TOKEN and not user.phone_verified:
+        await state.clear()
+        await state.set_state(SelfReg.phone)
+        await state.update_data(verify_billz_only=True, language=user.language)
+        await message.answer(t('reg.ask_phone_again', user.language), reply_markup=reply.share_contact_keyboard(user.language))
+        return True
+
     await state.clear()
     await message.answer(
         t("user.welcome_back", user.language, name=html.escape(user.full_name)),
@@ -255,11 +264,12 @@ async def _begin_self(
     registered_by_id: int | None = None,
 ) -> None:
     await state.clear()
-    await user_service.ensure_pending_user(
-        telegram_id=message.chat.id,
-        username=message.from_user.username if message.from_user else None,
-        source=TelegramUser.RegistrationSource.SELF,
-    )
+    if not settings.BILLZ_SECRET_TOKEN:
+        await user_service.ensure_pending_user(
+            telegram_id=message.chat.id,
+            username=message.from_user.username if message.from_user else None,
+            source=TelegramUser.RegistrationSource.SELF,
+        )
     # Carried through the FSM so the inviter is credited only once the friend
     # actually finishes signing up (see `_finalize_registration`).
     if registered_by_id is not None:
@@ -306,12 +316,13 @@ async def _begin_admin_assisted(
         admin_name=seller.display_name or str(admin_telegram_id),
     )
     # Create the pending row immediately so the seller sees the user in CRM.
-    await user_service.ensure_pending_user(
-        telegram_id=message.chat.id,
-        username=message.from_user.username if message.from_user else None,
-        source=TelegramUser.RegistrationSource.ADMIN,
-        referred_by_seller_id=seller.pk,
-    )
+    if not settings.BILLZ_SECRET_TOKEN:
+        await user_service.ensure_pending_user(
+            telegram_id=message.chat.id,
+            username=message.from_user.username if message.from_user else None,
+            source=TelegramUser.RegistrationSource.ADMIN,
+            referred_by_seller_id=seller.pk,
+        )
     # Notify the referring seller that a user started.
     await _safe_send(
         bot,
@@ -356,6 +367,11 @@ async def step_language(callback: CallbackQuery, state: FSMContext) -> None:
     await _clear_keyboard(callback)
 
     data = await state.get_data()
+    if settings.BILLZ_SECRET_TOKEN:
+        await state.update_data(billz_phone_first=True)
+        await state.set_state(AdminAssistedReg.phone if 'seller_id' in data else SelfReg.phone)
+        await replace_prompt_callback(callback,state,t('reg.ask_phone_again',chosen),reply_markup=reply.share_contact_keyboard(chosen))
+        return
     if "seller_id" in data:
         await state.set_state(AdminAssistedReg.full_name)
         greeting = t(
@@ -377,6 +393,7 @@ async def auth_confirm(callback: CallbackQuery) -> None:
         user is None
         or not user.is_active
         or user.registration_status != TelegramUser.RegistrationStatus.COMPLETED
+        or (settings.BILLZ_SECRET_TOKEN and not user.phone_verified)
     ):
         await callback.answer()
         await callback.message.edit_text(t("applogin.error", "uz"))
@@ -462,7 +479,23 @@ async def step_phone_contact(message: Message, state: FSMContext) -> None:
     if phone is None:
         await replace_prompt(message, state, t("reg.invalid_phone", lang))
         return
-    await state.update_data(phone_number=phone)
+    await state.update_data(phone_number=phone, phone_verified=True)
+    data = await state.get_data()
+    if data.get('verify_billz_only'):
+        user = await user_service.get_user(message.chat.id)
+        try:
+            user = await user_service.verify_billz_phone(user.pk, phone)
+        except ValueError:
+            await replace_prompt(message, state, t('reg.phone_already_linked', lang), reply_markup=reply.share_contact_keyboard(lang))
+            return
+        await state.clear()
+        await message.answer(t('user.welcome_back', lang, name=html.escape(user.full_name)), reply_markup=reply.main_menu_keyboard(lang))
+        await browse.open_tutorials(message.bot, message, user.telegram_id, lang)
+        return
+    if data.get('billz_phone_first'):
+        await state.update_data(full_name=message.from_user.full_name if message.from_user else message.contact.first_name)
+        await _finalize_registration(message,state,message.bot,photo_bytes=None)
+        return
     await ask_skin_step(message, state, lang)
 
 
@@ -471,6 +504,9 @@ async def step_phone_contact(message: Message, state: FSMContext) -> None:
 async def step_phone_text(message: Message, state: FSMContext) -> None:
     await cleanup_user_msg(message)
     lang = await _reg_language(state)
+    if settings.BILLZ_SECRET_TOKEN:
+        await replace_prompt(message, state, t('reg.ask_phone_again', lang), reply_markup=reply.share_contact_keyboard(lang))
+        return
     raw = (message.text or "").strip()
     if not raw:
         await replace_prompt(message, state, t("reg.ask_phone_again", lang))
@@ -545,22 +581,27 @@ async def _finalize_registration(
     chat = message.chat
 
     try:
-        user = await user_service.complete_user(
-            telegram_id=chat.id,
-            username=chat.username,
-            full_name=data["full_name"],
-            birth_date=datetime.fromisoformat(data["birth_date"]).date(),
-            phone_number=data["phone_number"],
-            face_condition=data["face_condition"],
-            source=source,
-            language=lang,
-            referred_by_seller_id=data.get("seller_id"),
-            registered_by_id=data.get("registered_by_id"),
-        )
+        if data.get('billz_phone_first'):
+            user = await user_service.bind_verified_contact(
+                telegram_id=chat.id,phone=data['phone_number'],username=chat.username,
+                full_name=data.get('full_name',''),language=lang,source=source,
+                referred_by_seller_id=data.get('seller_id'),registered_by_id=data.get('registered_by_id'),
+            )
+        else:
+            user = await user_service.complete_user(
+                telegram_id=chat.id,username=chat.username,full_name=data['full_name'],
+                birth_date=datetime.fromisoformat(data['birth_date']).date(),
+                phone_number=data['phone_number'],phone_verified=data.get('phone_verified',False),
+                face_condition=data['face_condition'],source=source,language=lang,
+                referred_by_seller_id=data.get('seller_id'),registered_by_id=data.get('registered_by_id'),
+            )
         if photo_bytes:
             await user_service.set_user_photo(
                 user.pk, photo_bytes, f"user_{user.telegram_id}.jpg"
             )
+    except ValueError:
+        await message.answer(t('reg.phone_already_linked',lang),reply_markup=reply.share_contact_keyboard(lang))
+        return
     except Exception:  # noqa: BLE001
         logger.exception("Failed to persist registration for %s", chat.id)
         await message.answer(t("reg.error", lang))

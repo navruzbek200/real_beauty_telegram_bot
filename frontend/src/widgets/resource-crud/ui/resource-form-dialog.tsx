@@ -71,7 +71,15 @@ export function ResourceFormDialog<TFormValues extends Record<string, unknown>>(
               control={control}
               render={({ field: rhf }) => {
                 if (field.type === 'textarea') {
-                  return <Textarea id={field.name} {...rhf} value={(rhf.value as string) ?? ''} />
+                  return <div className="space-y-2"><Textarea id={field.name} {...rhf} value={(rhf.value as string) ?? ''} />
+                    {field.variables && <div className="flex flex-wrap gap-1">{field.variables.map(variable => <Button key={variable.value} type="button" variant="ghost" size="sm" onClick={() => {
+                      const input=document.getElementById(field.name) as HTMLTextAreaElement
+                      const current=String(rhf.value ?? '')
+                      const start=input.selectionStart,end=input.selectionEnd
+                      rhf.onChange(current.slice(0,start)+variable.value+current.slice(end))
+                      requestAnimationFrame(() => {input.focus();input.setSelectionRange(start+variable.value.length,start+variable.value.length)})
+                    }}>+ {variable.label}</Button>)}</div>}
+                  </div>
                 }
                 if (field.type === 'checkbox') {
                   return (

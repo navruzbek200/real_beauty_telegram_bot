@@ -21,6 +21,10 @@ def render_body(body: str, context: dict[str, Any], *, html: bool) -> str:
     can't produce markup Telegram rejects.
     """
     from jinja2 import Environment
+    if context.get('user'):
+        from core.purchase_context import purchase_context
+        product=context.get('product')
+        context={**purchase_context(context['user'],[product] if product else []),**context}
 
     try:
         env = Environment(autoescape=html)
@@ -40,6 +44,7 @@ class MessageTemplate(models.Model):
     class TemplateType(models.TextChoices):
         WELCOME = "welcome", "Ro'yxatdan o'tgach salomlashish"
         PRODUCT_INTRO = "product_intro", "Mahsulot qo'llanmasi kirish"
+        PURCHASE_THANKS = 'purchase_thanks', 'BILLZ xaridi uchun minnatdorchilik'
         WEEK1_CHECKIN = "week1_checkin", "1-hafta so'rovi"
         WEEK2_PROGRESS = "week2_progress", "2-hafta natija so'rovi"
         BIRTHDAY_SALE = "birthday_sale", "Tug'ilgan kun chegirmasi"

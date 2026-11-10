@@ -9,6 +9,6 @@ export interface CustomerListParams {
   search?: string
   ordering?: string
   is_active?: boolean
-  source?: 'self' | 'admin' | 'app'
+  source?: 'self' | 'admin' | 'app' | 'billz'
   face_condition?: 'dry' | 'oily' | 'combined' | 'normal' | 'sensitive'
 }

@@ -47,7 +47,8 @@ STRINGS: dict[str, str] = {
     "reg.date_future": "❌ Tug'ilgan sana kelajakda bo'lishi mumkin emas. Qayta yozing.",
     "reg.date_old": "❌ Sana juda eski ko'rinadi. Tekshirib, qayta yozing.",
     "reg.ask_phone": "📱 Telefon raqamingiz?",
-    "reg.ask_phone_again": "Iltimos, telefon raqamingizni yuboring yoki yozing.",
+    "reg.ask_phone_again": "Iltimos, pastdagi tugma orqali o‘z telefon kontaktingizni yuboring.",
+    "reg.phone_already_linked": "Bu telefon boshqa Telegram hisobiga ulangan. Do‘kon administratoriga murojaat qiling.",
     "reg.invalid_phone": (
         "❌ Raqam noto'g'ri. Masalan: <b>+998 90 123 45 67</b>\n"
         "Yoki pastdagi tugma orqali kontaktingizni ulashing."

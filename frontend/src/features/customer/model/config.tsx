@@ -70,14 +70,14 @@ export const customerColumns: ResourceColumn<Customer>[] = [
     header: 'Manba',
     render: (c) => (
       <Badge tone={c.source === 'app' ? 'info' : c.source === 'admin' ? 'warning' : 'neutral'}>
-        {c.source === 'app' ? 'Mobil ilova' : c.source === 'admin' ? 'Admin' : "O'zi"}
+        {c.source === 'billz' ? 'BILLZ' : c.source === 'app' ? 'Mobil ilova' : c.source === 'admin' ? 'Admin' : "O'zi"}
       </Badge>
     ),
   },
   {
     key: 'linked',
     header: 'Bot',
-    render: (c) => (c.telegram_id ? <Badge tone="success">Ulangan</Badge> : <Badge>Ulanmagan</Badge>),
+    render: (c) => (c.telegram_id ? <Badge tone={c.phone_verified ? 'success' : 'warning'}>{c.phone_verified ? 'Tasdiqlangan' : 'Telefon tasdig‘i kutilmoqda'}</Badge> : <Badge>Ulanmagan</Badge>),
   },
   {
     key: 'created_at',

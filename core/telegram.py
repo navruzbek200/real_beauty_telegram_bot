@@ -39,9 +39,10 @@ _PERMANENT_MARKERS = (
 class TelegramError(RuntimeError):
     """Raised when the Bot API rejects a call or is unreachable."""
 
-    def __init__(self, description: str, retry_after: int | None = None) -> None:
+    def __init__(self, description: str, retry_after: int | None = None, *, delivery_uncertain: bool = False) -> None:
         super().__init__(description)
         self.retry_after = retry_after
+        self.delivery_uncertain = delivery_uncertain
 
     @property
     def is_permanent(self) -> bool:
@@ -83,7 +84,7 @@ def call(method: str, payload: dict[str, Any]) -> dict[str, Any]:
                 continue
             raise TelegramError(detail, retry_after=retry_after) from exc
         except Exception as exc:  # noqa: BLE001 — network/timeouts/JSON
-            raise TelegramError(str(exc)) from exc
+            raise TelegramError('Telegram bilan aloqa uzildi.', delivery_uncertain=True) from None
         if not body.get("ok"):
             raise TelegramError(body.get("description", "noma'lum xato"))
         return body.get("result", {})

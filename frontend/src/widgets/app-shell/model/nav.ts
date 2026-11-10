@@ -18,7 +18,8 @@ export const NAV_SECTIONS: NavSection[] = [
     title: 'Asosiy',
     items: [
       { to: '/', label: 'Boshqaruv paneli' },
-      { to: '/orders', label: 'Buyurtmalar', permission: 'orders.view_order' },
+      { to: '/billz-sales', label: 'BILLZ savdolari', permission: 'billz.view_billzreceipt' },
+      { to: '/orders', label: 'Onlayn buyurtmalar', permission: 'orders.view_order' },
       { to: '/customers', label: 'Xaridorlar', permission: 'users.view_telegramuser' },
       { to: '/support-threads', label: 'Murojaatlar', permission: 'support.view_supportthread' },
     ],

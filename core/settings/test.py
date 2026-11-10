@@ -18,6 +18,7 @@ DEBUG = False
 ALLOWED_HOSTS = ["*"]
 
 BOT_TOKEN = ""
+BILLZ_SECRET_TOKEN = ""
 WEBAPP_URL = ""
 
 CACHES = {

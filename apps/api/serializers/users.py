@@ -4,10 +4,29 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from apps.users.models import AppUser, SellerProfile, TelegramUser, UserProduct
+from apps.billz.models import BillzPurchase
+
+
+class BillzPurchaseSerializer(serializers.ModelSerializer):
+    mapping_id = serializers.CharField(source='item_id', read_only=True)
+    has_tutorial = serializers.SerializerMethodField()
+
+    def get_has_tutorial(self, obj) -> bool:
+        product = obj.item.product
+        return bool(product and any(step.has_video for step in product.tutorial_steps.all()))
+
+    class Meta:
+        model = BillzPurchase
+        fields = ['id', 'order_number', 'product_name', 'purchased_at', 'quantity', 'returned_quantity', 'active', 'cancelled', 'historical', 'has_tutorial', 'mapping_id']
+        read_only_fields = fields
 
 
 class UserProductSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
+    is_billz = serializers.SerializerMethodField()
+
+    def get_is_billz(self, obj) -> bool:
+        return not obj.auto_messages_enabled
 
     class Meta:
         model = UserProduct
@@ -19,6 +38,7 @@ class UserProductSerializer(serializers.ModelSerializer):
             "purchased_at",
             "week1_sent",
             "week2_sent",
+            "is_billz",
         ]
         read_only_fields = ["purchased_at", "week1_sent", "week2_sent"]
 
@@ -26,6 +46,7 @@ class UserProductSerializer(serializers.ModelSerializer):
 class TelegramUserSerializer(serializers.ModelSerializer):
     is_linked = serializers.BooleanField(read_only=True)
     purchases = UserProductSerializer(source="userproduct_set", many=True, read_only=True)
+    billz_purchases = BillzPurchaseSerializer(many=True, read_only=True)
 
     class Meta:
         model = TelegramUser
@@ -36,6 +57,7 @@ class TelegramUserSerializer(serializers.ModelSerializer):
             "full_name",
             "birth_date",
             "phone_number",
+            "phone_verified",
             "language",
             "face_condition",
             "photo",
@@ -48,9 +70,11 @@ class TelegramUserSerializer(serializers.ModelSerializer):
             "registered_at",
             "is_linked",
             "purchases",
+            "billz_purchases",
         ]
         read_only_fields = [
             "telegram_id",
+            "phone_verified",
             "source",
             "registration_status",
             "created_at",
@@ -82,11 +106,16 @@ class TelegramUserSerializer(serializers.ModelSerializer):
                 "Raqam noto'g'ri. O'zbekiston uchun: 90 123 45 67. "
                 "Boshqa davlat uchun kod bilan: +7 916 123 45 67."
             )
+        duplicate = TelegramUser.objects.filter(phone_number=normalized)
+        if self.instance:duplicate=duplicate.exclude(pk=self.instance.pk)
+        if duplicate.exists():
+            raise serializers.ValidationError('Bu telefon raqamiga mijoz allaqachon mavjud. Mavjud kartadan foydalaning.')
         return normalized
 
 
 class AppUserSerializer(serializers.ModelSerializer):
     is_linked = serializers.BooleanField(read_only=True)
+    validate_phone_number = TelegramUserSerializer.validate_phone_number
 
     class Meta:
         model = AppUser

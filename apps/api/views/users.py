@@ -3,7 +3,9 @@ from __future__ import annotations
 import logging
 
 from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
 from rest_framework import mixins, viewsets
+from rest_framework.exceptions import ValidationError
 
 from apps.api.pagination import DefaultPagination
 from apps.api.permissions import IsSuperUser, ModelPermissions
@@ -18,8 +20,16 @@ from apps.users.models import AppUser, TelegramUser, UserProduct
 logger = logging.getLogger(__name__)
 
 
+def _save_customer(serializer, **values):
+    try:
+        with transaction.atomic():
+            return serializer.save(**values)
+    except IntegrityError:
+        raise ValidationError({'phone_number':'Bu raqamga mijoz allaqachon mavjud. Mavjud kartadan foydalaning.'}) from None
+
+
 class TelegramUserViewSet(viewsets.ModelViewSet):
-    queryset = TelegramUser.objects.prefetch_related("userproduct_set__product").all()
+    queryset = TelegramUser.objects.prefetch_related("userproduct_set__product", "billz_purchases__item__product__tutorial_steps").all()
     serializer_class = TelegramUserSerializer
     permission_classes = [ModelPermissions]
     pagination_class = DefaultPagination
@@ -29,7 +39,10 @@ class TelegramUserViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # Cards born in the CRM, not from the bot's own /start flow.
-        serializer.save(source=TelegramUser.RegistrationSource.ADMIN)
+        _save_customer(serializer,source=TelegramUser.RegistrationSource.ADMIN)
+
+    def perform_update(self, serializer):
+        _save_customer(serializer)
 
 
 class AppUserViewSet(
@@ -48,6 +61,9 @@ class AppUserViewSet(
     search_fields = ["full_name", "phone_number"]
     ordering_fields = ["created_at"]
 
+    def perform_update(self, serializer):
+        _save_customer(serializer)
+
 
 class UserProductViewSet(viewsets.ModelViewSet):
     queryset = UserProduct.objects.select_related("user", "product").all()
@@ -57,7 +73,11 @@ class UserProductViewSet(viewsets.ModelViewSet):
     filterset_fields = ["user", "product"]
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        try:
+            with transaction.atomic():
+                instance = serializer.save()
+        except IntegrityError:
+            raise ValidationError({'product':'Bu mahsulot mijozga allaqachon biriktirilgan.'}) from None
         self._send_purchase_message(instance.user, instance.product)
 
     @staticmethod

@@ -7,6 +7,7 @@ from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from django.conf import settings
 
 from bot.filters.menu import MenuText
 from bot.handlers import browse
@@ -151,6 +152,11 @@ async def menu_profile(message: Message, state: FSMContext, lang: str) -> None:
     if message.from_user is None:
         return
     user = await user_service.get_user(message.from_user.id)
+    if user is not None and settings.BILLZ_SECRET_TOKEN and not user.phone_verified:
+        from bot.handlers import auth
+        if not await auth._handled_as_returning(message,state,lang):
+            await auth._begin_self(message,state,lang)
+        return
     if user is None or not user.full_name:
         await message.answer(t("user.not_registered", lang))
         return

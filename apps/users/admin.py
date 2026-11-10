@@ -209,6 +209,9 @@ class TelegramUserAdmin(RBModelAdmin):
         creates the customer: that is registration, not a purchase, so the
         "thanks for buying" line does not apply — only the tutorial does.
         """
+        from django.conf import settings
+        if settings.BILLZ_SECRET_TOKEN and not user.phone_verified:
+            return False
         from apps.campaigns.models import MessageTemplate
         from bot.i18n import t
         from bot.keyboards.inline import CB_TUTORIAL_STEP, SEP

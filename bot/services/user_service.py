@@ -6,6 +6,7 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.db import transaction
+from django.conf import settings
 
 from apps.users.models import SellerProfile, TelegramUser, UserProduct
 from apps.users import services as user_services
@@ -59,51 +60,19 @@ def get_seller_by_telegram_id(telegram_id: int) -> SellerProfile | None:
 
 
 def _find_preregistered(
-    *, username: str | None, phone_number: str | None = None
+    *, username: str | None, phone_number: str | None = None, verified_phone: bool = False
 ) -> TelegramUser | None:
-    """
-    Find a card staff created ahead of time for this person, so the customer
-    keeps the products and notes already entered instead of splitting into a
-    second, empty card.
-
-    Matched on username first (exact, cheap), then on the phone number's last
-    9 digits so formatting differences don't break the link.
-
-    Two staff-entered cards can share the same last 9 digits (a typo, a
-    reused family number, different country codes). Auto-linking to the
-    wrong one would hand a stranger's purchase history and notes to this
-    customer, so a tail match is only trusted when it is unambiguous — an
-    exact normalized-number match breaks a tie, otherwise nothing is linked
-    and the duplicate is left for staff to sort out by hand.
-    """
+    """Imported cards require an owned, exact full international phone."""
     unlinked = TelegramUser.objects.filter(telegram_id__isnull=True)
-
-    if username:
-        match = unlinked.filter(username__iexact=username).first()
-        if match is not None:
-            return match
-
-    tail = TelegramUser.phone_tail_of(phone_number)
-    if not tail:
+    if settings.BILLZ_SECRET_TOKEN and not verified_phone:
         return None
-
-    candidates = list(unlinked.filter(phone_tail=tail))
-    if not candidates:
-        return None
-    if len(candidates) == 1:
-        return candidates[0]
-
-    normalized = TelegramUser.normalize_phone(phone_number)
-    exact = [c for c in candidates if normalized and c.phone_number == normalized]
-    if len(exact) == 1:
-        return exact[0]
-
-    logger.warning(
-        "phone_tail collision on %s: %d unlinked candidates — refusing to "
-        "auto-link, needs manual review",
-        tail,
-        len(candidates),
-    )
+    if not verified_phone:
+        unlinked = unlinked.filter(billz_purchases__isnull=True)
+    if phone_number:
+        normalized = TelegramUser.normalize_phone(phone_number)
+        return unlinked.filter(phone_number=normalized).first() if normalized else None
+    if username and not settings.BILLZ_SECRET_TOKEN:
+        return unlinked.filter(username__iexact=username).first()
     return None
 
 
@@ -170,6 +139,7 @@ def complete_user(
     language: str = "uz",
     referred_by_seller_id: int | None = None,
     registered_by_id: int | None = None,
+    phone_verified: bool = False,
 ) -> TelegramUser:
     """Fill in registration data and mark the user COMPLETED (idempotent)."""
     from django.utils import timezone
@@ -178,14 +148,15 @@ def complete_user(
         # The phone is only known now, so this is the last chance to notice the
         # customer already has a card that staff filled in by hand.
         preregistered = _find_preregistered(
-            username=username, phone_number=phone_number
+            username=username, phone_number=phone_number, verified_phone=phone_verified
         )
         if preregistered is not None:
             # Free the telegram_id from the empty row /start made before we knew
             # who this was, then move it onto the card staff prepared.
-            TelegramUser.objects.filter(telegram_id=telegram_id).exclude(
-                pk=preregistered.pk
-            ).delete()
+            from apps.users.identity import merge_customers
+            current=TelegramUser.objects.filter(telegram_id=telegram_id).exclude(pk=preregistered.pk).first()
+            if current:
+                preregistered=merge_customers(current.pk,preregistered.pk)
             preregistered.telegram_id = telegram_id
             preregistered.save(update_fields=["telegram_id"])
 
@@ -194,6 +165,7 @@ def complete_user(
             "full_name": full_name,
             "birth_date": birth_date,
             "phone_number": phone_number,
+            "phone_verified": phone_verified,
             "face_condition": face_condition,
             "language": language,
             "registration_status": TelegramUser.RegistrationStatus.COMPLETED,
@@ -220,6 +192,18 @@ def complete_user(
 
 
 @sync_to_async
+def verify_billz_phone(user_id: int, phone: str):
+    from apps.billz.services import verify_phone
+    return verify_phone(user_id, phone)
+
+
+@sync_to_async
+def bind_verified_contact(**kwargs):
+    from apps.users.identity import bind_verified_contact as bind
+    return bind(**kwargs)
+
+
+@sync_to_async
 def set_user_photo(user_id: int, file_bytes: bytes, filename: str) -> None:
     from django.core.files.base import ContentFile
 
@@ -229,11 +213,9 @@ def set_user_photo(user_id: int, file_bytes: bytes, filename: str) -> None:
 
 @sync_to_async
 def get_user_products(telegram_id: int) -> list[UserProduct]:
-    return list(
-        UserProduct.objects.select_related("product").filter(
-            user__telegram_id=telegram_id
-        )
-    )
+    purchases=UserProduct.objects.select_related('product').filter(user__telegram_id=telegram_id)
+    if settings.BILLZ_SECRET_TOKEN:purchases=purchases.filter(user__phone_verified=True)
+    return list(purchases)
 
 
 @sync_to_async

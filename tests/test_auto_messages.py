@@ -356,14 +356,14 @@ class MigrationSeedTests(TestCase):
     def test_both_lifecycle_rules_were_carried_over(self):
         names = set(AutoMessage.objects.values_list("name", flat=True))
         self.assertIn("1-hafta — fikr so'rovi", names)
-        self.assertIn("2-hafta — natija rasmi", names)
+        self.assertIn("15 kun — natija so‘rovi", names)
 
     def test_the_delays_kept_their_original_meaning(self):
         week1 = AutoMessage.objects.get(name="1-hafta — fikr so'rovi")
-        week2 = AutoMessage.objects.get(name="2-hafta — natija rasmi")
+        week2 = AutoMessage.objects.get(name="15 kun — natija so‘rovi")
 
         self.assertEqual(week1.delay, timedelta(days=7))
-        self.assertEqual(week2.delay, timedelta(days=14))
+        self.assertEqual(week2.delay, timedelta(days=15))
         self.assertEqual(week1.trigger, AutoMessage.Trigger.AFTER_PURCHASE)
         # The feedback-rating flow this button used to open no longer exists
         # (see 0011_retire_feedback_button_action) — the rule survives as a

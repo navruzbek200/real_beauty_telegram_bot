@@ -59,6 +59,10 @@ class SellerProfile(models.Model):
 class TelegramUser(models.Model):
     """Registered bot user."""
 
+    @property
+    def first_name(self):
+        return self.full_name.split()[0] if self.full_name.strip() else 'Aziz mijoz'
+
     class FaceCondition(models.TextChoices):
         DRY = "dry", "Quruq"
         OILY = "oily", "Yog'li"
@@ -70,6 +74,7 @@ class TelegramUser(models.Model):
         SELF = "self", "O'zi ro'yxatdan o'tgan"
         ADMIN = "admin", "Admin yordamida"
         APP = "app", "Mobil ilova"
+        BILLZ = "billz", "BILLZ"
 
     class RegistrationStatus(models.TextChoices):
         PENDING = "pending", "To'ldirilishi kerak"
@@ -100,6 +105,7 @@ class TelegramUser(models.Model):
     phone_number = models.CharField(
         max_length=20, blank=True, verbose_name="Telefon raqami"
     )
+    phone_verified = models.BooleanField(default=False, editable=False)
     # Last 9 digits of phone_number, kept in sync by save(). Staff type
     # "+998 90 123 45 67" while Telegram reports "998901234567", so the raw
     # strings never compare equal — this column is what we actually match on.
@@ -168,8 +174,17 @@ class TelegramUser(models.Model):
     class Meta:
         verbose_name = "Xaridor"
         verbose_name_plural = "Xaridorlar"
+        constraints = [models.UniqueConstraint(fields=['phone_number'], condition=~models.Q(phone_number=''), name='unique_customer_phone')]
 
     def save(self, *args, **kwargs) -> None:
+        self.phone_number = self.normalize_phone(self.phone_number) or (self.phone_number or '')
+        fields = kwargs.get('update_fields')
+        if self.pk and self.phone_verified and (fields is None or 'phone_verified' not in fields):
+            previous = type(self).objects.filter(pk=self.pk).values_list('phone_number', flat=True).first()
+            if previous != self.phone_number:
+                self.phone_verified = False
+                if fields is not None:
+                    kwargs['update_fields'] = set(fields) | {'phone_verified'}
         self.phone_tail = self.phone_tail_of(self.phone_number)
         if "update_fields" in kwargs and kwargs["update_fields"] is not None:
             fields = set(kwargs["update_fields"])
@@ -296,6 +311,8 @@ class UserProduct(models.Model):
     purchased_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Sotib olingan sana"
     )
+    # BILLZ retains each repeat sale in its own ledger, where reminders anchor.
+    auto_messages_enabled = models.BooleanField(default=True, editable=False)
 
     # Track campaign state for this purchase
     week1_sent = models.BooleanField(default=False, verbose_name="1-hafta yuborilgan")

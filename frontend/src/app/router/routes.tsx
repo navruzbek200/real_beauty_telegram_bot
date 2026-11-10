@@ -10,6 +10,7 @@ import { LessonVideosPage } from '@/pages/lesson-videos'
 import { LoginPage } from '@/pages/login'
 import { MessageTemplatesPage } from '@/pages/message-templates'
 import { OrdersPage } from '@/pages/orders'
+import { BillzSalesPage } from '@/pages/billz-sales'
 import { ProductsPage } from '@/pages/products'
 import { SettingsPage } from '@/pages/settings'
 import { SkinQuizResultsPage } from '@/pages/skin-quiz-results'
@@ -27,6 +28,10 @@ export function AppRoutes() {
       <Route
         path="/customers"
         element={<ProtectedRoute permission="users.view_telegramuser"><CustomersPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/billz-sales"
+        element={<ProtectedRoute permission="billz.view_billzreceipt"><BillzSalesPage /></ProtectedRoute>}
       />
       <Route
         path="/orders"

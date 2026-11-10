@@ -244,6 +244,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/billz-receipts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["billz_receipts_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billz-receipts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["billz_receipts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billz-receipts/{id}/preview/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["billz_receipts_preview_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billz-receipts/{id}/retry/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["billz_receipts_retry_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/broadcasts/": {
         parameters: {
             query?: never;
@@ -1213,6 +1277,7 @@ export interface components {
             is_active?: boolean;
             /**
              * Nechta mijozga
+             * Format: int64
              * @description 1 — faqat bitta mijoz ishlatadi (tavsiya etiladi). 0 — cheksiz, butun aksiya uchun.
              */
             max_uses?: number;
@@ -1271,6 +1336,7 @@ export interface components {
             trigger?: components["schemas"]["TriggerEnum"];
             /**
              * Qancha vaqtdan keyin
+             * Format: int64
              * @description Raqam. Masalan: 7.
              */
             delay_value?: number;
@@ -1330,6 +1396,47 @@ export interface components {
             readonly updated_at: string;
             readonly schedule_label: string;
             readonly sent_total: number;
+        };
+        BillzPurchase: {
+            readonly id: number;
+            readonly order_number: string;
+            readonly product_name: string;
+            /** Format: date-time */
+            readonly purchased_at: string;
+            /** Format: decimal */
+            readonly quantity: string;
+            /** Format: decimal */
+            readonly returned_quantity: string;
+            readonly active: boolean;
+            readonly cancelled: boolean;
+            readonly historical: boolean;
+            readonly has_tutorial: boolean;
+            readonly mapping_id: string;
+        };
+        BillzReceipt: {
+            readonly id: number;
+            readonly shop_id: string;
+            readonly shop_name: string;
+            readonly order_id: string;
+            readonly order_number: string;
+            readonly user: number | null;
+            readonly customer_name: string;
+            readonly phone_number: string;
+            /** Format: date-time */
+            readonly purchased_at: string;
+            readonly historical: boolean;
+            readonly products: components["schemas"]["BillzPurchase"][];
+            readonly notification_state: string;
+            readonly notification_label: string;
+            /** Format: date-time */
+            readonly sent_at: string | null;
+            /** Format: date-time */
+            readonly last_attempt_at: string | null;
+            /** Format: date-time */
+            readonly next_attempt_at: string | null;
+            readonly attempt_count: number;
+            readonly last_error: string;
+            readonly message_text: string;
         };
         /** @enum {unknown} */
         BlankEnum: "";
@@ -1435,7 +1542,10 @@ export interface components {
             readonly id: number;
             /** Sarlavha */
             title: string;
-            /** Chegirma foizi (%) */
+            /**
+             * Chegirma foizi (%)
+             * Format: int64
+             */
             percent?: number;
             /** Tavsif */
             description?: string;
@@ -1464,6 +1574,7 @@ export interface components {
         GlobalSettings: {
             /**
              * Tug'ilgan kun chegirmasi (%)
+             * Format: int64
              * @description Tug'ilgan kun xabaridagi foiz. Xabar matnida {{ discount }} o'rniga shu raqam qo'yiladi.
              */
             birthday_discount_percent?: number;
@@ -1484,14 +1595,17 @@ export interface components {
             youtube_url?: string;
             /** Telegram kanal havolasi */
             telegram_url?: string;
+            /** Linktree («Biz haqimizda») havolasi */
             linktree_url?: string;
             /**
              * Yandeks yetkazish haqi (so'm)
+             * Format: int64
              * @description Toshkent bo'ylab. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_yandex?: number;
             /**
              * BTS yetkazish haqi (so'm)
+             * Format: int64
              * @description Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_bts?: number;
@@ -1558,6 +1672,7 @@ export interface components {
             description_en?: string;
             /**
              * Tartib
+             * Format: int64
              * @description Kichik raqam yuqorida turadi: 1, 2, 3 …
              */
             order?: number;
@@ -1605,38 +1720,62 @@ export interface components {
             is_enabled?: boolean;
             /**
              * Ro'yxatdan o'tgani uchun
+             * Format: int64
              * @description Mijoz botda ro'yxatdan o'tishni tugatganda beriladi.
              */
             points_registration?: number;
             /**
              * Do'stini taklif qilgani uchun
+             * Format: int64
              * @description Taklif qilingan do'st ro'yxatdan o'tib bo'lgach beriladi.
              */
             points_referral?: number;
             /**
              * Har bir xarid uchun
+             * Format: int64
              * @description Mijozga mahsulot biriktirilganda beriladi.
              */
             points_purchase?: number;
-            /** Teri testini topshirgani uchun */
+            /**
+             * Teri testini topshirgani uchun
+             * Format: int64
+             */
             points_quiz?: number;
-            /** Mahsulotga baho bergani uchun */
+            /**
+             * Mahsulotga baho bergani uchun
+             * Format: int64
+             */
             points_feedback?: number;
-            /** Oldin/keyin rasmi uchun */
+            /**
+             * Oldin/keyin rasmi uchun
+             * Format: int64
+             */
             points_progress?: number;
-            /** Tug'ilgan kun sovg'asi */
+            /**
+             * Tug'ilgan kun sovg'asi
+             * Format: int64
+             */
             points_birthday?: number;
             /** Bronza keshbek / chegirma (%) */
             bronze_cashback?: number;
-            /** Kumush darajasi (balldan) */
+            /**
+             * Kumush darajasi (balldan)
+             * Format: int64
+             */
             silver_from?: number;
             /** Kumush keshbek / chegirma (%) */
             silver_cashback?: number;
-            /** Oltin darajasi (balldan) */
+            /**
+             * Oltin darajasi (balldan)
+             * Format: int64
+             */
             gold_from?: number;
             /** Oltin keshbek / chegirma (%) */
             gold_cashback?: number;
-            /** Platina darajasi (balldan) */
+            /**
+             * Platina darajasi (balldan)
+             * Format: int64
+             */
             platinum_from?: number;
             /** Platina keshbek / chegirma (%) */
             platinum_cashback?: number;
@@ -1790,6 +1929,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["AutoMessage"][];
+        };
+        PaginatedBillzReceiptList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["BillzReceipt"][];
         };
         PaginatedBroadcastList: {
             /** @example 123 */
@@ -2068,6 +2222,7 @@ export interface components {
             is_active?: boolean;
             /**
              * Nechta mijozga
+             * Format: int64
              * @description 1 — faqat bitta mijoz ishlatadi (tavsiya etiladi). 0 — cheksiz, butun aksiya uchun.
              */
             max_uses?: number;
@@ -2119,6 +2274,7 @@ export interface components {
             trigger?: components["schemas"]["TriggerEnum"];
             /**
              * Qancha vaqtdan keyin
+             * Format: int64
              * @description Raqam. Masalan: 7.
              */
             delay_value?: number;
@@ -2233,7 +2389,10 @@ export interface components {
             readonly id?: number;
             /** Sarlavha */
             title?: string;
-            /** Chegirma foizi (%) */
+            /**
+             * Chegirma foizi (%)
+             * Format: int64
+             */
             percent?: number;
             /** Tavsif */
             description?: string;
@@ -2253,6 +2412,7 @@ export interface components {
         PatchedGlobalSettings: {
             /**
              * Tug'ilgan kun chegirmasi (%)
+             * Format: int64
              * @description Tug'ilgan kun xabaridagi foiz. Xabar matnida {{ discount }} o'rniga shu raqam qo'yiladi.
              */
             birthday_discount_percent?: number;
@@ -2273,14 +2433,17 @@ export interface components {
             youtube_url?: string;
             /** Telegram kanal havolasi */
             telegram_url?: string;
+            /** Linktree («Biz haqimizda») havolasi */
             linktree_url?: string;
             /**
              * Yandeks yetkazish haqi (so'm)
+             * Format: int64
              * @description Toshkent bo'ylab. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_yandex?: number;
             /**
              * BTS yetkazish haqi (so'm)
+             * Format: int64
              * @description Viloyatlarga pochta. Savatchada alohida qator bo'lib qo'shiladi.
              */
             delivery_fee_bts?: number;
@@ -2312,6 +2475,7 @@ export interface components {
             description_en?: string;
             /**
              * Tartib
+             * Format: int64
              * @description Kichik raqam yuqorida turadi: 1, 2, 3 …
              */
             order?: number;
@@ -2354,38 +2518,62 @@ export interface components {
             is_enabled?: boolean;
             /**
              * Ro'yxatdan o'tgani uchun
+             * Format: int64
              * @description Mijoz botda ro'yxatdan o'tishni tugatganda beriladi.
              */
             points_registration?: number;
             /**
              * Do'stini taklif qilgani uchun
+             * Format: int64
              * @description Taklif qilingan do'st ro'yxatdan o'tib bo'lgach beriladi.
              */
             points_referral?: number;
             /**
              * Har bir xarid uchun
+             * Format: int64
              * @description Mijozga mahsulot biriktirilganda beriladi.
              */
             points_purchase?: number;
-            /** Teri testini topshirgani uchun */
+            /**
+             * Teri testini topshirgani uchun
+             * Format: int64
+             */
             points_quiz?: number;
-            /** Mahsulotga baho bergani uchun */
+            /**
+             * Mahsulotga baho bergani uchun
+             * Format: int64
+             */
             points_feedback?: number;
-            /** Oldin/keyin rasmi uchun */
+            /**
+             * Oldin/keyin rasmi uchun
+             * Format: int64
+             */
             points_progress?: number;
-            /** Tug'ilgan kun sovg'asi */
+            /**
+             * Tug'ilgan kun sovg'asi
+             * Format: int64
+             */
             points_birthday?: number;
             /** Bronza keshbek / chegirma (%) */
             bronze_cashback?: number;
-            /** Kumush darajasi (balldan) */
+            /**
+             * Kumush darajasi (balldan)
+             * Format: int64
+             */
             silver_from?: number;
             /** Kumush keshbek / chegirma (%) */
             silver_cashback?: number;
-            /** Oltin darajasi (balldan) */
+            /**
+             * Oltin darajasi (balldan)
+             * Format: int64
+             */
             gold_from?: number;
             /** Oltin keshbek / chegirma (%) */
             gold_cashback?: number;
-            /** Platina darajasi (balldan) */
+            /**
+             * Platina darajasi (balldan)
+             * Format: int64
+             */
             platinum_from?: number;
             /** Platina keshbek / chegirma (%) */
             platinum_cashback?: number;
@@ -2489,10 +2677,14 @@ export interface components {
             is_active?: boolean;
             /** Sotuvda mavjud */
             in_stock?: boolean;
-            /** Hozirgi narxi (so'm) */
+            /**
+             * Hozirgi narxi (so'm)
+             * Format: int64
+             */
             current_price?: number;
             /**
              * Eski narxi (so'm)
+             * Format: int64
              * @description Chegirmani ko'rsatish uchun. Bo'sh qoldirsangiz chegirma ko'rsatilmaydi.
              */
             old_price?: number | null;
@@ -2504,6 +2696,7 @@ export interface components {
             is_top?: boolean;
             /**
              * Top ro'yxatdagi o'rni
+             * Format: int64
              * @description 1 — birinchi bo'lib chiqadi, keyin 2, 3 ...
              */
             top_order?: number;
@@ -2527,6 +2720,7 @@ export interface components {
             product?: number;
             /**
              * Ketma-ketlik
+             * Format: int64
              * @description Tugmalar tartibi: 1, 2, 3 ... (kichik raqam yuqorida turadi).
              */
             order?: number;
@@ -2572,7 +2766,10 @@ export interface components {
             description_ru?: string;
             /** Tavsif (inglizcha) */
             description_en?: string;
-            /** Narxi (ball) */
+            /**
+             * Narxi (ball)
+             * Format: int64
+             */
             cost_points?: number;
             /**
              * Promokod boshlanishi
@@ -2581,6 +2778,7 @@ export interface components {
             code_prefix?: string;
             /**
              * Nechta qoldi
+             * Format: int64
              * @description Bo'sh qoldirsangiz — cheklanmagan.
              */
             stock?: number | null;
@@ -2659,6 +2857,7 @@ export interface components {
             birth_date?: string | null;
             /** Telefon raqami */
             phone_number?: string;
+            readonly phone_verified?: boolean;
             /**
              * Til
              * @description Mijoz botda tanlagan til. Xabarlar shu tilda yuboriladi.
@@ -2695,6 +2894,7 @@ export interface components {
             readonly registered_at?: string | null;
             readonly is_linked?: boolean;
             readonly purchases?: components["schemas"]["UserProduct"][];
+            readonly billz_purchases?: components["schemas"]["BillzPurchase"][];
         };
         PatchedTopProduct: {
             readonly id?: number;
@@ -2719,10 +2919,14 @@ export interface components {
             is_active?: boolean;
             /** Sotuvda mavjud */
             in_stock?: boolean;
-            /** Hozirgi narxi (so'm) */
+            /**
+             * Hozirgi narxi (so'm)
+             * Format: int64
+             */
             current_price?: number;
             /**
              * Eski narxi (so'm)
+             * Format: int64
              * @description Chegirmani ko'rsatish uchun. Bo'sh qoldirsangiz chegirma ko'rsatilmaydi.
              */
             old_price?: number | null;
@@ -2734,6 +2938,7 @@ export interface components {
             is_top?: boolean;
             /**
              * Top ro'yxatdagi o'rni
+             * Format: int64
              * @description 1 — birinchi bo'lib chiqadi, keyin 2, 3 ...
              */
             top_order?: number;
@@ -2767,6 +2972,7 @@ export interface components {
             readonly week1_sent?: boolean;
             /** 2-hafta yuborilgan */
             readonly week2_sent?: boolean;
+            readonly is_billz?: boolean;
         };
         /**
          * @description * `cod` - 💵 Yetkazishda naqd
@@ -2804,10 +3010,14 @@ export interface components {
             is_active?: boolean;
             /** Sotuvda mavjud */
             in_stock?: boolean;
-            /** Hozirgi narxi (so'm) */
+            /**
+             * Hozirgi narxi (so'm)
+             * Format: int64
+             */
             current_price?: number;
             /**
              * Eski narxi (so'm)
+             * Format: int64
              * @description Chegirmani ko'rsatish uchun. Bo'sh qoldirsangiz chegirma ko'rsatilmaydi.
              */
             old_price?: number | null;
@@ -2819,6 +3029,7 @@ export interface components {
             is_top?: boolean;
             /**
              * Top ro'yxatdagi o'rni
+             * Format: int64
              * @description 1 — birinchi bo'lib chiqadi, keyin 2, 3 ...
              */
             top_order?: number;
@@ -2845,6 +3056,7 @@ export interface components {
             product: number;
             /**
              * Ketma-ketlik
+             * Format: int64
              * @description Tugmalar tartibi: 1, 2, 3 ... (kichik raqam yuqorida turadi).
              */
             order?: number;
@@ -2875,6 +3087,13 @@ export interface components {
             /** Himoya (ulashish/saqlashni taqiqlash) */
             protect_content?: boolean;
             readonly has_video: boolean;
+        };
+        ReceiptPreview: {
+            text: string;
+            parts: number;
+        };
+        ReceiptPreviewRequest: {
+            body?: string;
         };
         /**
          * @description Request-only shape for /auth/refresh/.
@@ -2907,7 +3126,10 @@ export interface components {
             description_ru?: string;
             /** Tavsif (inglizcha) */
             description_en?: string;
-            /** Narxi (ball) */
+            /**
+             * Narxi (ball)
+             * Format: int64
+             */
             cost_points?: number;
             /**
              * Promokod boshlanishi
@@ -2916,6 +3138,7 @@ export interface components {
             code_prefix?: string;
             /**
              * Nechta qoldi
+             * Format: int64
              * @description Bo'sh qoldirsangiz — cheklanmagan.
              */
             stock?: number | null;
@@ -2977,9 +3200,10 @@ export interface components {
          * @description * `self` - O'zi ro'yxatdan o'tgan
          *     * `admin` - Admin yordamida
          *     * `app` - Mobil ilova
+         *     * `billz` - BILLZ
          * @enum {string}
          */
-        SourceEnum: "self" | "admin" | "app";
+        SourceEnum: "self" | "admin" | "app" | "billz";
         /** @description Staff = the auth.User proxy; role/seller_profile mirror the admin's StaffForm. */
         Staff: {
             readonly id: number;
@@ -3104,6 +3328,7 @@ export interface components {
             birth_date?: string | null;
             /** Telefon raqami */
             phone_number?: string;
+            readonly phone_verified: boolean;
             /**
              * Til
              * @description Mijoz botda tanlagan til. Xabarlar shu tilda yuboriladi.
@@ -3140,17 +3365,19 @@ export interface components {
             readonly registered_at: string | null;
             readonly is_linked: boolean;
             readonly purchases: components["schemas"]["UserProduct"][];
+            readonly billz_purchases: components["schemas"]["BillzPurchase"][];
         };
         /**
          * @description * `welcome` - Ro'yxatdan o'tgach salomlashish
          *     * `product_intro` - Mahsulot qo'llanmasi kirish
+         *     * `purchase_thanks` - BILLZ xaridi uchun minnatdorchilik
          *     * `week1_checkin` - 1-hafta so'rovi
          *     * `week2_progress` - 2-hafta natija so'rovi
          *     * `birthday_sale` - Tug'ilgan kun chegirmasi
          *     * `feedback_thanks` - Fikr uchun rahmat
          * @enum {string}
          */
-        TemplateTypeEnum: "welcome" | "product_intro" | "week1_checkin" | "week2_progress" | "birthday_sale" | "feedback_thanks";
+        TemplateTypeEnum: "welcome" | "product_intro" | "purchase_thanks" | "week1_checkin" | "week2_progress" | "birthday_sale" | "feedback_thanks";
         /**
          * @description Output-only shape of a successful login/refresh.
          *
@@ -3186,10 +3413,14 @@ export interface components {
             is_active?: boolean;
             /** Sotuvda mavjud */
             in_stock?: boolean;
-            /** Hozirgi narxi (so'm) */
+            /**
+             * Hozirgi narxi (so'm)
+             * Format: int64
+             */
             current_price?: number;
             /**
              * Eski narxi (so'm)
+             * Format: int64
              * @description Chegirmani ko'rsatish uchun. Bo'sh qoldirsangiz chegirma ko'rsatilmaydi.
              */
             old_price?: number | null;
@@ -3201,6 +3432,7 @@ export interface components {
             is_top?: boolean;
             /**
              * Top ro'yxatdagi o'rni
+             * Format: int64
              * @description 1 — birinchi bo'lib chiqadi, keyin 2, 3 ...
              */
             top_order?: number;
@@ -3240,6 +3472,7 @@ export interface components {
             readonly week1_sent: boolean;
             /** 2-hafta yuborilgan */
             readonly week2_sent: boolean;
+            readonly is_billz: boolean;
         };
     };
     responses: never;
@@ -3844,6 +4077,121 @@ export interface operations {
             };
         };
     };
+    billz_receipts_list: {
+        parameters: {
+            query?: {
+                date_from?: string;
+                date_to?: string;
+                notification_state?: string;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedBillzReceiptList"];
+                };
+            };
+        };
+    };
+    billz_receipts_retrieve: {
+        parameters: {
+            query?: {
+                date_from?: string;
+                date_to?: string;
+                notification_state?: string;
+            };
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this BILLZ cheki. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillzReceipt"];
+                };
+            };
+        };
+    };
+    billz_receipts_preview_create: {
+        parameters: {
+            query?: {
+                date_from?: string;
+                date_to?: string;
+                notification_state?: string;
+            };
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this BILLZ cheki. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReceiptPreviewRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReceiptPreviewRequest"];
+                "multipart/form-data": components["schemas"]["ReceiptPreviewRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptPreview"];
+                };
+            };
+        };
+    };
+    billz_receipts_retry_create: {
+        parameters: {
+            query?: {
+                date_from?: string;
+                date_to?: string;
+                notification_state?: string;
+            };
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this BILLZ cheki. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailMessage"];
+                };
+            };
+        };
+    };
     broadcasts_list: {
         parameters: {
             query?: {
@@ -4077,8 +4425,9 @@ export interface operations {
                  * @description * `self` - O'zi ro'yxatdan o'tgan
                  *     * `admin` - Admin yordamida
                  *     * `app` - Mobil ilova
+                 *     * `billz` - BILLZ
                  */
-                source?: "admin" | "app" | "self";
+                source?: "admin" | "app" | "billz" | "self";
             };
             header?: never;
             path?: never;

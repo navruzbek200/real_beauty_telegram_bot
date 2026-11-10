@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { ResourcePage } from '@/widgets/resource-crud'
@@ -61,6 +62,7 @@ export function OrdersPage() {
   return (
     <div className="space-y-3">
       <Alert tone="info">
+        Do‘kondagi chek va minnatdorchilik xabarlari <Link className="font-semibold underline" to="/billz-sales">BILLZ savdolari</Link> bo‘limida.{' '}
         Buyurtmalar Mini Appdagi 🛒 savatchadan tushadi va Telegram guruhga ham boradi.
         Ish tartibi: mijozga qo'ng'iroq qiling → <b>Tasdiqlash</b> → jo'natgach{' '}
         <b>Yo'lga chiqdi</b> → qo'lga tekkach <b>Yetkazildi</b>.
@@ -71,7 +73,7 @@ export function OrdersPage() {
         </Alert>
       )}
       <ResourcePage<Order, OrderFormValues, Partial<Order>, Partial<Order>>
-        title="Buyurtmalar"
+        title="Onlayn buyurtmalar"
         api={orderApi}
         queryKey={['orders']}
         columns={orderColumns}

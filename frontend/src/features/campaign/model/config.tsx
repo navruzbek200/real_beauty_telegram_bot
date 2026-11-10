@@ -8,6 +8,12 @@ import type {
   MessageTemplate,
 } from '@/entities/campaign'
 
+export const purchaseVariables = [
+  {label:'Mijoz ismi',value:'{{ first_name }}'},
+  {label:'Mahsulot nomlari',value:'{{ product_name }}'},
+  {label:'Mahsulotlar va miqdori',value:'{{ products_text }}'},
+]
+
 // --- Message templates (edit-only, superuser) ---
 export const messageTemplateFormSchema = z.object({
   name: z.string().min(1),
@@ -23,6 +29,7 @@ export const messageTemplateFormConfig: ResourceFormConfig<MessageTemplateFormVa
       name: 'body',
       label: 'Xabar matni',
       type: 'textarea',
+      variables: purchaseVariables,
       help: 'HTML ishlatsa bo\'ladi: <b>qalin</b>, <i>yotiq</i>. {{ user.full_name }} — mijoz ismi bilan almashadi. '
         + 'Masalan: «Salom, {{ user.full_name }}! Xush kelibsiz 🌸»',
     },
@@ -85,8 +92,9 @@ export const autoMessageFormConfig: ResourceFormConfig<AutoMessageFormValues> = 
       name: 'body',
       label: 'Xabar matni',
       type: 'textarea',
-      help: 'HTML mumkin: <b>qalin</b>, <i>yotiq</i>. {{ user.full_name }} — mijoz ismi, {{ product.name }} — mahsulot nomi. '
-        + 'Masalan: «{{ user.full_name }}, {{ product.name }} natijasi qanday? 😊»',
+      variables: purchaseVariables,
+      help: 'Pastdagi tugmalarni bosing: bot yuborayotganda mijoz ismi va BILLZ chekidagi barcha mahsulotlar avtomatik to‘ldiriladi. '
+        + '{{ first_name }} — ism; {{ product_name }} yoki {{ product.name }} — barcha mahsulot nomlari. Masalan: «{{ first_name }}, {{ product_name }} sizga qanday taassurot qoldirdi? 😊»',
     },
     { name: 'is_active', label: 'Yoqilgan', type: 'checkbox', help: 'O\'chiq bo\'lsa hech kimga yuborilmaydi.' },
     { name: 'is_test_mode', label: 'Sinov rejimi', type: 'checkbox', help: 'Yoqilsa xabar faqat sinov uchun belgilangan adminlarga boradi, mijozlarga emas.' },
@@ -96,7 +104,7 @@ export const autoMessageFormConfig: ResourceFormConfig<AutoMessageFormValues> = 
     trigger: 'after_purchase',
     delay_value: 7,
     delay_unit: 'day',
-    body: '',
+    body: '{{ first_name }}, {{ product_name }} sizga qanday taassurot qoldirdi? Savollaringiz bo‘lsa, bizga yozing 🌸',
     is_active: true,
     is_test_mode: false,
   },

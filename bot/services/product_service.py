@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from asgiref.sync import sync_to_async
 from django.db.models import Exists, OuterRef, Q
+from django.conf import settings
 
 from apps.products.models import Product, ProductTutorialStep
 
@@ -74,8 +75,10 @@ def get_tutorial_products(telegram_id: int) -> list[Product]:
     """
     playable = Product.objects.filter(is_active=True).filter(_has_playable_lesson())
 
+    owned_query=playable.filter(userproduct__user__telegram_id=telegram_id)
+    if settings.BILLZ_SECRET_TOKEN:owned_query=owned_query.filter(userproduct__user__phone_verified=True)
     owned = list(
-        playable.filter(userproduct__user__telegram_id=telegram_id)
+        owned_query
         .distinct()
         .order_by("name")
     )

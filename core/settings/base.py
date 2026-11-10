@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "apps.loyalty",
     "apps.lessons",
     "apps.orders",
+    "apps.billz",
     "apps.api",
 ]
 
@@ -112,6 +113,10 @@ USE_TZ = True
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+BILLZ_SECRET_TOKEN = os.environ.get("BILLZ_SECRET_TOKEN", "").strip()
+BILLZ_SHOP_IDS = [value.strip() for value in os.environ.get("BILLZ_SHOP_IDS", "").split(",") if value.strip()]
+BILLZ_HISTORY_START = os.environ.get("BILLZ_HISTORY_START", "2000-01-01")
 
 # Cache — backs the short-lived Telegram file URLs served by core.views.
 CACHES = {
@@ -270,6 +275,15 @@ UNFOLD = {
         "show_search": True,
         "show_all_applications": False,
         "navigation": [
+            {
+                "title": "BILLZ",
+                "separator": True,
+                "items": [
+                    {"title": "Xaridlar", "icon": "receipt_long", "link": reverse_lazy("admin:billz_billzpurchase_changelist")},
+                    {"title": "Mahsulotlarni bog‘lash", "icon": "link", "link": reverse_lazy("admin:billz_billzproduct_changelist")},
+                    {"title": "Ulanish holati", "icon": "sync", "link": reverse_lazy("admin:billz_billzsyncstate_changelist")},
+                ],
+            },
             {
                 "title": "Asosiy",
                 "separator": True,

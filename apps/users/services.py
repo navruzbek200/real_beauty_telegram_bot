@@ -22,8 +22,7 @@ def register_app_user(*, full_name: str, phone_number: str) -> TelegramUser:
     if normalized is None:
         raise InvalidPhoneNumber("Telefon raqam noto'g'ri formatda")
 
-    tail = TelegramUser.phone_tail_of(normalized)
-    existing = TelegramUser.objects.filter(phone_tail=tail).first()
+    existing = TelegramUser.objects.filter(phone_number=normalized).first()
     if existing is not None:
         # A card that already has a name (typed by staff, or completed via the
         # bot) knows more about this person than a bare app signup does —
@@ -33,12 +32,8 @@ def register_app_user(*, full_name: str, phone_number: str) -> TelegramUser:
             existing.save(update_fields=["full_name"])
         return existing
 
-    return TelegramUser.objects.create(
-        full_name=full_name,
-        phone_number=normalized,
-        source=TelegramUser.RegistrationSource.APP,
-        registration_status=TelegramUser.RegistrationStatus.PENDING,
-    )
+    user, _ = TelegramUser.objects.get_or_create(phone_number=normalized, defaults={'full_name':full_name,'source':TelegramUser.RegistrationSource.APP,'registration_status':TelegramUser.RegistrationStatus.PENDING})
+    return user
 
 
 def create_login_session() -> TelegramLoginSession:

@@ -8,12 +8,16 @@ from celery.schedules import crontab
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings.prod")
 
 app = Celery(
-    "realbeauty", include=["tasks.scheduled", "tasks.broadcast", "tasks.orders"]
+    "realbeauty", include=["tasks.scheduled", "tasks.broadcast", "tasks.orders", "tasks.billz"]
 )
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
+    "billz-purchases": {
+        "task": "tasks.billz.poll_billz",
+        "schedule": crontab(minute="*"),
+    },
     # Every minute, because the delay on an automatic message is admin-editable
     # down to one minute. A daily beat would quietly turn "1 daqiqa" into
     # "tomorrow at 10:00" — the exact thing that makes a campaign untestable.
